@@ -3300,8 +3300,9 @@ c
      .     -2.d0/3*dlog(rmt/mz) 
      .     -2*dlog(abs(rmg)/mz) 
      .      -1.d0/6*(2*dlog(msu1/mz)+2*dlog(msu2/mz)
-     .                + dlog(mst1/mz)+dlog(mst2/mz)           
-     .      +         + 2*dlog(msd1/mz)+2*dlog(msd2/mz)
+     .                + dlog(mst1/mz)+dlog(mst2/mz)  
+c---- ramona removed double + in following line on 11/9/14         
+     .                + 2*dlog(msd1/mz)+2*dlog(msd2/mz)
      .                + dlog(msb1/mz)+dlog(msb2/mz)          ) )
       alphasdr=alphas/(1.d0-dalphas)
 
@@ -9287,7 +9288,7 @@ c -------------------------------------------------------------------- c
       character line1*6,line2*100,
      .          spinfo1*100,spinfo2*100,modselval*100,mincom(1:20)*20,
      .          extcom(0:60)*20
-      logical done
+      logical done,endfile
 
       COMMON/SU_leshouches1/spinfo1,spinfo2,modselval,mincom,extcom
       COMMON/SU_leshouches2/minval,extval,smval,massval,nmixval,umixval,
@@ -9379,7 +9380,7 @@ c -- looks for blocks and reads them in one after the other --
 
 c -- look for Block MODSEL --
             if(line2(1:6).eq.'MODSEL') then
-               call SU_READ_MODSEL(ninlha,modselval,imod,done)
+               call SU_READ_MODSEL(ninlha,modselval,imod,done,endfile)
 c translate SLHA model choice imode values into SUSpect model ichoice values:
                 if(imod(2).eq.0) ichoice(1)=0    ! general MSSM at low scale
                 if(imod(2).eq.1) ichoice(1)=10   ! mSUGRA
@@ -9389,18 +9390,26 @@ c translate SLHA model choice imode values into SUSpect model ichoice values:
                 if(imod(2).eq.-1) ichoice(1)=2   ! EWSB input and bottom-up RGE
                if (done) then
                   check(21) = 1
-                  goto 1111
+                  if(endfile) then
+                     goto 9900
+                  else
+                     goto 1111
+                  endif
                else
                   print*,'SU_read_leshouches: problem in MODSEL'
                endif
 
 c -- look for Block SU_ALGO --(SuSpect algorithm control parameters)
             elseif(line2(1:7).eq.'SU_ALGO') then
-               call SU_READ_SU_ALGO(ninlha,ichoice,done)
+               call SU_READ_SU_ALGO(ninlha,ichoice,done,endfile)
                if (done) then
                   check(22) = 1
 		  algo_warn=0d0
-                  goto 1111
+                  if (endfile) then
+                     goto 9900
+                  else
+                     goto 1111
+                  endif
                else
             algo_warn=-1d0
 c case where specific SuSpect bloc SU_ALGO undefined: take defaut values
@@ -9408,7 +9417,7 @@ c case where specific SuSpect bloc SU_ALGO undefined: take defaut values
 
 c -- look for Block SMINPUTS --
             elseif(line2(1:8).eq.'SMINPUTS') then
-               call SU_READ_SMINPUTS(ninlha,smval,done)
+               call SU_READ_SMINPUTS(ninlha,smval,done,endfile)
       u=unlikely
       if(smval(1).ne.u) alfinv = smval(1)
       if(smval(1).eq.u.or.smval(1).eq.0d0) alfinv= 127.934d0  
@@ -9433,7 +9442,11 @@ c
                
                if (done) then
                   check(1) = 1
-                  goto 1111
+                  if(endfile) then
+                     goto 9900
+                  else
+                     goto 1111
+                  endif
                else
       smin_warn=-1d0
       alfinv = 127.934d0  
@@ -9455,7 +9468,7 @@ c --then create Block SMINPUTS --
 
 c -- look for Block MINPAR --
             elseif(line2(1:6).eq.'MINPAR') then
-               call SU_READ_MINPAR(ninlha,minval,mincom,done)
+               call SU_READ_MINPAR(ninlha,minval,mincom,done,endfile)
       if(ichoice(1).eq.10) then
 c minimal SUGRA models with full universality: if non-universality, values
 c are supersed by block EXTPAR below
@@ -9525,14 +9538,18 @@ c added 21/05/08 (jlk): read tbeta(mZ) from MINPAR even if modsel-0 or -1:
       if(imod(2).le.0.and.minval(3).ne.u) tgbeta=minval(3)
                if (done) then
                   check(2) = 1
-                  goto 1111
+                  if (endfile) then
+                     goto 9900
+                  else
+                     goto 1111
+                  endif
                else
                   print*,'SU_read_leshouches: problem in MINPAR'
                endif
 
 c -- look for Block EXTPAR --
             elseif(line2(1:6).eq.'EXTPAR') then
-               call SU_READ_EXTPAR(ninlha,extval,extcom,done)
+               call SU_READ_EXTPAR(ninlha,extval,extcom,done,endfile)
       if(ichoice(8).eq.0.and.extval(0).ne.unlikely) Qewsb = extval(0)
 c! essai      if(ichoice(1).eq.2) ehigh = extval(10)
         if(extval(10).ne.unlikely) ehigh = extval(10) 
@@ -9586,9 +9603,18 @@ c
       if(extval(44).ne.u) MUR = extval(44)
       if(extval(47).ne.u) MDR = extval(47)
 c
+
+      if(endfile) then
+         goto 9900
+      endif
+
                if (done) then
                   check(23) = 1
-                  goto 1111
+                  if(endfile) then
+                     goto 9900
+                  else
+                     goto 1111
+                  endif
                else
                   print*,'SU_read_leshouches: problem in EXTPAR'
                endif
@@ -9667,7 +9693,8 @@ c
       mincom(3) = 'tanbeta'  
       mincom(4) = 'sign(mu)'  
       mincom(5) = 'Nl_mes'     
-      mincom(6) = 'Nq_mes'   
+      mincom(6) = 'Nq_mes'  
+
       elseif(ichoice(1).eq.12) then
 c AMSB models
       minval(2) = m32 
@@ -9781,14 +9808,15 @@ c
 
 c -------------------------------------------------------------------- c
 
-      subroutine SU_READ_MODSEL(ninlha,modselval,imod,done)
+      subroutine SU_READ_MODSEL(ninlha,modselval,imod,done,endfile)
 
       implicit double precision (a-h,m,o-z)
       integer imod(1:2)
       character line1*1,line2*1,line3*100,modselval*100
-      logical done
+      logical done,endfile
 
       done=.false.
+      endfile=.false.
 
       modselval = ' '
 
@@ -9825,18 +9853,20 @@ c               modselval = line3
 
  9900 print*,'SU_read_leshouches: end of file'
       done = .true.
+      endfile = .true.
 
       end
 
 c -------------------------------------------------------------------- c
-       subroutine SU_READ_SU_ALGO(ninlha,ichoice,done)
+       subroutine SU_READ_SU_ALGO(ninlha,ichoice,done,endfile)
 
       implicit double precision (a-h,m,o-z)
       integer ichoice(1:11)
       character line1*1
-      logical done
+      logical done,endfile
 
       done=.false.
+      endfile=.false.
 
       do i=1,200,1
          read(ninlha,'(a1)',end=9900) line1
@@ -9881,17 +9911,19 @@ c --
 
  9900 print*,'SU_read_leshouches: end of file'
       done = .true.
+      endfile = .true.
 
       end
 c---------------------------------------------------------------------
-      subroutine SU_READ_SMINPUTS(ninlha,smval,done)
+      subroutine SU_READ_SMINPUTS(ninlha,smval,done,endfile)
 
       implicit double precision (a-h,m,o-z)
       double precision smval(20)
       character line1*1
-      logical done
+      logical done,endfile
 
       done=.false.
+      endfile=.false.
 
       do i=1,20,1
          smval(i) = 0.D0
@@ -9944,19 +9976,21 @@ c -- mtau, pole mass --
 
  9900 print*,'SU_read_leshouches: end of file'
       done = .true.
+      endfile = .true.
 
       end
 
 c -------------------------------------------------------------------- c
 
-      subroutine SU_READ_MINPAR(ninlha,minval,mincom,done)
+      subroutine SU_READ_MINPAR(ninlha,minval,mincom,done,endfile)
 
       implicit double precision (a-h,m,o-z)
       double precision minval(20)
       character line1*1,line2*1,line3*20,mincom(1:20)*20
-      logical done
+      logical done,endfile
 
       done= .false.
+      endfile= .false.
       unlikely=-123456789d0
       do i=1,20,1
          minval(i) = unlikely
@@ -9997,18 +10031,20 @@ c -- i=3: value for tanbeta(MZ) --
 
  9900 print*,'SU_read_leshouches: end of file'
       done = .true.
+      endfile = .true.
 
       end
 
 c -------------------------------------------------------------------- c
-       subroutine SU_READ_EXTPAR(ninlha,extval,extcom,done)
+       subroutine SU_READ_EXTPAR(ninlha,extval,extcom,done,endfile)
 
       implicit double precision (a-h,m,o-z)
       dimension extval(0:60)
       character line1*1,line2*1,line3*20,extcom(0:60)*20
-      logical done
+      logical done,endfile
 
       done=.false.
+      endfile=.false.
 c a trick to jump over undefined parameters:
       unlikely = -123456789D0
       do i=0,60,1
@@ -10049,19 +10085,21 @@ c --
 
  9900 print*,'SU_read_leshouches: end of file'
       done = .true.
+      endfile = .true.
 
       end
 c -------------------------------------------------------------------- c
 
 
 
-      subroutine SU_READ_SPINFO(ninlha,spinfo1,spinfo2,done)
+      subroutine SU_READ_SPINFO(ninlha,spinfo1,spinfo2,done,endfile)
 
       implicit double precision (a-h,m,o-z)
       character line1*1,line2*100,spinfo1*100,spinfo2*100
-      logical done
+      logical done,endfile
 
       done= .false.
+      endfile=.false.
 
       spinfo1 = ' '
       spinfo2 = ' '
@@ -10097,6 +10135,7 @@ c -- the version number of the spectrum calculator --
 
  9900 print*,'SU_read_leshouches: end of file'
       done = .true.
+      endfile = .true.
 
       end
 c--------------------------------------------------------------------------

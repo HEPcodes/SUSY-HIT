@@ -1,6 +1,6 @@
 c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc c
 c                                                                      c
-c   This is the version SUSY-HIT 1.2                                   c
+c   This is the version SUSY-HIT 1.5                                   c
 c              ------------------------------------------              c
 c              SUSY-HIT - SUspect-SdecaY-Hdecay-InTerface              c
 c              ------------------------------------------              c
@@ -17,6 +17,14 @@ c   HDECAY 3.4 - A.Djouadi, J.Kalinowski, M. Muehlleitner, M.Spira     c
 c   SDECAY 1.3b - M.Muehlleitner, A.Djouadi, Y.Mambrini                c
 c                                                                      c
 c  The reference to be used for the package is: hep-ph/0609292         c
+c								       c
+c   The authors of the FCNC stop decays implementation are:            c
+c   R. Groeber, M. Muehlleitner, E. Popenda, A. Wlotzka                c
+c                                                                      c
+c   The reference to be used for the package is: hep-ph/0609292        c
+c                                                                      c
+c   If the FCNC stop decays are calculated please cite in addition     c
+c   arXiv:1408.4662                                                    c
 c                                                                      c
 c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc c
 c                                                                      c
@@ -32,8 +40,8 @@ c -------------------------------------------------------------------- c
 c                                                                      c
 c  The program is written by M.Muhlleitner, A.Djouadi and Y.Mambrini   c
 c                                                                      c
-c  VERSION 1.3b                                                        c
-c  Last changes: Dec 5, 2008                                           c
+c  VERSION 1.5                                                         c
+c  Last changes: FEB 21, 2015                                          c
 c  The reference to be used for the program is: hep-ph/0311167         c
 c                                                                      c
 c -------------------------------------------------------------------- c
@@ -53,6 +61,26 @@ c  possibly important higher order decay modes: the three-body decays  c
 c  of charginos, neutralinos, gluinos and the top squarks and the      c
 c  four-body decays of the top squark. The program also calculates     c
 c  the decay widths and branching ratios of the heavy top quark.       c
+c								                                       c
+c  New in the version 1.4:                                             c
+c  The new SUSY-HIT version of 20 Aug 2014 supports the calculation of c
+c  light stop decays including flavour-changing neutral current (FCNC) c
+c  couplings at tree-level. This means that the two-body decay into a  c
+c  charm- or up-quark and a neutralino is now calculated taking into   c
+c  account FCNC couplings and including the newly calculated SUSY-QCD  c
+c  corrections. Furthermore, the four-body decay into the lightest     c
+c  neutralino, a down-type quark and a fermion pair now takes into     c
+c  account diagrams, that are mediated by FCNC couplings, and it also  c
+c  includes the masses of the third generation fermions in the final   c
+c  state.                                                              c
+c                                                                      c
+c  New in the version 1.5:                                             c
+c  The FV part of SUSY-HIT supports from version 1.5 on also the stop  c
+c  three-body decay into W b neutralino and the decay to top neutrino. c
+c  The W boson width and the top width are included in the four-body   c
+c  and three-body stop decay, respectively, and a proper description   c
+c  of the threshold region is implemented.                             c
+c                                                                      c
 c                                                                      c
 c -------------------------------------------------------------------- c
 c                                                                      c
@@ -86,11 +114,12 @@ c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc c
      .       nmixval(4,4),umixval(2,2),vmixval(2,2),stopmixval(2,2),
      .       sbotmixval(2,2),staumixval(2,2),hmixval(1:10),
      .       gaugeval(1:3),msoftval(1:100),auval(3,3),adval(3,3),
-     .       aeval(3,3),yuval(3,3),ydval(3,3),yeval(3,3),qvalue(1:20),
+     .       aeval(3,3),yuval(3,3),ydval(3,3),yeval(3,3),qvalue(1:22),
      .       extval(0:100),m_softval(1:100)
       double precision nl,nq
       integer nx1t,ny1t,nnlo,imod(1:2)
-      integer check(1:22)
+c--- ramona chnaged on 6/6/13 size of array check
+      integer check(1:30)
       character spinfo1*100,spinfo2*100,modselval*100,mincom(1:20)*20,
      .          extcom(0:100)*20,softcom(1:100)*20,m_softcom(1:100)*20,
      .          hmixcom(1:10)*20
@@ -250,7 +279,21 @@ c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc c
      .          hhbrsn1(4,4),habrsn1(4,4)
       dimension whlgd(4),whcgd(2),whhgd(4),whagd(4),bhlgd(4),bhhgd(4),
      .          bhagd(4),bhcgd(2)
+c--- ramona changed 18/3/13
+           double precision vckm(3,3), msq2(3,3), msu2(3,3), 
+     .msd2(3,3), td(3,3), tu(3,3),
+     . usqmix(6,6), dsqmix(6,6)
+	double precision amsupq(6), amsdownq(6), amslepton(6), 
+     .amsneutrino(3)
+c------ end ramona changed
+c---- ramona changed 20/8/14
+      integer icheckfav, imodfav(1:2)
+c----- ramona added 5/11/14
+      character*200 command_line
+c----- end ramona added
 
+      common/checkfavvio/icheckfav, imodfav
+c---- end ramona changed
 c ----------------- common blocks needed in sdecay ------------------- c
       COMMON/SUSYHITIN/flagshsin,amsin,amcin,ammuonin,alphin,gamwin,
      .                 gamzin,vusin,vcbin,rvubin
@@ -429,16 +472,47 @@ c -- useful when SDECAY is linked to other programs. ----------------- c
       COMMON/SD_sntauwidth/sntautot2
       COMMON/SD_top2body/brtopbw,brtopbh,brtopneutrstop
       COMMON/SD_topwidth/toptot2
+c---- ramona changed 18/3/2013
+      COMMON/flavviolation/vckm, msq2, msd2, msu2, td, 
+     .tu, usqmix, ifavvio, dsqmix
+      COMMON/msfermion/ amsupq, amsdownq, amslepton, amsneutrino
+c------ end ramona changed
+c----- ramona added for alex output 25/11/14
+      common/ratio3bod/ratiotopcharg
+c----- end ramona added
+c----- ramona added 22/12/14
+       common/stability/istab
+c----- ramona added
 
 c ------------------------ external functions ------------------------ c
       external SD_alphascall,SD_yuk
 
 c --------------------- The input and output files ------------------- c
 
+c------ ramona added 5/11/14
+      call getarg(1,command_line)
+c------ end ramona added
+
       nout  = 21
       ninlha= 22
       nis   = 23
       ninshs= 25
+
+c----- ramona added 25/11/14
+c----- if iflag4bod3bod=1 3 body for amstop-amneut> amw+amb+flagdiff3bod4bod
+c----- if iflag4bod3bod = 0 always 4 body (below top threshold)
+c----- if iflag4bod3bod =2 3 body decay above kinematical threshold+ 0.5 GeV
+      iflag4bod3bod=1
+      flagdiff3bod4bod=30d0
+c----- end ramona added
+c----- ramona added 20/2/15
+c----- if iflag4bod3bod=1 3 body for amstop-amneut> amw+amb+flagdiff3bod4bod
+c----- if iflag3bod2bod=0 3 body decay above top threshold
+c----- if iflag3bod2bod=2 2 body decay stop-> top neutralino above threshold 
+       iflag3bod2bod=1
+       flagdiff2bod3bod=30d0
+c----- end ramona added
+
 
       open(ninshs,file='susyhit.in',status='unknown')
 
@@ -464,7 +538,23 @@ c -- read in susyhit.in --
       read(ninshs,300)vusin
       read(ninshs,300)vcbin
       read(ninshs,300)rvubin
-
+c-----ramona chnaged 7/6/13
+      read(ninshs,*)
+      read(ninshs,*)
+      read(ninshs,*)
+      read(ninshs,*)
+      read(ninshs,*)ifavvio
+      read(ninshs,*)
+      read(ninshs,*)
+      read(ninshs,*)i4bod
+      
+      if(ifavvio.eq.1)then
+      print*, "flavour violation only for light stop decay implemented"
+      print*, "output only in SLHA2 format"
+      flagoutput=1d0
+      flagshsin=2d0
+      endif
+c---- end ramona chnaged
 c -- The following flags are not read in any more but hard-coded for - c
 c -- the SDECAY use within SUSY-HIT.                                 - c
 c -- This means, that by default the QCD corrections to 2-body decays- c
@@ -489,7 +579,15 @@ c setting of the parameters read in in SD_common_ini
 c -- opening the output file in the SLHA format                      - c
 
       if(flagoutput.eq.1.D0) then
-         open(nout,file="susyhit_slha.out")
+c---- ramona changed 20/8/14
+      if(ifavvio.eq.1)then
+      open(nout,file="susyhit_slha2.out")
+      else
+c--- end ramona changed
+      open(nout,file="susyhit_slha.out")
+c--- ramona changed 20/8/14
+      endif
+c--- end ramona changed
       elseif(flagoutput.eq.0.D0) then
          open(nout,file="susyhit.out")
       endif
@@ -500,8 +598,20 @@ c-Number of loops for the calculation of the running strong coupling  -c
 c ---------------- The input a la SUSY Les Houches Accord ------------ c
 
       if(flagshsin.eq.2.D0) then
+c---- ramona changed 19/8/14
+      if(ifavvio.eq.1)then
+      open(ninlha,file='slhaspectrumFV.in',status='old')
+!        open(ninlha,file=command_line,status='old')
+      else
+c---- end ramona changed
          open(ninlha,file='slhaspectrum.in',status='unknown')
+c--- ramona changed 19/8/14
       endif
+c---- end ramona changed
+      endif
+
+
+
 
 c ------------ initializing the parameters needed in sdecay ---------- c
 
@@ -512,8 +622,14 @@ c ------------ initializing the parameters needed in sdecay ---------- c
       endif
 
 c ------ The link to HDECAY ------ c
-c
+c    ramona chnaged 7/6/13
+      if(ifavvio.eq.1) then
+      print*, "Higgs decays not implemented for flavour violation"
+      else
       call hdecay
+      endif
+!      call hdecay
+c--- end ramona chaged     
 
 c ------------- initializing the couplings needed in sdecay ---------- c
       call SD_couplings
@@ -534,7 +650,9 @@ c             chargino1 and chargino2 2- and 3-body decays             c
 c--------------------------------------------------------------------- c
 
 c -- initialization --
-
+c---- ramona chnaged 27/5/13
+      if(ifavvio.ne.1)then
+c---- end ramona changed
       do i=1,2,1
          flagchar3bod(i) = 1.D0
 
@@ -1617,6 +1735,7 @@ c -- the 3-body decays and 3-body total widths --
      .     xintegst2st1uu,xintegst2st1dd,xintegst2st1ee,
      .     xintegst2st1nunu,xintegst2st1tautau,xintegst2st1startt)  
 
+
       do i=1,2,1
          if(stoptot2(i).eq.0.D0) then
             stoptotmulti(i) = 0.D0
@@ -1781,6 +1900,8 @@ c -- for the 3-body and loop decays --
             brstsnel(i)    = xintegstsnel(i)/stoptot(i)
          endif
       end do
+ 
+
 
       if(stoptot2(2).eq.0.D0.and.flagmulti.eq.1.D0) then
          brst2st1tt     = xintegst2st1tt/stoptot(2)
@@ -2260,14 +2381,161 @@ c -------------------------------------------------------------------- c
             end do
          end do
       endif
+c-- --- ramona changed 27/5/13
+      else
 
+      call SD_lightstop2bod(stopcneut, stopuneut)
+
+c---- ramona changed 2/2/15
+      if(amsupq(1)-amneut(1).gt.samt)then
+      call SD_FVstop2bod(st1neuttopFV)
+ 
+
+      call SD_lightstop3bod(width_lightstoptot3bod,width_bchiW, 
+     .                            width_jchiw)
+
+c---- ramona changed 20/2/15
+      if(iflag3bod2bod.eq.0)then
+      totlightstop=stopcneut+stopuneut+width_bchiw
+     .+width_jchiw
+
+      brlightstopcneut=stopcneut/totlightstop
+      brlightstopuneut=stopuneut/totlightstop
+
+      brlightstneuttop=width_lightstoptot3bod/totlightstop
+      elseif(iflag3bod2bod.eq.1) then
+      if(amsupq(1)-amneut(1)-sdmt.le.flagdiff3bod4bod)then
+
+            totlightstop=stopcneut+stopuneut+width_bchiw
+     .+width_jchiw
+
+      brlightstopcneut=stopcneut/totlightstop
+      brlightstopuneut=stopuneut/totlightstop
+
+      brlightstneuttop=width_lightstoptot3bod/totlightstop
+
+      
+      else
+
+      totlightstop=st1neuttopFV+stopcneut+stopuneut
+
+      brlightstopcneut=stopcneut/totlightstop
+      brlightstopuneut=stopuneut/totlightstop
+      brlightstneuttop=st1neuttopFV/totlightstop
+   
+
+      Print*, "STOP DECAY TO TOP NEUTRALINO IN THE FV SUSY-HIT VERSION
+     .AT THE MOMENT ONLY AT TREE LEVEL AVAILABLE"
+ 
+      endif
+
+      else
+      totlightstop=st1neuttopFV+stopcneut+stopuneut
+
+      brlightstopcneut=stopcneut/totlightstop
+      brlightstopuneut=stopuneut/totlightstop
+      brlightstneuttop=st1neuttopFV/totlightstop
+
+
+
+      Print*, "STOP DECAY TO TOP NEUTRALINO IN THE FV SUSY-HIT VERSION
+     .AT THE MOMENT ONLY AT TREE LEVEL AVAILABLE"
+      endif
+c---- end ramona changed
+      istab=1
+c----- end ramona changed
+
+c----- ramona changed 25/11/14
+      elseif(amsupq(1)-amneut(1).gt.sdmw+samb+0.5d0)then
+
+      if(iflag4bod3bod.eq.1)then
+      if(amsupq(1)-amneut(1)-sdmw-samb.gt.flagdiff3bod4bod)then
+      call SD_lightstop3bod(width_lightstoptot3bod,width_bchiW, 
+     .                            width_jchiw)
+
+
+
+      decwidth3bod_bchiW=width_bchiW
+      decwidth3bod_jchiW=width_jchiw
+      else
+
+
+      call SD_lightstop4bod(sigma,width4bodbtau,width4bodbbjet,
+     .width4bodbjets,width4bodbmu,width4bodbelec,width4bodjettau,
+     .width4bodjetb,width4bodjetjet,width4bodjetmu,width4bodjetelec)
+
+      decwidth3bod_bchiW=width4bodbtau+width4bodbbjet+width4bodbjets
+     .                  +width4bodbmu+width4bodbelec
+      decwidth3bod_jchiW=width4bodjettau+width4bodjetb+width4bodjetjet
+     .                  +width4bodjetmu+width4bodjetelec
+
+      endif
+      
+      elseif(iflag4bod3bod.eq.0)then
+      
+            call SD_lightstop4bod(sigma,width4bodbtau,width4bodbbjet,
+     .width4bodbjets,width4bodbmu,width4bodbelec,width4bodjettau,
+     .width4bodjetb,width4bodjetjet,width4bodjetmu,width4bodjetelec)
+      
+      decwidth3bod_bchiW=width4bodbtau+width4bodbbjet+width4bodbjets
+     .                  +width4bodbmu+width4bodbelec
+      decwidth3bod_jchiW=width4bodjettau+width4bodjetb+width4bodjetjet
+     .                  +width4bodjetmu+width4bodjetelec
+
+      elseif(iflag4bod3bod.eq.2)then 
+            call SD_lightstop3bod(width_lightstoptot3bod,width_bchiW, 
+     .                            width_jchiw)
+
+      decwidth3bod_bchiW=width_bchiW
+      decwidth3bod_jchiW=width_jchiw
+
+      else
+      print*, "iflag4bod3bod= ", iflag4bod3bod, "choose differently"
+      stop
+      endif
+
+      totlightstop=stopcneut+stopuneut+decwidth3bod_bchiw
+     .+decwidth3bod_jchiw
+      brlightstopcneut=stopcneut/totlightstop
+      brlightstopuneut=stopuneut/totlightstop
+      brlightstbchiw=decwidth3bod_bchiw/totlightstop
+      brlightstjchiw=decwidth3bod_jchiw/totlightstop
+      
+      else
+c----- end ramona changed 
+
+      call SD_lightstop4bod(sigma,width4bodbtau,width4bodbbjet,
+     .width4bodbjets,width4bodbmu,width4bodbelec,width4bodjettau,
+     .width4bodjetb,width4bodjetjet,width4bodjetmu,width4bodjetelec)
+
+      totlightstop=stopcneut+stopuneut+sigma
+      brlightstopcneut=stopcneut/totlightstop
+      brlightstopuneut=stopuneut/totlightstop
+      br4bodlightstop=sigma/totlightstop
+      br4bodbtau=width4bodbtau/totlightstop
+      br4bodbbjet=width4bodbbjet/totlightstop   
+      br4bodbjets=width4bodbjets/totlightstop
+      br4bodbmu=width4bodbmu/totlightstop
+      br4bodbelec=width4bodbelec/totlightstop
+      br4bodjettau=width4bodjettau/totlightstop      
+      br4bodjetb=width4bodjetb/totlightstop
+      br4bodjetjet=width4bodjetjet/totlightstop
+      br4bodjetmu=width4bodjetmu/totlightstop
+      br4bodjetelec=width4bodjetelec/totlightstop 
+      
+      endif
+      endif
+c---- end ramona chnaged
 c ==================================================================== c
 c                          The output file                             c
 c ==================================================================== c
 c -------------------------------------------------------------------- c
 
-      if(flagoutput.eq.1.D0) then
 
+c---- ramona chnaged 27/5/13--- flavour violation only with SLHA Output so far
+      if((flagoutput.eq.1.D0).or.(ifavvio.eq.1)) then
+!      if(flagoutput.eq.1.D0) then
+c---- end ramona changed
 c ------------------ output a la Les Houches accord ------------------ c
 
       unlikely = -123456789D0
@@ -2360,8 +2628,8 @@ c maggie comment: This is not a PDG code:
      .r and M.Spira. |'
       write(nout,50)'             |  In case of problems with SUSY-HIT e
      .mail to        |'
-      write(nout,50)'             |           margarete.muehlleitner@cer
-     .n.ch           |'
+      write(nout,50)'             |           margarete.muehlleitner@kit
+     ..edu           |'
       write(nout,50)'             |           michael.spira@psi.ch
      .               |'
       write(nout,50)'             |           abdelhak.djouadi@cern.ch
@@ -2370,6 +2638,31 @@ c maggie comment: This is not a PDG code:
      .----------------'
       write(nout,105)
 
+c------ ramona changed 20/8/14
+      if(ifavvio.eq.1) then
+
+      write(nout,50)'             --------------------------------------
+     .----------------'
+      write(nout,50)'             |     This output of the SUSY-HIT pack
+     .age            |'
+      write(nout,50)'             |  includes the flavour-violating stop
+     . decays        |'
+      write(nout,50)'             |  implemented by R.Groeber, M. Muehll
+     .eitner,        |'
+      write(nout,50)'             |  Eva Popenda and Alexander Wlotzka. 
+     .               |'
+      write(nout,50)'             |  In case of problems with these deca
+     .ys email to    |'
+      write(nout,50)'             |           groeber@roma3.infn.it
+     .               |'
+      write(nout,50)'             |           margarete.muehlleitner@kit
+     ..edu           |'
+      write(nout,50)'             --------------------------------------
+     .----------------'
+      write(nout,105)
+      
+      endif
+c---- end ramona changed
 
       write(nout,50)'             --------------------------------------
      .----------------'
@@ -2379,7 +2672,7 @@ c maggie comment: This is not a PDG code:
      .rams           |'
       write(nout,50)'             |                                     
      .               |'
-      write(nout,50)'             |                     SDECAY 1.3b     
+      write(nout,50)'             |                     SDECAY 1.5
      .               |'
       write(nout,50)'             |                                     
      .               |'
@@ -2586,7 +2879,7 @@ c ----------------------------------- c
       write(nout,105)
       write(nout,51) 'DCINFO','Decay Program information'
       write(nout,61) 1,'SDECAY/HDECAY # decay calculator'
-      write(nout,61) 2,'1.3b  /3.4    # version number'
+      write(nout,61) 2,'1.5  /3.4    # version number'
 
 c ----------------------------------------------------------------- c
 c The program information: Which spectrum calculator has been used. c
@@ -2604,6 +2897,11 @@ c ------------------------------------------------ c
       write(nout,105)
       write(nout,51) 'MODSEL','Model selection'
       write(nout,62) imod(1),imod(2),modselval(1:50)
+c---- ramona changed 20/8/14
+      if(ifavvio.eq.1)then
+      write(nout,62) imodfav(1),imodfav(2),'FV entry'
+      endif
+c--- end ramona changed
 
 c ----------------------- c
 c The SM input parameters c
@@ -2668,6 +2966,9 @@ c ----------------- c
       write(nout,52) ihc,amch,'H+'
       write(nout,52) ib,samb,'b-quark pole mass calculated from mb(mb)_M
      .sbar'
+c--- ramona chnaged 27/5/13
+      if(ifavvio.ne.1) then
+c---- end ramona changed
       write(nout,52) isdl,asdown1,'~d_L'
       write(nout,52) isdr,asdown2,'~d_R'
       write(nout,52) isul,asup1,'~u_L'
@@ -2689,6 +2990,31 @@ c ----------------- c
       write(nout,52) istau1,astau1,'~tau_1'
       write(nout,52) istau2,astau2,'~tau_2'
       write(nout,52) intau1,asntau1,'~nu_tauL'
+c----- ramona changed 27/05/13
+      else
+      write(nout,52) isdl,amsdownq(1),'~d_1'
+      write(nout,52) issl,amsdownq(2),'~d_2'
+      write(nout,52) isb1,amsdownq(3),'~d_3'
+      write(nout,52) isdr,amsdownq(4),'~d_4'
+      write(nout,52) issr,amsdownq(5),'~d_5'
+      write(nout,52) isb2,amsdownq(6),'~d_6'
+      write(nout,52) isul,amsupq(1),'~u_1'
+      write(nout,52) iscl,amsupq(2),'~u_2'
+      write(nout,52) ist1,amsupq(3),'~u_3'
+      write(nout,52) isur,amsupq(4),'~u_4'   
+      write(nout,52) iscr,amsupq(5),'~u_5'
+      write(nout,52) ist2,amsupq(6),'~u_6' 
+      write(nout,52) isell,amslepton(1),'~e_1'
+      write(nout,52) ismul,amslepton(2),'~e_2'
+      write(nout,52) istau1,amslepton(3),'~e_3'
+      write(nout,52) iselr,amslepton(4),'~e_4'          
+      write(nout,52) ismur,amslepton(5),'~e_5'
+      write(nout,52) istau2,amslepton(6),'~e_6'
+      write(nout,52) inel,asne1,'~nu_eL'
+      write(nout,52) inmul,asne1,'~nu_muL'          
+      write(nout,52) intau1,asntau1,'~nu_tauL'
+      endif
+c---- end ramona chnaged 
       write(nout,52) iglo,mgluino,'~g'
       write(nout,52) in1,xmneut(1),'~chi_10'
       write(nout,52) in2,xmneut(2),'~chi_20'
@@ -2747,7 +3073,9 @@ c ------------------------------------------------------------------- c
 c ------------------------------------------ c
 c The stop, sbottom and stau mixing matrices c
 c ------------------------------------------ c
-
+c--- ramona changed 27/5/13
+      if(ifavvio.ne.1) then
+c--- end ramona chnaged
       if(check(9).eq.1) then
       write(nout,105)
       write(nout,51) 'STOPMIX','Stop Mixing Matrix'
@@ -2774,18 +3102,105 @@ c ------------------------------------------ c
       write(nout,53) 2,1,-dsin(sdthel),'-sin(theta_tau)'
       write(nout,53) 2,2,dcos(sdthel),'cos(theta_tau)'
       endif
-
+c--- ramona chnaged 27/5/13
+      else
+      if(check(22).eq.1) then
+      write(nout,105)
+      write(nout,51) 'USQMIX', 'Mixing Matrix in the sup-sector'
+      write(nout,53) 1,1,USQMix(1,1),'USQMIX(1,1)'
+      write(nout,53) 2,1,USQMix(2,1),'USQMIX(2,1)'
+      write(nout,53) 3,1,USQMix(3,1),'USQMIX(3,1)'
+      write(nout,53) 4,1,USQMix(4,1),'USQMIX(4,1)'
+      write(nout,53) 5,1,USQMix(5,1),'USQMIX(5,1)'
+      write(nout,53) 6,1,USQMix(6,1),'USQMIX(6,1)'
+      write(nout,53) 1,2,USQMix(1,2),'USQMIX(1,2)'
+      write(nout,53) 2,2,USQMix(2,2),'USQMIX(2,2)'
+      write(nout,53) 3,2,USQMix(3,2),'USQMIX(3,2)'
+      write(nout,53) 4,2,USQMix(4,2),'USQMIX(4,2)'
+      write(nout,53) 5,2,USQMix(5,2),'USQMIX(5,2)'
+      write(nout,53) 6,2,USQMix(6,2),'USQMIX(6,2)'
+      write(nout,53) 1,3,USQMix(1,3),'USQMIX(1,3)'
+      write(nout,53) 2,3,USQMix(2,3),'USQMIX(2,3)'
+      write(nout,53) 3,3,USQMix(3,3),'USQMIX(3,3)'
+      write(nout,53) 4,3,USQMix(4,3),'USQMIX(4,3)'
+      write(nout,53) 5,3,USQMix(5,3),'USQMIX(5,3)'
+      write(nout,53) 6,3,USQMix(6,3),'USQMIX(6,3)'
+      write(nout,53) 1,4,USQMix(1,4),'USQMIX(1,4)'
+      write(nout,53) 2,4,USQMix(2,4),'USQMIX(2,4)'
+      write(nout,53) 3,4,USQMix(3,4),'USQMIX(3,4)'
+      write(nout,53) 4,4,USQMix(4,4),'USQMIX(4,4)'
+      write(nout,53) 5,4,USQMix(5,4),'USQMIX(5,4)'
+      write(nout,53) 6,4,USQMix(6,4),'USQMIX(6,4)'
+      write(nout,53) 1,5,USQMix(1,5),'USQMIX(1,5)'
+      write(nout,53) 2,5,USQMix(2,5),'USQMIX(2,5)'
+      write(nout,53) 3,5,USQMix(3,5),'USQMIX(3,5)'
+      write(nout,53) 4,5,USQMix(4,5),'USQMIX(4,5)'
+      write(nout,53) 5,5,USQMix(5,5),'USQMIX(5,5)'
+      write(nout,53) 6,5,USQMix(6,5),'USQMIX(6,5)'
+      write(nout,53) 1,6,USQMix(1,6),'USQMIX(1,6)'
+      write(nout,53) 2,6,USQMix(2,6),'USQMIX(2,6)'
+      write(nout,53) 3,6,USQMix(3,6),'USQMIX(3,6)'
+      write(nout,53) 4,6,USQMix(4,6),'USQMIX(4,6)'
+      write(nout,53) 5,6,USQMix(5,6),'USQMIX(5,6)'
+      write(nout,53) 6,6,USQMix(6,6),'USQMIX(6,6)'
+      end if 
+            if(check(28).eq.1) then
+      write(nout,105)
+      write(nout,51) 'DSQMIX', 'Mixing Matrix in the sdown-sector'
+      write(nout,53) 1,1,DSQMix(1,1),'DSQMIX(1,1)'
+      write(nout,53) 2,1,DSQMix(2,1),'DSQMIX(2,1)'
+      write(nout,53) 3,1,DSQMix(3,1),'DSQMIX(3,1)'
+      write(nout,53) 4,1,DSQMix(4,1),'DSQMIX(4,1)'
+      write(nout,53) 5,1,DSQMix(5,1),'DSQMIX(5,1)'
+      write(nout,53) 6,1,DSQMix(6,1),'DSQMIX(6,1)'
+      write(nout,53) 1,2,DSQMix(1,2),'DSQMIX(1,2)'
+      write(nout,53) 2,2,DSQMix(2,2),'DSQMIX(2,2)'
+      write(nout,53) 3,2,DSQMix(3,2),'DSQMIX(3,2)'
+      write(nout,53) 4,2,DSQMix(4,2),'DSQMIX(4,2)'
+      write(nout,53) 5,2,DSQMix(5,2),'DSQMIX(5,2)'
+      write(nout,53) 6,2,DSQMix(6,2),'DSQMIX(6,2)'
+      write(nout,53) 1,3,DSQMix(1,3),'DSQMIX(1,3)'
+      write(nout,53) 2,3,DSQMix(2,3),'DSQMIX(2,3)'
+      write(nout,53) 3,3,DSQMix(3,3),'DSQMIX(3,3)'
+      write(nout,53) 4,3,DSQMix(4,3),'DSQMIX(4,3)'
+      write(nout,53) 5,3,DSQMix(5,3),'DSQMIX(5,3)'
+      write(nout,53) 6,3,DSQMix(6,3),'DSQMIX(6,3)'
+      write(nout,53) 1,4,DSQMix(1,4),'DSQMIX(1,4)'
+      write(nout,53) 2,4,DSQMix(2,4),'DSQMIX(2,4)'
+      write(nout,53) 3,4,DSQMix(3,4),'DSQMIX(3,4)'
+      write(nout,53) 4,4,DSQMix(4,4),'DSQMIX(4,4)'
+      write(nout,53) 5,4,DSQMix(5,4),'DSQMIX(5,4)'
+      write(nout,53) 6,4,DSQMix(6,4),'DSQMIX(6,4)'
+      write(nout,53) 1,5,DSQMix(1,5),'DSQMIX(1,5)'
+      write(nout,53) 2,5,DSQMix(2,5),'DSQMIX(2,5)'
+      write(nout,53) 3,5,DSQMix(3,5),'DSQMIX(3,5)'
+      write(nout,53) 4,5,DSQMix(4,5),'DSQMIX(4,5)'
+      write(nout,53) 5,5,DSQMix(5,5),'DSQMIX(5,5)'
+      write(nout,53) 6,5,DSQMix(6,5),'DSQMIX(6,5)'
+      write(nout,53) 1,6,DSQMix(1,6),'DSQMIX(1,6)'
+      write(nout,53) 2,6,DSQMix(2,6),'DSQMIX(2,6)'
+      write(nout,53) 3,6,DSQMix(3,6),'DSQMIX(3,6)'
+      write(nout,53) 4,6,DSQMix(4,6),'DSQMIX(4,6)'
+      write(nout,53) 5,6,DSQMix(5,6),'DSQMIX(5,6)'
+      write(nout,53) 6,6,DSQMix(6,6),'DSQMIX(6,6)'
+      end if 
+      endif
+c----end ramona changed 
 c ------------------------------------------------------------------- c
 c The angle alpha in the Higgs sector and the Higgs mixing parameters c
 c ------------------------------------------------------------------- c
-
+c--- ramona changed 27/5/13
+       if(ifavvio.ne.1)then
+c--- end ramona chnaged
       if(check(12).eq.1) then
       write(nout,105)
       write(nout,51) 'ALPHA','Higgs mixing'
       write(nout,60) alp_mssm,'Mixing angle in the neutral Higgs boson s
      .ector'
       endif
-
+c--- ramona chnaged 27/5/13
+       endif
+! c--- end ramoan chnaged
       if(check(13).eq.1) then
          write(nout,105)
          write(nout,54) 'HMIX Q=',scaleofewsb,'DRbar Higgs Parameters'
@@ -2833,7 +3248,9 @@ c ------------------- c
 c ------------------------------------- c
 c The trilinear couplings Au, Ad and Ae c
 c ------------------------------------- c
-
+c---- ramona chnaged 27/5/13
+      if(ifavvio.ne.1) then
+c----end ramona chnaged
       if(check(16).eq.1) then
       write(nout,105)
       write(nout,54) 'AU Q=',scaleofewsb,'The trilinear couplings'
@@ -2857,11 +3274,42 @@ c ------------------------------------- c
       write(nout,53) 2,2,aeval(2,2),'A_mu(Q) DRbar'
       write(nout,53) 3,3,aeval(3,3),'A_tau(Q) DRbar'
       endif
-
+c--- ramona chnaged 27/5/13
+      else
+            if(check(26).eq.1) then
+      write(nout,105)
+      write(nout,54) 'TD Q=',scaleofewsb,'Trilinear couplings of down'
+      write(nout,53) 1,1,td(1,1),'TD(1,1) DRbar'
+      write(nout,53) 1,2,td(1,2),'TD(1,2) DRbar'
+      write(nout,53) 1,3,td(1,3),'TD(1,3) DRbar'
+      write(nout,53) 2,1,td(2,1),'TD(2,1) DRbar'
+      write(nout,53) 2,2,td(2,2),'TD(2,2) DRbar'
+      write(nout,53) 2,3,td(2,3),'TD(2,3) DRbar'
+      write(nout,53) 3,1,td(3,1),'TD(3,1) DRbar'
+      write(nout,53) 3,2,td(3,2),'TD(3,2) DRbar'
+      write(nout,53) 3,3,td(3,3),'TD(3,3) DRbar'
+      endif
+      if(check(27).eq.1) then
+      write(nout,105)
+      write(nout,54) 'TU Q=',scaleofewsb,'Trilinear couplings of up'
+      write(nout,53) 1,1,tu(1,1),'TU(1,1) DRbar'
+      write(nout,53) 1,2,tu(1,2),'TU(1,2) DRbar'
+      write(nout,53) 1,3,tu(1,3),'TU(1,3) DRbar'
+      write(nout,53) 2,1,tu(2,1),'TU(2,1) DRbar'
+      write(nout,53) 2,2,tu(2,2),'TU(2,2) DRbar'
+      write(nout,53) 2,3,tu(2,3),'TU(2,3) DRbar'
+      write(nout,53) 3,1,tu(3,1),'TU(3,1) DRbar'
+      write(nout,53) 3,2,tu(3,2),'TU(3,2) DRbar'
+      write(nout,53) 3,3,tu(3,3),'TU(3,3) DRbar'
+      endif
+      endif
+c---- end ramona chnaged
 c ---------------------------------- c
 c The Yukawa couplings Yu, Yd and Ye c
 c ---------------------------------- c
-
+c---- ramona chnaged 6/6/13
+      if(ifavvio.ne.1)then
+c---- end ramona chnaged
       if(check(19).eq.1) then
       write(nout,105)
       write(nout,54) 'Yu Q=',scaleofewsb,'The Yukawa couplings'
@@ -2929,7 +3377,9 @@ c ---------------------------------- c
          write(nout,53) 3,3,ytau,'y_tau(Q) DRbar'
       endif 
       endif
-
+c---- ramona changed 6/6/13
+      endif
+c---- end ramona changed
 c ----------------------------- c
 c The soft SUSY breaking masses c
 c ----------------------------- c
@@ -2944,6 +3394,7 @@ c ----------------------------- c
                if(ii.ne.11.and.ii.ne.12.and.ii.ne.13.and.ii.ne.23.and.
      .            ii.ne.24.and.ii.ne.25.and.ii.ne.26) then
                   write(nout,52) ii,m_softval(ii),m_softcom(ii)
+
                endif
             endif
          end do
@@ -2960,7 +3411,9 @@ c --------------- c
       write(nout,50) '                            ================='
       write(nout,50) '                            |The decay table|'
       write(nout,50) '                            ================='
-
+c--- ramona changed 27/5/13
+      if(ifavvio.ne.1) then
+c--- end ramona changed
       if(flagqcd.eq.1.D0) then
         write(nout,105)
         write(nout,50) '- The QCD corrections to the decays gluino -> sq
@@ -7805,7 +8258,135 @@ c --------- c
       write(nout,100) 37,0.000000000E+00,'H+ decays'
 
       endif
+c---- ramona changed 27/5/13
+      
+      else
+      write(nout,99)
+      write(nout,100) 1000002,totlightstop,'stop1 decays (light stop)'
+      write(nout,101)
+      if(brlightstopcneut.gt.1d-8)  then
+      write(nout,102) brlightstopcneut,2,in1,ic,           'BR(~t1 ->  
+     . c  ~chi_10)'
+      endif
+      if(brlightstopuneut.gt.1d-8) then
+       write(nout,102) brlightstopuneut,2,in1,iu,          'BR(~t1 -> 
+     . u  ~chi_10)'
+      endif
 
+c---- ramona changed 25/11/14
+
+      if(amsupq(1)-amneut(1).le.sdmw+samb+0.5d0)then
+c----- end ramona changed
+      if(i4bod.eq.0) then
+      if(br4bodlightstop.gt.1d-8) then
+       write(nout,106) br4bodlightstop,4,in1,ib,iu,-id, 
+     .'BR(~t1 -> q  ~chi_10 f f)'
+      endif
+      else
+c----- comment: 25/4/14 bug fixed in output 4-body NDA=4 not 1  
+      if(br4bodbtau.gt.1d-8)then
+       write(nout,106) br4bodbtau,4,in1,ib,-itau,intau,
+     .'BR(~t1 -> b ~chi_10 tau nu_tau)'
+      endif
+      if(br4bodbmu.gt.1d-8)then
+       write(nout,106) br4bodbmu,4,in1,ib,-imu,inmu,          
+     .'BR(~t1 -> b ~chi_10 mu nu_mu)'
+      endif
+      if(br4bodbelec.gt.1d-8)then
+       write(nout,106) br4bodbelec,4,in1,ib,-ie,ine,  
+     . 'BR(~t1 -> b ~chi_10 e nu_e)'
+      endif
+      if(br4bodbjets.gt.1d-8)then
+       write(nout,106) br4bodbjets,4,in1,ib,iu,-id,    
+     . 'BR(~t1 -> b ~chi_10 j j)'
+      endif   
+      if(br4bodbbjet.gt.1d-8)then
+       write(nout,106) br4bodbbjet,4,in1,ib,-ib,iu,    
+     .  'BR(~t1 -> b ~chi_10 b j)'
+      endif  
+       if(br4bodjettau.gt.1d-8)then
+       write(nout,106) br4bodjettau,4,in1,id,-itau,intau, 
+     .  'BR(~t1 -> j ~chi_10 tau nu_tau)'
+      endif 
+       if(br4bodjetmu.gt.1d-8)then
+       write(nout,106) br4bodjetmu,4,in1,id,-imu,inmu,     
+     . 'BR(~t1 -> j ~chi_10 mu nu_mu)'
+      endif  
+       if(br4bodjetelec.gt.1d-8)then
+       write(nout,106) br4bodjetelec,4,in1,id,-ie,ine,      
+     .  'BR(~t1 -> j ~chi_10 e nu_e)'
+      endif
+       if(br4bodjetb.gt.1d-8)then
+       write(nout,106) br4bodjetb,4,in1,id, -ib,iu,        
+     .  'BR(~t1 -> j ~chi_10 b j)'
+      endif
+       if(br4bodjetjet.gt.1d-8)then
+       write(nout,106) br4bodjetjet,4,in1,id, -id,iu,        
+     .  'BR(~t1 -> j ~chi_10 j j)'
+      endif
+      print*, "In the output file 'j' is a jet and can consist of u,d,c,
+     .s jets in the 4-body decay"
+       endif
+c----- ramona changed 25/11/14
+      elseif(amsupq(1)-amneut(1).lt.sdmw+samb+flagdiff3bod4bod)then
+
+       if(brlightstbchiw.gt.1d-8)then
+       write(nout,104) brlightstbchiw,3,in1, ib,iwc,        
+     .  'BR(~t1 -> b ~chi_10 W+^(*))'
+      endif
+       if(brlightstjchiw.gt.1d-8)then
+       write(nout,104) brlightstjchiw,3,in1,id, iwc,        
+     .  'BR(~t1 -> j ~chi_10 W+^(*))'
+      endif
+
+      else
+
+c---- ramona changed 3/2/15
+      if(amsupq(1)-amneut(1).lt.samt)then
+c---- end ramona changed
+       if(brlightstbchiw.gt.1d-8)then
+       write(nout,104) brlightstbchiw,3,in1, ib,iwc,        
+     .  'BR(~t1 -> b ~chi_10 W+)'
+      endif
+       if(brlightstjchiw.gt.1d-8)then
+       write(nout,104) brlightstjchiw,3,in1,id, iwc,        
+     .  'BR(~t1 -> j ~chi_10 W+)'
+       endif
+c----- ramona changed 3/2/15
+      else
+
+c---- ramona changed 20/2/15
+      if(amsupq(1)-amneut(1).lt.samt+flagdiff2bod3bod)then
+
+c---- end ramona changed
+      if(brlightstneuttop.gt.1d-8)then
+      write(nout,102) brlightstneuttop,2,in1,it,           'BR(~t1 ->  
+     . t^(*)  ~chi_10)'
+      endif
+c---- ramona changed 20/2/15
+      else
+
+      if(brlightstneuttop.gt.1d-8)then
+      write(nout,102) brlightstneuttop,2,in1,it,           'BR(~t1 ->  
+     . t  ~chi_10)'
+      endif
+      endif
+
+c---- end ramona changed
+
+      endif
+c---- end ramona changed 3/2/15
+!       endif
+
+c---- end ramona changed
+      endif 
+      
+ 
+      endif
+
+      
+
+c---- end ramona changed
 c      write(nout,102) bhcgd(1),2,ic1,igrav ,'BR(H+ -> ~chi_1+ ~G     )'
 c      write(nout,102) bhcgd(2),2,ic2,igrav ,'BR(H+ -> ~chi_2+ ~G     )'
 
@@ -7829,7 +8410,7 @@ c ---------------- output not a la Les Houches accord ---------------- c
       write(21,*)
 
       write(21,*)'MSSM Spectrum + Decays based on the decay programs'
-      write(21,*)'SDECAY 1.3b'
+      write(21,*)'SDECAY 1.5'
       write(21,*)'Authors: M.Muhlleitner, A.Djouadi and Y.Mambrini'
       write(21,*)'Comput.Phys.Commun.168(2005)46 [hep-ph/0311167]'
       write(21,*)'HDECAY 3.4'  
@@ -8071,7 +8652,7 @@ c ----------------------------------- c
       write(21,*) " Decay Program information"
       write(21,*) " -------------------------"
       write(21,*) " SDECAY/HDECAY      decay calculator"
-      write(21,*) " 1.3b  /3.4         version number"
+      write(21,*) " 1.5  /3.4         version number"
 
 c ----------------------------------------------------------------- c
 c The program information: Which spectrum calculator has been used. c
@@ -11166,11 +11747,12 @@ c -------------------------------------------------------------------- c
      .                 stopmixval(2,2),sbotmixval(2,2),staumixval(2,2),
      .                 hmixval(1:10),gaugeval(1:3),msoftval(1:100),
      .                 auval(3,3),adval(3,3),aeval(3,3),yuval(3,3),
-     .                 ydval(3,3),yeval(3,3),qvalue(1:20),extval(0:100),
+     .                 ydval(3,3),yeval(3,3),qvalue(1:22),extval(0:100),
      .                 m_softval(1:100)
 c      double precision nl,nq
       integer imod(1:2)
-      integer check(1:22)
+c--- ramona changed size of array check
+      integer check(1:30)
       character spinfo1*100,spinfo2*100,modselval*100,mincom(1:20)*20,
      .          extcom(0:100)*20,softcom(1:100)*20,m_softcom(1:100)*20,
      .          hmixcom(1:10)*20
@@ -11178,7 +11760,16 @@ c      double precision nl,nq
       dimension u(2,2),v(2,2),z(4,4),dxmn(4)
       dimension amneut(4),xmneut(4),amchar(2),xmchar(2)
       dimension uu(2,2),vv(2,2),zz(4,4),zp(4,4)
-
+c------ ramona chnaged 27/5/13
+      double precision amsupq(6), amsdownq(6), amslepton(6)
+            double precision vckm(3,3), msq2(3,3), msu2(3,3), 
+     .msd2(3,3), td(3,3), tu(3,3),
+     . usqmix(6,6), dsqmix(6,6), amsneutrino(3)
+       integer ifavvio
+      COMMON/msfermion/amsupq, amsdownq, amslepton, amsneutrino
+            COMMON/flavviolation/vckm, msq2, msd2, msu2, td, 
+     .tu, usqmix, ifavvio, dsqmix
+c------end ramona chnaged
 c -------------- common block given by SD_read_leshouches ------------ c
       COMMON/SD_leshouches1/spinfo1,spinfo2,modselval,mincom,extcom,
      .                      softcom,hmixcom
@@ -11263,7 +11854,7 @@ c ------------ setting of the parameters needed in sdecay ------------ c
 
 c -- pi --
          pi = 4.D0*datan(1.D0)
-
+c---- ramona commented out to adjust to hdecay
 c -- alpha_ew_MSbar at M_Z --
          if(smval(1).ne.0.D0) then
             salpha_MS = 1.D0/smval(1)
@@ -11312,11 +11903,17 @@ c -- v at the scale Q --
             vewsb = hmixval(3)
          endif
 
+c---- ramona changed 6/6/13
+
+
 c -- the scale Q at which the couplings are given --
-            if(extval(0).ne.unlikely.and.extval(0).ne.-1.D0) then
-               scaleofewsb = extval(0)
-               ewsbscale = scaleofewsb
-            else
+!             if(extval(0).ne.unlikely.and.extval(0).ne.-1.D0) then
+! 
+!                scaleofewsb = extval(0)
+!                ewsbscale = scaleofewsb
+! 
+!             else
+c---- end ramona changed
                qvalsum = 0.D0
                isum    = 0
                do i=1,20,1
@@ -11332,8 +11929,11 @@ c -- the scale Q at which the couplings are given --
                   warning(1) = 1.D0
                endif
                ewsbscale   = scaleofewsb
-            endif
+c--- ramona changed 6/6/13
+!             endif
+! c---- end ramona changed
 
+	  
 c -- the DRbar couplings g1,g2,alpha_s at the scale Q --
          if(gaugeval(3).ne.0.D0) then
             alsew = gaugeval(3)**2/4.D0/pi
@@ -11345,7 +11945,7 @@ c -- the DRbar couplings g1,g2,alpha_s at the scale Q --
          if(gaugeval(1).ne.0.D0) then
             g1ew  = gaugeval(1)
          endif
-
+! 
          if(gaugeval(2).ne.0.D0) then
             g2ew  = gaugeval(2)
 c -- g**2 at the scale Q --
@@ -11373,6 +11973,64 @@ c -- Z and W mass at the scale Q if g1ew and g2ew are given --
          endif
 c maggie question!
 
+! c----- ramona changed to adapt to hdecay
+! c -- G_F --
+!          if(smval(2).ne.0.D0) then
+!             GF = smval(2)
+!          endif
+! 
+! 
+! c -- Z pole mass --
+!          if(smval(4).ne.0.D0) then
+!             sdmz = smval(4)
+!          endif
+!          if(smval(4).ne.0.D0) then
+!             amzp = smval(4)
+!          else
+!             amzp = 91.187D0
+!          endif
+! c -- W pole mass --
+!          if(massval(1).ne.0.D0) then
+!             sdmw= massval(1)
+!          endif
+! c -- the MSbar couplings g1,g2 at the scale Q --
+!          if(gaugeval(1).ne.0.D0) then
+!             g1ew  = gaugeval(1)
+!          endif
+!          if(gaugeval(2).ne.0.D0) then
+!             g2ew  = gaugeval(2)*(1-gaugeval(2)**2/96/pi**2*2)
+!          endif
+!          cw2calc = sdmw**2/sdmz**2
+!          sw2calc = 1d0-cw2calc
+!          cwcalc  = dsqrt(cw2calc)
+!          swcalc  = dsqrt(sw2calc)
+! 	 
+! 	
+! c -- v at the scale Q --         
+!           if(smval(2).eq.0.D0.and.hmixval(3).ne.unlikely) then
+!            vewsb = hmixval(3)
+!            gf = 1/dsqrt(2.D0)/vewsb**2
+!           else
+!           vewsb = 1.D0/dsqrt(dsqrt(2.D0)*gf)
+!           endif
+!           
+!           g2ew = 2d0*sdmw/vewsb
+!           g1ew = g2ew*swcalc/cwcalc
+! c -- Z and W mass at the scale Q if g1ew and g2ew are given --
+!          if(massval(1).eq.0.D0.or.smval(4).eq.0.D0) then
+!             sdmz = dsqrt(1.D0/4.D0*(gaugeval(1)**2+gaugeval(2)**2)*
+!      .           vewsb**2)
+!             sdmw = dsqrt(1.D0/4.D0*gaugeval(2)**2*vewsb**2)
+!          g1ew= gaugeval(1)
+!          g2ew=gaugeval(2)
+!              cw2calc = amw**2/amz**2
+!          sw2calc = 1-cw2calc
+!          cwcalc  = dsqrt(cw2calc)
+!          swcalc  = dsqrt(sw2calc)
+! 
+!          endif
+c---- end ramona changed
+ 	
 c -- the value for sw calculated from g, gprime given in the DRbar 
 c -- scheme at the scale Q if g1ew and g2ew are given
          if(gaugeval(1).ne.0.D0.and.gaugeval(2).ne.0.D0) then
@@ -11389,7 +12047,10 @@ c maggie question!
 c -- This scale is important for the calculation of the higher     --- c
 c -- order corrections. It is the scale at which the couplings are --- c
 c -- taken. Other possibilities are initiated in the subroutines   --- c
-         amuref = ewsbscale
+
+
+          amuref = ewsbscale
+
 
 c -- neutralino and chargino masses --      
 
@@ -11448,7 +12109,33 @@ c -- sfermion masses --
       asne2   = 1.D15
       asntau1 = massval(26)
       asntau2 = 1.D15
+c----- ramona changed 27/5/2013
+      if(ifavvio.eq.1)then
+      amsupq(1)=massval(8)
+      amsupq(2)=massval(12)
+      amsupq(3)=massval(16)
+      amsupq(4)=massval(9)
+      amsupq(5)=massval(13)
+      amsupq(6)=massval(17)
+      amsdownq(1)=massval(6)
+      amsdownq(2)=massval(10) 
+      amsdownq(3)=massval(14)
+      amsdownq(4)=massval(7)
+      amsdownq(5)=massval(11)
+      amsdownq(6)=massval(15)
+      amslepton(1)=massval(18)
+      amslepton(2)=massval(21)
+      amslepton(3)=massval(24)
+      amslepton(4)=massval(19)
+      amslepton(5)=massval(22)
+      amslepton(6)=massval(25)
+      amsneutrino(1)=massval(20)
+      amsneutrino(2)=massval(23)
+      amsneutrino(3)=massval(26)
+      
+      endif
 
+c------ end ramona chnaged
 c -- the gluino mass --
 
       mgluino = massval(27)
@@ -11750,13 +12437,23 @@ c -------------------------------------------------------------------- c
      .                 stopmixval(2,2),sbotmixval(2,2),staumixval(2,2),
      .                 hmixval(1:10),gaugeval(1:3),msoftval(1:100),
      .                 auval(3,3),adval(3,3),aeval(3,3),yuval(3,3),
-     .                 ydval(3,3),yeval(3,3),qvalue(1:20),extval(0:100)
-      integer check(1:22),check_final,imod(1:2)
+     .                 ydval(3,3),yeval(3,3),qvalue(1:22),extval(0:100)
+c---- ramona changed size of check array
+      integer check(1:30),check_final,imod(1:2)
       character line1*6,line2*100,
      .          spinfo1*100,spinfo2*100,modselval*100,mincom(1:20)*20,
      .          extcom(0:100)*20,softcom(1:100)*20,hmixcom(1:10)*20
       logical done
-
+c----- ramona chnaged 7/6/13
+      double precision vckm(3,3), msq2(3,3), msu2(3,3), 
+     .msd2(3,3), td(3,3), tu(3,3),
+     . usqmix(6,6), dsqmix(6,6), selmix(6,6)
+       character*20 test
+c---- end ramona chnaged
+c---- ramona changed 20/8/14
+      integer icheckfav, imodfav(1:2)
+      common/checkfavvio/icheckfav, imodfav
+c---- end ramona changed
       COMMON/SD_leshouches1/spinfo1,spinfo2,modselval,mincom,extcom,
      .                      softcom,hmixcom
       COMMON/SD_leshouches2/minval,extval,smval,massval,nmixval,umixval,
@@ -11765,16 +12462,21 @@ c -------------------------------------------------------------------- c
      .                      aeval,yuval,ydval,yeval,alphaval,qvalue,imod
       COMMON/SD_mbmb/sd_mbmb,i_sd_mbmb
       COMMON/SD_checkval/check
-
+      common/SD_selectron/selmix
+c----ramona changed 7/6/13
+            COMMON/flavviolation/vckm, msq2, msd2, msu2, td, 
+     .tu, usqmix, ifavvio, dsqmix
+c---- end ramona chnaged
 c -- i_sd_mbmb = 0 ensures that the routine is called which calulates --
 c -- the mbpole mass from mb(mb)_MSbar = smval(5)                 --
       i_sd_mbmb = 0
 
 c -- start from the beginning of the file slhaspectrum.in --
       rewind(ninlha)
-
+	
 c -- initialization of the check array --
-      do i1=1,22,1
+c--- ramona changed size of check array
+      do i1=1,30,1
          check(i1) = 0
       end do
 
@@ -11799,17 +12501,34 @@ c a trick to jump over undefined parameters in subsequent writings
       end do
 
 c ------------------------------------------------------------------- c
+c---- ramona changed 8/3/13 ---must be added for flavour violating case, yu, ... not neceessary in this case
+          
+	  if(ifavvio.eq.1) then
+	  check(16)=1
+	  check(17)=1
+          check(18)=1
+          check(9)=1
+          check(10)=1
+          check(11)=1
+          check(12)=1
+          else
+          do i=23, 30, 1
+          check(i)=1
+          end do
+
+          endif
+c---- end ramona changed
       do i=1,10000,1
 
 c -- check if routine can be left --
          check_final = 1
-         do i1=1,22,1
+c--- ramona changed on 7/6/13 to 30 for favvio
+         do i1=1,30,1
             check_final = check_final*check(i1)
          end do
          if(check_final.eq.1) then
             return
          endif
-
 c -- read in new line --
          line1=' '
          read(ninlha,'(a6,a100)',end=9900) line1,line2
@@ -11839,14 +12558,20 @@ c -- look for Block MODSEL --
                call SD_READ_MODSEL(ninlha,modselval,imod,done)
                if (done) then
                   check(1) = 1
+c---- ramona changed 20/8/14
+	       if(ifavvio.eq.1.and.icheckfav.eq.0)then
+               print*, "input file not in SLHA2 format, but FV choosen"
+	       endif
+c---- end ramona changed
                   goto 1111
                else
                   print*,'SD_read_leshouches: problem in MODSEL'
                endif
-
+	      
 c -- look for Block SMINPUTS --
             elseif(line2(1:8).eq.'SMINPUTS') then
                call SD_READ_SMINPUTS(ninlha,smval,done)
+             
                if (done) then
                   check(2) = 1
                   goto 1111
@@ -11856,7 +12581,7 @@ c -- look for Block SMINPUTS --
 
 c -- look for Block MINPAR --
             elseif(line2(1:6).eq.'MINPAR') then
-               call SD_READ_MINPAR(ninlha,minval,mincom,done)
+              call SD_READ_MINPAR(ninlha,minval,mincom,done)
                if (done) then
                   check(3) = 1
                   goto 1111
@@ -12080,6 +12805,128 @@ c -- look for Block SPINFO --
                else
                   print*,'SD_read_leshouches: problem in SPINFO'
                endif
+c--- ramona changed 8/3/13 --- for flavor violation blocks must be added following slha2 convention
+               	elseif(line2(1:4).eq.'MSQ2') then
+c		 backspace ninlha
+
+               call readqval(ninlha, qval)
+               qvalue(11)=qval
+               call SLHA_READ_MSQ2(ninlha,msq2,done)
+               
+               if (done) then
+                  check(23) = 1
+                 
+                  goto 1111
+               else
+                  print*,'SLHA_read_leshouches: problem in MSQ2'
+               endif
+		elseif(line2(1:4).eq.'MSD2') then
+c		 backspace ninlha
+               call readqval(ninlha, qval)
+               qvalue(10)=qval
+               call SLHA_READ_MSD2(ninlha,msd2,done)
+               if (done) then
+                  check(24) = 1
+                 
+                  goto 1111
+               else
+                  print*,'SLHA_read_leshouches: problem in MSD2'
+               endif
+		elseif(line2(1:4).eq.'MSU2') then
+c		 backspace ninlha
+               call readqval(ninlha, qval)
+               qvalue(11)=qval
+               call SLHA_READ_MSU2(ninlha,msu2,done)
+               if (done) then
+                  check(25) = 1
+                 
+                  goto 1111
+               else
+                  print*,'SLHA_read_leshouches: problem in MSU2'
+               endif
+		elseif(line2(1:2).eq.'TD') then
+c		 backspace ninlha
+               call readqval(ninlha, qval)
+               qvalue(12)=qval
+               call SLHA_READ_TD(ninlha,td,done)
+               if (done) then
+                  check(26) = 1
+                 
+                  goto 1111
+               else
+                  print*,'SLHA_read_leshouches: problem in TD'
+               endif
+		elseif(line2(1:2).eq.'TU') then
+c		 backspace ninlha
+               call readqval(ninlha, qval)
+               qvalue(13)=qval
+               call SLHA_READ_TU(ninlha,tu,done)
+               if (done) then
+                  check(27) = 1
+                 
+                  goto 1111
+               else
+                  print*,'SLHA_read_leshouches: problem in TU'
+               endif
+		elseif(line2(1:6).eq.'USQMIX') then
+               call readqval(ninlha, qval)
+               qvalue(14)=qval
+               
+               call SLHA_READ_USQMIX(ninlha,usqmix,done)
+               
+	       
+               if (done) then
+                  check(22) = 1
+                 
+                  goto 1111
+               else
+                print*,'SLHA_read_leshouches: problem in USQMIX'
+               endif
+                 
+	      	elseif(line2(1:6).eq.'DSQMIX') then
+c		 backspace ninlha
+               
+               call readqval(ninlha, qval)
+               qvalue(14)=qval
+               call SLHA_READ_DSQMIX(ninlha,dsqmix,done)
+               if (done) then
+                  check(28) = 1
+                 
+                  goto 1111
+               else
+                  print*,'SLHA_read_leshouches: problem in DSQMIX'
+               endif
+      	      elseif(line2(1:6).eq.'SELMIX') then
+c		 backspace ninlha
+               
+               call readqval(ninlha, qval)
+               qvalue(22)=qval
+               call SLHA_READ_SELMIX(ninlha,selmix,done)
+	       
+               if (done) then
+                  check(30) = 1
+                 
+                  goto 1111
+               else
+                  print*,'SLHA_read_leshouches: problem in SELMIX'
+               endif
+			
+              	      	elseif(line2(1:5).eq.'VCKM ') then
+c		 backspace ninlha
+               
+               call readqval(ninlha, qval)
+               qvalue(21)=qval
+               
+               call SLHA_READ_VCKM(ninlha,vckm,done)
+               
+               if (done) then
+                  check(29) = 1
+                 
+                  goto 1111
+               else
+                  print*,'SLHA_read_leshouches: problem in VCKM'
+               endif
+c----------- end ramona changed
 
 c -- continue if the Block is not interesting --
             else
@@ -12108,10 +12955,18 @@ c -------------------------------------------------------------------- c
       integer imod(1:2)
       character line1*1,line2*1,line3*100,modselval*100
       logical done
+c---- ramona changed 20/8/14
+      integer icheckfav, imodfav(1:2)
+      common/checkfavvio/icheckfav, imodfav
+c---- end ramona changed
 
       done=.false.
 
       modselval = ' '
+
+c---- ramona changed 20/8/14
+      icheckfav=0
+c---- end ramona changed
 
       do i=1,200,1
          read(ninlha,'(a1)',end=9900) line1
@@ -12120,12 +12975,22 @@ c -- decide what it is and read the line if anything of interest --
          if (line1.eq.' ') then
             backspace ninlha
             read(ninlha,'(1x,i5,1x,i5,3x,a100)') idum1,idum2,line3
-
+	    
             if(idum1.eq.1) then
                imod(1) = idum1
                imod(2) = idum2
                modselval = line3
             endif
+
+c---- ramona changed 20/8/14
+	  if(idum1.eq.6.and.idum2.ne.0)then
+	 icheckfav=1
+         imodfav(1)=idum1
+         imodfav(2)=idum2
+         else
+         icheckfav=0
+	 endif
+c---- end ramona changed
 
          elseif(line1.eq.'#') then
             go to 1111
@@ -12976,6 +13841,26 @@ c -- decide what it is and read the line if anything of interest --
                if(idum.eq.ii) then
                   msoftval(ii) = val
                   softcom(ii)  = line3
+c---- ramona changed 20/8/14 (because output with SPHENO didnt work properly)
+             softcom(21)='M^2_Hd'
+             softcom(22)='M^2_Hu'
+	     softcom(31)='M_eL'
+             softcom(32)='M_muL'
+             softcom(33)='M_tauL'
+             softcom(34)='M_eR'
+             softcom(35)='M_muR'
+             softcom(36)='M_tauR'
+             softcom(41)='M_q1L'
+             softcom(42)='M_q2L'
+             softcom(43)='M_q3L'
+             softcom(44)='M_uR'
+             softcom(45)='M_cR'
+             softcom(46)='M_tR'
+             softcom(47)='M_dR'
+             softcom(48)='M_sR'
+             softcom(49)='M_bR'	    
+c---- ramona changed
+
                endif
             end do
 
@@ -13438,7 +14323,540 @@ c -- the version number of the spectrum calculator --
       done = .true.
 
       end
+c---- ramona added 6/6/13
+c -------------------------------------------------------------------- c
 
+      subroutine SLHA_READ_MSQ2(ninlha,msq2,done)
+
+      implicit double precision (a-h,m,o-z)
+      double precision msq2(3,3)
+      character line1*1
+      logical done
+
+      done= .false.
+
+      do i=1,3,1
+         do j=1,3,1
+            msq2(i,j) = 0.D0
+         end do
+      end do
+
+      do i=1,200,1
+         read(ninlha,'(a1)',end=9900) line1
+
+c -- decide what it is and read the line if anything of interest --
+         if (line1.eq.' ') then
+            backspace ninlha
+            read(ninlha,*) idum1,idum2,val
+
+c -- The following parameters are the DR_bar running parameters at --
+c -- the scale Q.                                                  --
+c -- values for YD(i,j) at the scale Q --
+            if(idum1.eq.1.and.idum2.eq.1) then
+               msq2(1,1) = val
+            elseif(idum1.eq.1.and.idum2.eq.2) then
+               msq2(1,2) = val
+            elseif(idum1.eq.1.and.idum2.eq.3) then
+               msq2(1,3) = val
+            elseif(idum1.eq.2.and.idum2.eq.1) then
+               msq2(2,1) = val
+            elseif(idum1.eq.2.and.idum2.eq.2) then
+               msq2(2,2) = val
+            elseif(idum1.eq.2.and.idum2.eq.3) then
+               msq2(2,3) = val
+            elseif(idum1.eq.3.and.idum2.eq.1) then
+               msq2(3,1) = val
+            elseif(idum1.eq.3.and.idum2.eq.2) then
+               msq2(3,2) = val
+            elseif(idum1.eq.3.and.idum2.eq.3) then
+               msq2(3,3) = val
+            endif
+
+         elseif(line1.eq.'#') then
+            goto 1111
+         elseif(line1.eq.'b'.or.line1.eq.'B'.or.line1.eq.'d'.or.line1.eq
+     ..'D') then
+            backspace ninlha
+            done = .true.
+            return
+         endif
+
+ 1111    continue
+      end do
+
+ 9900 print*,'SLHA_read_leshouches: end of file'
+      done = .true.
+
+      end
+c -------------------------------------------------------------------- c
+
+      subroutine SLHA_READ_MSD2(ninlha,msD2,done)
+
+      implicit double precision (a-h,m,o-z)
+      double precision msd2(3,3)
+      character line1*1
+      logical done
+
+      done= .false.
+
+      do i=1,3,1
+         do j=1,3,1
+            msd2(i,j) = 0.D0
+         end do
+      end do
+
+      do i=1,200,1
+         read(ninlha,'(a1)',end=9900) line1
+
+c -- decide what it is and read the line if anything of interest --
+         if (line1.eq.' ') then
+            backspace ninlha
+            read(ninlha,*) idum1,idum2,val
+
+c -- The following parameters are the DR_bar running parameters at --
+c -- the scale Q.                                                  --
+c -- values for YD(i,j) at the scale Q --
+            if(idum1.eq.1.and.idum2.eq.1) then
+               msd2(1,1) = val
+            elseif(idum1.eq.1.and.idum2.eq.2) then
+               msd2(1,2) = val
+            elseif(idum1.eq.1.and.idum2.eq.3) then
+               msd2(1,3) = val
+            elseif(idum1.eq.2.and.idum2.eq.1) then
+               msd2(2,1) = val
+            elseif(idum1.eq.2.and.idum2.eq.2) then
+               msd2(2,2) = val
+            elseif(idum1.eq.2.and.idum2.eq.3) then
+               msd2(2,3) = val
+            elseif(idum1.eq.3.and.idum2.eq.1) then
+               msd2(3,1) = val
+            elseif(idum1.eq.3.and.idum2.eq.2) then
+               msd2(3,2) = val
+            elseif(idum1.eq.3.and.idum2.eq.3) then
+               msd2(3,3) = val
+            endif
+
+         elseif(line1.eq.'#') then
+            goto 1111
+         elseif(line1.eq.'b'.or.line1.eq.'B'.or.line1.eq.'d'.or.line1.eq
+     ..'D') then
+            backspace ninlha
+            done = .true.
+            return
+         endif
+
+ 1111    continue
+      end do
+
+ 9900 print*,'SLHA_read_leshouches: end of file'
+      done = .true.
+
+      end
+c -------------------------------------------------------------------- c
+
+      subroutine SLHA_READ_MSU2(ninlha,msu2,done)
+
+      implicit double precision (a-h,m,o-z)
+      double precision msu2(3,3)
+      character line1*1
+      logical done
+
+      done= .false.
+
+      do i=1,3,1
+         do j=1,3,1
+            msu2(i,j) = 0.D0
+         end do
+      end do
+
+      do i=1,200,1
+         read(ninlha,'(a1)',end=9900) line1
+
+c -- decide what it is and read the line if anything of interest --
+         if (line1.eq.' ') then
+            backspace ninlha
+            read(ninlha,*) idum1,idum2,val
+
+c -- The following parameters are the DR_bar running parameters at --
+c -- the scale Q.                                                  --
+c -- values for YD(i,j) at the scale Q --
+            if(idum1.eq.1.and.idum2.eq.1) then
+               msu2(1,1) = val
+            elseif(idum1.eq.1.and.idum2.eq.2) then
+               msu2(1,2) = val
+            elseif(idum1.eq.1.and.idum2.eq.3) then
+               msu2(1,3) = val
+            elseif(idum1.eq.2.and.idum2.eq.1) then
+               msu2(2,1) = val
+            elseif(idum1.eq.2.and.idum2.eq.2) then
+               msu2(2,2) = val
+            elseif(idum1.eq.2.and.idum2.eq.3) then
+               msu2(2,3) = val
+            elseif(idum1.eq.3.and.idum2.eq.1) then
+               msu2(3,1) = val
+            elseif(idum1.eq.3.and.idum2.eq.2) then
+               msu2(3,2) = val
+            elseif(idum1.eq.3.and.idum2.eq.3) then
+               msu2(3,3) = val
+            endif
+
+         elseif(line1.eq.'#') then
+            goto 1111
+         elseif(line1.eq.'b'.or.line1.eq.'B'.or.line1.eq.'d'.or.line1.eq
+     ..'D') then
+            backspace ninlha
+            done = .true.
+            return
+         endif
+
+ 1111    continue
+      end do
+
+ 9900 print*,'SLHA_read_leshouches: end of file'
+      done = .true.
+
+      end
+
+
+c -------------------------------------------------------------------- c
+
+      subroutine SLHA_READ_TD(ninlha,td,done)
+
+      implicit double precision (a-h,m,o-z)
+      double precision td(3,3)
+      character line1*1
+      logical done
+
+      done= .false.
+
+      do i=1,3,1
+         do j=1,3,1
+            td(i,j) = 0.D0
+         end do
+      end do
+
+      do i=1,200,1
+         read(ninlha,'(a1)',end=9900) line1
+
+c -- decide what it is and read the line if anything of interest --
+         if (line1.eq.' ') then
+            backspace ninlha
+            read(ninlha,*) idum1,idum2,val
+
+c -- The following parameters are the DR_bar running parameters at --
+c -- the scale Q.                                                  --
+c -- values for YD(i,j) at the scale Q --
+            if(idum1.eq.1.and.idum2.eq.1) then
+               td(1,1) = val
+            elseif(idum1.eq.1.and.idum2.eq.2) then
+               td(1,2) = val
+            elseif(idum1.eq.1.and.idum2.eq.3) then
+               td(1,3) = val
+            elseif(idum1.eq.2.and.idum2.eq.1) then
+               td(2,1) = val
+            elseif(idum1.eq.2.and.idum2.eq.2) then
+               td(2,2) = val
+            elseif(idum1.eq.2.and.idum2.eq.3) then
+               td(2,3) = val
+            elseif(idum1.eq.3.and.idum2.eq.1) then
+               td(3,1) = val
+            elseif(idum1.eq.3.and.idum2.eq.2) then
+               td(3,2) = val
+            elseif(idum1.eq.3.and.idum2.eq.3) then
+               td(3,3) = val
+            endif
+
+         elseif(line1.eq.'#') then
+            goto 1111
+         elseif(line1.eq.'b'.or.line1.eq.'B'.or.line1.eq.'d'.or.line1.eq
+     ..'D') then
+            backspace ninlha
+            done = .true.
+            return
+         endif
+
+ 1111    continue
+      end do
+
+ 9900 print*,'SLHA_read_leshouches: end of file'
+      done = .true.
+
+      end
+c -------------------------------------------------------------------- c
+
+      subroutine SLHA_READ_TU(ninlha,tu,done)
+
+      implicit double precision (a-h,m,o-z)
+      double precision tu(3,3)
+      character line1*1
+      logical done
+
+      done= .false.
+
+      do i=1,3,1
+         do j=1,3,1
+            tu(i,j) = 0.D0
+         end do
+      end do
+
+      do i=1,200,1
+         read(ninlha,'(a1)',end=9900) line1
+
+c -- decide what it is and read the line if anything of interest --
+         if (line1.eq.' ') then
+            backspace ninlha
+            read(ninlha,*) idum1,idum2,val
+	    
+c -- The following parameters are the DR_bar running parameters at --
+c -- the scale Q.                                                  --
+c -- values for YD(i,j) at the scale Q --
+            if(idum1.eq.1.and.idum2.eq.1) then
+               tu(1,1) = val
+            elseif(idum1.eq.1.and.idum2.eq.2) then
+               tu(1,2) = val
+            elseif(idum1.eq.1.and.idum2.eq.3) then
+               tu(1,3) = val
+            elseif(idum1.eq.2.and.idum2.eq.1) then
+               tu(2,1) = val
+            elseif(idum1.eq.2.and.idum2.eq.2) then
+               tu(2,2) = val
+            elseif(idum1.eq.2.and.idum2.eq.3) then
+               tu(2,3) = val
+            elseif(idum1.eq.3.and.idum2.eq.1) then
+               tu(3,1) = val
+            elseif(idum1.eq.3.and.idum2.eq.2) then
+               tu(3,2) = val
+            elseif(idum1.eq.3.and.idum2.eq.3) then
+               tu(3,3) = val
+            endif
+
+         elseif(line1.eq.'#') then
+            goto 1111
+         elseif(line1.eq.'b'.or.line1.eq.'B'.or.line1.eq.'d'.or.line1.eq
+     ..'D') then
+            backspace ninlha
+            done = .true.
+            return
+         endif
+
+ 1111    continue
+      end do
+
+ 9900 print*,'SLHA_read_leshouches: end of file'
+      done = .true.
+
+      end
+c -------------------------------------------------------------------- c
+
+      subroutine SLHA_READ_USQMIX(ninlha,usqmix,done)
+
+      implicit double precision (a-h,m,o-z)
+      double precision usqmix(6,6)
+      character line1*1
+      logical done
+
+      done= .false.
+
+      do i=1,6,1
+         do j=1,6,1
+            usqmix(i,j) = 0.D0
+         end do
+      end do
+
+      do i=1,200,1
+         read(ninlha,'(a1)',end=9900) line1
+
+c -- decide what it is and read the line if anything of interest --
+         if (line1.eq.' ') then
+            backspace ninlha
+            read(ninlha,*) idum1,idum2,val
+	    
+ 	    usqmix(idum1, idum2)=val
+            
+
+
+         elseif(line1.eq.'#') then
+            goto 1111
+         elseif(line1.eq.'b'.or.line1.eq.'B'.or.line1.eq.'d'.or.line1.eq
+     ..'D') then
+            backspace ninlha
+            done = .true.
+            return
+         endif
+
+ 1111    continue
+      end do
+
+ 9900 print*,'SLHA_read_leshouches: end of file'
+      done = .true.
+
+      end
+c -------------------------------------------------------------------- c
+
+      subroutine SLHA_READ_DSQMIX(ninlha,dsqmix,done)
+
+      implicit double precision (a-h,m,o-z)
+      double precision dsqmix(6,6)
+      character line1*1
+      logical done
+
+      done= .false.
+
+      do i=1,6,1
+         do j=1,6,1
+            dsqmix(i,j) = 0.D0
+         end do
+      end do
+
+      do i=1,200,1
+         read(ninlha,'(a1)',end=9900) line1
+
+c -- decide what it is and read the line if anything of interest --
+         if (line1.eq.' ') then
+            backspace ninlha
+            read(ninlha,*) idum1,idum2,val
+!             if((idum1.le.6).and.(idum2.le.6))
+ 	    dsqmix(idum1, idum2)=val
+!             endif
+	   
+
+         elseif(line1.eq.'#') then
+            goto 1111
+         elseif(line1.eq.'b'.or.line1.eq.'B'.or.line1.eq.'d'.or.line1.eq
+     ..'D') then
+            backspace ninlha
+            done = .true.
+            return
+         endif
+
+ 1111    continue
+      end do
+
+ 9900 print*,'SLHA_read_leshouches: end of file'
+      done = .true.
+
+      end
+c -------------------------------------------------------------------- c
+
+      subroutine SLHA_READ_SELMIX(ninlha,selmix,done)
+
+      implicit double precision (a-h,m,o-z)
+      double precision selmix(6,6)
+      character line1*1
+      logical done
+
+      done= .false.
+
+      do i=1,6,1
+         do j=1,6,1
+            selmix(i,j) = 0.D0
+         end do
+      end do
+
+      do i=1,200,1
+         read(ninlha,'(a1)',end=9900) line1
+
+c -- decide what it is and read the line if anything of interest --
+         if (line1.eq.' ') then
+            backspace ninlha
+            read(ninlha,*) idum1,idum2,val
+!             if((idum1.le.6).and.(idum2.le.6))
+ 	    selmix(idum1, idum2)=val
+!             endif
+	   
+
+         elseif(line1.eq.'#') then
+            goto 1111
+         elseif(line1.eq.'b'.or.line1.eq.'B'.or.line1.eq.'d'.or.line1.eq
+     ..'D') then
+            backspace ninlha
+            done = .true.
+            return
+         endif
+
+ 1111    continue
+      end do
+
+ 9900 print*,'SLHA_read_leshouches: end of file'
+      done = .true.
+
+      end
+c---- ramona added 20/6/13
+c--- reading the vckm blog at scale q
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      subroutine SLHA_READ_vckm(ninlha,vckm,done)
+      implicit double precision (a-h,m,o-z)
+      double precision vckm(3,3)
+      character line1*1
+      logical done
+      do i=1,3,1
+         do j=1,3,1
+            vckm(i,j) = 0.D0
+         end do
+      end do
+
+      do i=1,200,1
+         read(ninlha,'(a1)',end=9900) line1
+
+c -- decide what it is and read the line if anything of interest --
+         if (line1.eq.' ') then
+            backspace ninlha
+            read(ninlha,*) idum1,idum2,val
+
+c -- the values for the neutralino mixing matrix --
+            if(idum1.eq.1.and.idum2.eq.1) then
+               vckm(1,1) = val
+            elseif(idum1.eq.1.and.idum2.eq.2) then
+               vckm(1,2) = val
+            elseif(idum1.eq.1.and.idum2.eq.3) then
+               vckm(1,3) = val
+              elseif(idum1.eq.2.and.idum2.eq.1) then
+               vckm(2,1) = val
+            elseif(idum1.eq.2.and.idum2.eq.2) then
+               vckm(2,2) = val
+            elseif(idum1.eq.2.and.idum2.eq.3) then
+               vckm(2,3) = val
+            elseif(idum1.eq.3.and.idum2.eq.1) then
+               vckm(3,1) = val
+            elseif(idum1.eq.3.and.idum2.eq.2) then
+               vckm(3,2) = val
+            elseif(idum1.eq.3.and.idum2.eq.3) then
+               vckm(3,3) = val
+            endif
+            
+         elseif(line1.eq.'#') then
+            goto 1111
+         elseif(line1.eq.'b'.or.line1.eq.'B'.or.line1.eq.'d'.or.line1.eq
+     ..'D') then
+            backspace ninlha
+            done = .true.
+            return
+         endif
+
+ 1111    continue
+      end do
+
+ 9900 print*,'SLHA_read_leshouches: end of file'
+      done = .true.
+
+      end
+c---- end ramona added
+c--------------------------------------------------------------------
+c--------------------------------------------------------------------
+      subroutine readQval(ninlha,Qval)
+      character buff*100
+      integer ninlha,i
+      real*8 Qval
+      backspace ninlha      
+      read(ninlha,fmt='(A100)') buff
+      do i=1,100 
+       if(buff(i:i).eq.'=') then 
+            read(buff(i+1:100),*) Qval
+            return 
+      endif
+      enddo
+      end
+c---- end ramona added
 c -------------------------------------------------------------------- c
 c -------- Calculation of the couplings needed in the decays --------- c
 c -------------------------------------------------------------------- c
@@ -14178,7 +15596,113 @@ c Feynman rule: ig_s*t_ij*sqrt(2)*[gbr(i)*P_L+gbl(i)*P_R]
 c incoming gluino, outgoing quark
 
       end
+c-----ramona changed 28/5/13
+c--------------------------------------------------------------------- c
+c		couplings for the flavour violating case	       c
+c--------------------------------------------------------------------- c
+c--------------------------------------------------------------------- c
+c		neutralino-sup-up couplings			       c
+c--------------------------------------------------------------------- c
+      subroutine coupfavneut(gneutsupupr, gneutsupupl, i, j,
+     .  k, imassflag)
+      implicit none
+      integer ifavvio, i, j, k, imassflag
+      double precision gneutsupupl, gneutsupupr
+      double precision sdgf, amz, amw, pi, g2, mf
+      double precision amsupq(6), amsdownq(6), amslepton(6)
+      double precision sw, cw, alp_mssm, tanbeta, amt, amb, amtau
+      double precision uu(2,2), vv(2,2), zz(4,4), zp(4,4)
+      double precision vckm(3,3), msq2(3,3), msu2(3,3), 
+     .msd2(3,3), td(3,3), tu(3,3),
+     . usqmix(6,6), dsqmix(6,6),amsneutrino(3)
+      double precision sinbeta,alsew,g2ew,g1ew, ams, amc
+      COMMON/SD_param/sdgf,amz,amw,pi,g2
+      COMMON/flavviolation/vckm, msq2, msd2, msu2, td, 
+     .tu, usqmix, ifavvio, dsqmix
+      COMMON/msfermion/ amsupq, amsdownq, amslepton, amsneutrino
+      COMMON/SD_weinberg/sw,cw
+      COMMON/SD_mixang/alp_mssm,tanbeta
+      COMMON/SD_fermion/amt,amb,amtau
+      COMMON/SD_mixmat/uu,vv,zz,zp
+      COMMON/SD_coupewsb/alsew,g2ew,g1ew
+      COMMON/SD_strangecharm/ams,amc
 
+      if(j.eq.3)then
+      mf=amt
+      else
+      mf=0d0
+      endif
+
+      
+
+      if(imassflag.ne.0d0)then
+      if(j.eq.2)then
+      mf=amc
+      
+      endif
+      endif
+
+      
+      sinbeta=dSin(dAtan(tanbeta))
+      gneutsupupl=-1d0/6d0*(dSqrt(2d0)*g1ew*zz(i, 1)*usqmix(k, j) + 
+     .	      3d0*dSqrt(2d0)*g2ew*zz(i, 2)*usqmix(k, j)
+     . 	      + 6d0*mf*g2ew/(dsqrt(2d0)*amw*sinbeta)
+     . *zz(i, 4)*usqmix(k, 3 + j))
+
+      gneutsupupr=1d0/3d0*(-3d0*mf*g2ew/(dsqrt(2d0)
+     .*amw*sinbeta)*zz(i, 4)*
+     .usqmix(k, j) + 
+     . 2d0*dSqrt(2d0)*g1ew*zz(i, 1)*usqmix(k, 3 + j))
+ 
+      return
+      end
+
+c------------------------------------------------------------------------------------------
+	subroutine coupfavgluino(left, right, i,j)
+        implicit none
+              integer ifavvio, i, j
+        double precision vckm(3,3), msq2(3,3), msu2(3,3), 
+     .msd2(3,3), td(3,3), tu(3,3),
+     . usqmix(6,6), dsqmix(6,6)
+      double precision g3, left, right
+      COMMON/flavviolation/vckm, msq2, msd2, msu2, td, 
+     .tu, usqmix, ifavvio, dsqmix
+     	common/alfas/g3
+         
+	left=(g3*Usqmix(j, i)/dSqrt(2d0))
+        right=-(g3*Usqmix(j, i+3))/dSqrt(2d0)
+        
+
+        return
+        end
+c----------------------------------------------------------------------------------------
+       double precision function  coupfavquartic(j,q, iint)
+c----- quartic sup coupling for flavor violation
+       implicit none
+      integer j, q, iint, ifavvio
+      double precision vckm(3,3), msq2(3,3), msu2(3,3), 
+     .msd2(3,3), td(3,3), tu(3,3),
+     . usqmix(6,6), dsqmix(6,6)
+      double precision g3
+      COMMON/flavviolation/vckm, msq2, msd2, msu2, td, 
+     .tu, usqmix, ifavvio, dsqmix
+      common/alfas/g3
+	 coupfavquartic=1d0/12d0*g3**2*(
+     -     ((USQMIX(j,1))*USQMIX(iint,1) + 
+     -       (USQMIX(j,2))*USQMIX(iint,2) + 
+     -       (USQMIX(j,3))*USQMIX(iint,3) - 
+     -       (USQMIX(j,4))*USQMIX(iint,4) - 
+     -       (USQMIX(j,5))*USQMIX(iint,5) - 
+     -       (USQMIX(j,6))*USQMIX(iint,6))*
+     -     ((USQMIX(iint,1))*USQMIX(q,1) + 
+     -       (USQMIX(iint,2))*USQMIX(q,2) + 
+     -       (USQMIX(iint,3))*USQMIX(q,3) - 
+     -       (USQMIX(iint,4))*USQMIX(q,4) - 
+     -       (USQMIX(iint,5))*USQMIX(q,5) - 
+     -       (USQMIX(iint,6))*USQMIX(q,6)))
+	return
+        end
+c---- end ramona changed
 c -------------------------------------------------------------------- c
 c --------------------- scale dependent couplings -------------------- c
 c -------------------------------------------------------------------- c
@@ -14232,7 +15756,7 @@ c -------------------------------------------------------------------- c
       endif
       acc  = 1.d-10
       loop = loopnum
-
+      
       xlambda = SD_xitla(amewsb,n0,loop,alsewsb,acc)
       call SD_alsini(acc)
 
@@ -14806,6 +16330,8 @@ c outgoing chargino+, outgoing top-quark
       cb = dcos(theb)
       sb = dsin(theb)
 
+
+
       do k=1,2
          alsbot(1,k)=-cb*U(k,1)+sb*scalb*U(k,2)
          alsbot(2,k)= sb*U(k,1)+cb*scalb*U(k,2)
@@ -14834,6 +16360,8 @@ c outgoing chargino+, outgoing bottom-quark
 
       ct = dcos(thet)
       st = dsin(thet)
+ 
+
 
       do k=1,2
          alstor(1,k)=-ct*V(k,1)+st*scalt*V(k,2)
@@ -28184,7 +29712,244 @@ c --- the QCD corrections ---
       endif
 
       end 
+c----- ramona added 2/2/15
+c ===================================================================== c
+c               light stop 2-body decays				c
+c ===================================================================== c
+      subroutine SD_FVstop2bod(st1neuttopFV)
+      implicit none
+      integer ifavvio
+      double precision st1neuttopFV
+      double precision minval(1:20),smval(1:20),massval(1:50),
+     .       nmixval(4,4),umixval(2,2),vmixval(2,2),
+     .       gaugeval(1:3),msoftval(1:100),auval(3,3),adval(3,3),
+     .       aeval(3,3),yuval(3,3),ydval(3,3),yeval(3,3)
+      double precision amneut(4),amchar(2),xmneut(4), xmchar(2)
+      double precision amt,amb,amtau, mgluino
+      double precision gf,amz,amw,pi,g2, prefactor
+      double precision sw, cw, amwp, amzp, alp_mssm, tanbeta, alsew, 
+     . g2ew, g1ew
+           double precision vckm(3,3), msq2(3,3), msu2(3,3), 
+     .msd2(3,3), td(3,3), tu(3,3),
+     . usqmix(6,6), dsqmix(6,6)
+	double precision amsupq(6), amsdownq(6), amslepton(6)
+      double precision gneutsttl, gneutsttr
+      double precision treelevelfullmass
+      double precision amuref, mtop, msquark(6), amsneutrino(3)
+c----- ramona changed 15/10/14
+      double precision signmneut
+c---end ramona changed
+     
+      COMMON/SD_refscale/amuref
+      COMMON/flavviolation/vckm, msq2, msd2, msu2, td, 
+     .tu, usqmix, ifavvio, dsqmix
+      COMMON/msfermion/amsupq, amsdownq, amslepton, amsneutrino
+      COMMON/SD_param/gf,amz,amw,pi,g2
+      COMMON/SD_massgino/amneut,xmneut,amchar,xmchar
+      COMMON/SD_gluino/mgluino
+      COMMON/SD_fermion/amt,amb,amtau
+      COMMON/SD_mixang/alp_mssm,tanbeta
+      COMMON/SD_coupewsb/alsew,g2ew,g1ew
+      COMMON/SD_mwmzpole/amwp,amzp
+      COMMON/SD_weinberg/sw,cw
+      common/masses/msquark, mtop
 
+
+c------ inititalize masses for qcdcorrections
+      mtop=amt
+      msquark(1)=amsupq(1)
+      msquark(2)=amsupq(2)
+      msquark(3)=amsupq(3)
+      msquark(4)=amsupq(4)
+      msquark(5)=amsupq(5)
+      msquark(6)=amsupq(6)
+      
+      	if((amneut(1)+amt)/amsupq(1).ge.1d0) then
+        print*, "M_Stop<M_neut+M_top-> Decay not possible"
+        st1neuttopFV=0d0
+        stop
+        endif
+c----- ramona changed 21/8/14
+       if(amsupq(1).gt.mgluino)then
+       print*, "Stop not NLSP"
+       stop
+       endif
+c----- end ramona changed
+c--- initialize couplings neutralino quark squark
+
+      call coupfavneut(gneutsttr, gneutsttl, 1, 3, 1, 1)
+
+      
+c---- the decay width with the prefactors from the phase space integration
+        prefactor=1d0/8d0/Pi*1d0/2d0/amsupq(1)*
+     .(1d0-(amneut(1)/amsupq(1))**2)	
+     
+	
+      if((amneut(1)+amt)/amsupq(1).le.1d0)then
+ 
+      treelevelfullmass=1d0/16d0/Pi*amsupq(1)     
+     .*sqrt((1d0-(amt+amneut(1))**2/amsupq(1)**2)*
+     .(1d0-(amt-amneut(1))**2/amsupq(1)**2))     
+     .*((1d0-amt**2/amsupq(1)**2-amneut(1)**2/amsupq(1)**2)
+     .*(gneutsttr**2+gneutsttl**2)
+c---- ramona changed 14/10/14 xmneut-->xmneut
+     .-4d0*amt*xmneut(1)/amsupq(1)**2*gneutsttr* gneutsttl)
+
+
+
+	st1neuttopFV=treelevelfullmass
+      endif
+
+
+      return 
+      end
+c-----end ramona changed
+
+
+
+c------ramona changed 27/5/13
+c ===================================================================== c
+c               light stop 2-body decays				c
+c ===================================================================== c
+      subroutine SD_lightstop2bod(st1neutcharmed, st1neutup)
+      implicit none
+      integer ifavvio, i, j, k
+      double precision st1neutcharmed, st1neutup
+      double precision minval(1:20),smval(1:20),massval(1:50),
+     .       nmixval(4,4),umixval(2,2),vmixval(2,2),
+     .       gaugeval(1:3),msoftval(1:100),auval(3,3),adval(3,3),
+     .       aeval(3,3),yuval(3,3),ydval(3,3),yeval(3,3)
+      double precision amneut(4),amchar(2),xmneut(4), xmchar(2)
+      double precision amt,amb,amtau, mgluino
+      double precision gf,amz,amw,pi,g2, prefactor
+      double precision sw, cw, amwp, amzp, alp_mssm, tanbeta, alsew, 
+     . g2ew, g1ew
+           double precision vckm(3,3), msq2(3,3), msu2(3,3), 
+     .msd2(3,3), td(3,3), tu(3,3),
+     . usqmix(6,6), dsqmix(6,6)
+	double precision amsupq(6), amsdownq(6), amslepton(6)
+      double precision gneutstcl, gneutstcr,gneutstul, gneutstur
+      double precision qcdlightstop, treelevelfullmass, amc, ams
+      double precision amuref, mtop, msquark(6), amsneutrino(3),
+     . zwi(6,6)
+c----- ramona changed 15/10/14
+      double precision signmneut
+c---end ramona changed
+     
+      COMMON/SD_refscale/amuref
+      COMMON/flavviolation/vckm, msq2, msd2, msu2, td, 
+     .tu, usqmix, ifavvio, dsqmix
+      COMMON/msfermion/amsupq, amsdownq, amslepton, amsneutrino
+      COMMON/SD_param/gf,amz,amw,pi,g2
+      COMMON/SD_massgino/amneut,xmneut,amchar,xmchar
+      COMMON/SD_gluino/mgluino
+      COMMON/SD_fermion/amt,amb,amtau
+      COMMON/SD_mixang/alp_mssm,tanbeta
+      COMMON/SD_coupewsb/alsew,g2ew,g1ew
+      COMMON/SD_mwmzpole/amwp,amzp
+      COMMON/SD_weinberg/sw,cw
+      common/masses/msquark, mtop
+      COMMON/SD_strangecharm/ams,amc
+
+c------ inititalize masses for qcdcorrections
+      mtop=amt
+      msquark(1)=amsupq(1)
+      msquark(2)=amsupq(2)
+      msquark(3)=amsupq(3)
+      msquark(4)=amsupq(4)
+      msquark(5)=amsupq(5)
+      msquark(6)=amsupq(6)
+
+
+      
+      do j=1,6
+      do k=1,6
+      zwi(j,k)=0d0
+      do i=1, 6
+      zwi(j,k)=zwi(j,k)+usqmix(j,i)*usqmix(k,i)
+      end do
+      end do
+      end do
+
+
+      
+      	if(amneut(1)/amsupq(1).ge.1d0) then
+        print*, "M_Stop<M_neut-> Decay not possible"
+        st1neutup=0d0
+        st1neutcharmed=0d0
+        stop
+        endif
+c----- ramona changed 21/8/14
+       if(amsupq(1).gt.mgluino)then
+       print*, "Stop not NLSP"
+       stop
+       endif
+c----- end ramona changed
+c--- initialize couplings neutralino quark squark
+
+      call coupfavneut(gneutstcr, gneutstcl, 1, 2, 1, 1)
+      call coupfavneut(gneutstur, gneutstul, 1, 1, 1, 0)
+      
+c---- the decay width with the prefactors from the phase space integration
+        prefactor=1d0/8d0/Pi*1d0/2d0/amsupq(1)*
+     .(1d0-(amneut(1)/amsupq(1))**2)	
+     
+	
+      if((amneut(1)+amc)/amsupq(1).le.1d0)then
+ 
+      treelevelfullmass=1d0/16d0/Pi*amsupq(1)     
+     .*sqrt((1d0-(amc+amneut(1))**2/amsupq(1)**2)*
+     .(1d0-(amc-amneut(1))**2/amsupq(1)**2))     
+     .*((1d0-amc**2/amsupq(1)**2-amneut(1)**2/amsupq(1)**2)
+     .*(gneutstcr**2+gneutstcl**2)
+c---- ramona changed 14/10/14 xmneut-->xmneut
+     .-4d0*amc*xmneut(1)/amsupq(1)**2*gneutstcr* gneutstcl)
+
+c----- ramona changed 15/10/14
+       if(xmneut(1).lt.0d0)then
+       signmneut=-1d0
+       else
+       signmneut=1d0
+       endif
+c---- end ramona changed
+
+  
+
+c---- mc=0 result	
+!  	st1neutcharmed=prefactor*(gneutstcr**2+gneutstcl**2)
+!      . *(amsupq(1)**2-amneut(1)**2)
+!      .+prefactor
+!      . *qcdlightstop(amsupq(1), amneut(1), mgluino, 2)
+
+
+c---- result with full mass dependence of charm quark mass for tree-level
+ 	st1neutcharmed=treelevelfullmass
+     .+prefactor
+c---- ramona added signmneut 15/10/14
+     . *qcdlightstop(amsupq(1), amneut(1), mgluino, 2, signmneut)
+
+
+
+       else
+       print*, "M_Stop<M_neut+M_c-> Decay not possible"
+       st1neutcharmed=0d0
+       endif
+
+
+c---- same but for up-quark
+
+       	st1neutup=prefactor*(gneutstur**2+gneutstul**2)
+     . *(amsupq(1)**2-amneut(1)**2)
+     .+prefactor
+c---- ramona added signmneut 15/10/14
+     . *qcdlightstop(amsupq(1), amneut(1), mgluino, 1, signmneut)
+
+
+
+
+      return 
+      end
+c-----end ramona changed
 c ==================================================================== c
 c                           stop 2-body decays                         c
 c ==================================================================== c
@@ -29613,6 +31378,8 @@ c -------------------------------------------------------------------- c
          enddo
       enddo
 
+
+
 c -------------------------------------------------------------------- c
 c                             top exchange
 c -------------------------------------------------------------------- c
@@ -29623,7 +31390,10 @@ c -------------------------------------------------------------------- c
      .     2.D0*btopr(ni,nj)**2*xmut*(y1+2.D0*y2*y3/xmuw) +
      .     2.D0*atopr(ni,nj)**2*(y1*(xmub-xmuw+4.D0*y2)+2.D0*y3*xmub+
      .     4.D0*y2*y3+1.D0/xmuw*(4.D0*y2**2*y1-2.D0*y2*y3*xmub)) )
+      
+ 
 
+ 
 c -------------------------------------------------------------------- c
 c                           chargino exchange
 c -------------------------------------------------------------------- c
@@ -29666,6 +31436,8 @@ c -------------------------------------------------------------------- c
      .           (xmuw+xmuneut+2.D0*y3) )
          enddo
       enddo
+   
+
 
 c -------------------------------------------------------------------- c
 c                    chargino sbottom interference
@@ -29699,6 +31471,7 @@ c                       top sbottom interference
 c -------------------------------------------------------------------- c
 
       stbchiwbt=0.d0
+
         
       do i=1,2
          stbchiwbt=stbchiwbt+4.D0*vw*gwtb(ni,i)/dsqrt(2.D0)/dt/dsb(i)*(
@@ -29712,6 +31485,8 @@ c -------------------------------------------------------------------- c
      .        dsqrt(xmub)*xmneut(nj)/gmst(ni)*atopr(ni,nj)*bbot(i,nj)*
      .        (y1+xmub-1.D0/xmuw*y2*(y2+y3)) )
       end do
+
+ 
 
 c -------------------------------------------------------------------- c
 c                      chargino top interference
@@ -29746,8 +31521,10 @@ c -------------------------------------------------------------------- c
 
 c -------------------------------------------------------------------- c
 
-      SD_stbchiw=stbchiwbb+stbchiwtt+stbchiwchichi+2.D0*stbchiwchib+
-     .           2.D0*stbchiwbt+2.D0*stbchiwchit
+      SD_stbchiw=stbchiwbb+stbchiwtt+stbchiwchichi
+     . +2.D0*stbchiwchib+2.D0*stbchiwbt+2.D0*stbchiwchit
+
+
 
       end
 
@@ -35324,25 +37101,28 @@ c -------------------------------------------------------------------- c
      .                     NX,NY,SUM)
       IMPLICIT double precision (A-H,O-Z)
       DIMENSION RX(1000),WX(1000),RY(1000),WY(1000)
-      EXTERNAL F,SD_AY,SD_BY,SD_AX,SD_BX
+      EXTERNAL F, SD_AY,SD_BY,SD_AX,SD_BX
       INTEGER NX,NY
 	
       AXX=SD_AX(xmu1,xmu2,xmu3)
       BXX=SD_BX(xmu1,xmu2,xmu3)
 
       CALL SD_GAUS(NX,AXX,BXX,RX,WX)
-    
       SX=0.D0
       DO  1 K=1,NX
          X=RX(K)
          AYX=SD_AY(xmu1,xmu2,xmu3,X)
          BYX=SD_BY(xmu1,xmu2,xmu3,X)
+
          CALL SD_GAUS(NY,AYX,BYX,RY,WY)
          SY=0.D0
          DO 2 J=1,NY
+
             SY=SY+WY(J)*F(X,RY(J))
+         
  2       CONTINUE
          SX=SX+WX(K)*SY
+
  1    CONTINUE		
       SUM=SX
       END
@@ -35720,7 +37500,615 @@ c -------------------------------------------------------------------- c
 c -------------------------------------------------------------------- c
 c -------------- Help functions for the QCD corrections -------------- c
 c -------------------------------------------------------------------- c
+c-----ramona changed 28/5/13
+c------------------------------------------------------------------------------------------
+c		QCD corrections for stop->quark neutralino
+c---- ramona added signmneut 15/10/14
+      Double Precision function qcdlightstop(ms, mneu, mg, indquark,
+     . signmneut)
+      implicit none
+       integer k,l, indquark
+	double precision ms, mneu, Pi, mg, gluinovirt, r
+      double precision coupl, coupr, g3, alphas, born, couplkl, couprkl
+      double precision mf(3), msquark(6), mtop, sca
+      double precision gluinoleft12l, gluinoleft1k1, gluinoright12l,
+     - gluinoright1k1, zwi, gluonvirt, counterterm, gneutul, gneutur
+      double precision Gisll(2), Gislr(2), realcorrections
+      double precision SD_alphascall
+      real*8 SD_B02
+      complex*16 infc0func, SD_C03, SD_CCspen
+c---- ramon added 15/10/14
+      double precision signmneut
+c----- end ramona changed
 
+      common/masses/msquark, mtop
+      common/alfas/g3
+      common/scalelightstop/sca
+      external SD_alphascall
+      PI = 4d0*DATAN(1D0)
+c---- quark masses
+      mf(1)=0d0
+      mf(2)=0d0
+      mf(3)=mtop
+c--- scale can be set randomly, result has to stay the same      
+      sca=1d2
+     
+      g3=dsqrt(SD_alphascall(ms,2)*4.D0*pi)
+
+    
+
+
+c---- coupling of stop-charmed-neutralino- for the lightest squark and lightest neutralino
+      call coupfavneut(coupr, coupl, 1, indquark, 1, 0)
+
+      
+c---- gluon virtual contributions (triangle graph)      
+      gluonvirt=-2d0*g3**2*Real(Real((SD_B02(mneu**2,0d0,ms, sca)*
+     -        (2d0*mneu**4 - 2d0*mneu**2*ms**2)
+     -        - (mneu**2 - ms**2)*
+     -          (SD_B02(ms**2,0d0,ms,sca)*
+     -           (mneu**2 + ms**2) - 
+     - 2d0*infc0func(mneu**2,ms,sca)*
+     -           (mneu**4 - 
+     -             2*mneu**2*ms**2 + ms**4)))/
+     -(12d0*Pi**2*(mneu**2-ms**2)**2)
+     - *(ms**2-mneu**2)*(coupl**2+coupr**2)))
+
+ 
+      
+c---- gluino triangle graph
+      gluinovirt=0d0
+
+     
+      
+
+      do k=1,3
+      do l=1,6
+c---- the couplings 1 are just left and right interchanged
+      call coupfavgluino(gluinoright12l, gluinoleft12l, indquark, l)
+      call coupfavgluino(gluinoright1k1, gluinoleft1k1, k, 1)
+      call coupfavneut(couprkl, couplkl, 1, k, l, 0)
+
+
+
+	zwi=-12d0*Real(Real(SD_B02(mneu**2, mf(k), msquark(l), sca)/
+c---- ramona added signmneut 15/10/14
+     -(mneu**2-ms**2)*mneu*signmneut*
+     -           (gluinoleft12l*
+     -              gluinoright1k1*mf(k)*
+     -              coupR*coupRkl+ 
+     -             gluinoleft1k1*
+c---- ramona added signmneut 15/10/14
+     -              (gluinoright12l*signmneut*mneu*
+     -                coupL*CoupRkl + 
+     -                gluinoleft12l*mg*
+     - coupR*CoupRkl)+gluinoright12l*
+     -              gluinoleft1k1*mf(k)*
+     -              coupL*coupLkl+ 
+     -             gluinoright1k1*
+c---- ramona added signmneut 15/10/14
+     -              (gluinoleft12l*mneu*signmneut*
+     -                coupR*CoupLkl + 
+     -                gluinoright12l*mg*
+     - coupL*CoupLkl))
+     - -SD_B02(ms**2,mf(k), mg, sca)/(mneu**2-ms**2)*(gluinoleft12l*
+c---- ramona added signmneut 15/10/14
+     -              gluinoright1k1*mneu*signmneut*
+     -              mf(k)*
+     - coupR*coupRkl+ 
+     -             gluinoleft1k1*
+     -              (gluinoright12l*ms**2*
+     - coupL*coupRkl+ 
+c---- ramona added signmneut 15/10/14
+     -                gluinoleft12l*mneu*signmneut*
+     -                 mg*
+     - coupR*CoupRkl)+gluinoright12l*
+c---- ramona added signmneut 15/10/14
+     -              gluinoleft1k1*mneu*signmneut*
+     -              mf(k)*
+     - coupL*coupLkl+ 
+     -             gluinoright1k1*
+     -              (gluinoleft12l*ms**2*
+     - coupR*coupLkl+ 
+c---- ramona added signmneut 15/10/14
+     -                gluinoright12l*mneu*signmneut*
+     -                 mg*
+     - coupL*CoupLkl))+
+     - SD_C03(mneu**2, ms**2,0d0, msquark(l),mf(k), mg)
+     -/(mneu**2-ms**2)*(gluinoright1k1*mf(k)*
+     -              (gluinoright12l*mg*
+     -                 (mneu**2 - ms**2)*
+     -coupL*coupRkl + 
+c---- ramona added signmneut 15/10/14
+     -                gluinoleft12l*mneu*signmneut*
+     -                 (mg**2 - msquark(l)**2)*
+     -coupR*CoupRkl) + 
+     -             gluinoleft1k1*
+     -              (gluinoright12l*
+     -                 (mneu**2*mg**2 - 
+     -                   ms**2*msquark(l)**2)*
+     - coupL*Couprkl + 
+c---- ramona added signmneut 15/10/14
+     -                gluinoleft12l*mneu*signmneut*
+     -                 mg*
+     -                 (mneu**2 + mg**2 - 
+     -                   ms**2 - msquark(l)**2)*
+     - coupR*CoupRkl)+gluinoleft1k1*mf(k)*
+     -              (gluinoleft12l*mg*
+     -                 (mneu**2 - ms**2)*
+     -coupR*coupLkl + 
+c---- ramona added signmneut 15/10/14
+     -                gluinoright12l*mneu*signmneut*
+     -                 (mg**2 - msquark(l)**2)*
+     -coupL*CoupLkl) + 
+     -             gluinoright1k1*
+     -              (gluinoleft12l*
+     -                 (mneu**2*mg**2 - 
+     -                   ms**2*msquark(l)**2)*
+     - coupR*CoupLkl + 
+c---- ramona added signmneut 15/10/14
+     -                gluinoright12l*mneu*signmneut*
+     -                 mg*
+     -                 (mneu**2 + mg**2 - 
+     -                   ms**2 - msquark(l)**2)*
+     - coupL*CoupLkl))))*(ms**2-mneu**2)/(18d0*Pi**2)
+
+      gluinovirt=gluinovirt+zwi
+
+      
+      end do
+      end do
+      
+      
+c---- the real corrections
+      r=mneu/ms 
+      realcorrections=(coupL**2 + coupR**2)*g3**2*ms**2*
+     -      (-99d0 + 10d0*Pi**2 + 204d0*r**2 - 20d0*Pi**2*r**2 - 
+     -        105d0*r**4 + 10d0*Pi**2*r**4 - 
+     -        6d0*(-1d0 + r**2)**2*dLog(ms**2/sca)**2 + 
+     -        24*r**2*dLog(r**2) - 18d0*r**4*dLog(r**2) + 
+     -        60d0*dLog(1d0 - r**2) - 120d0*r**2*dLog(1d0 - r**2) + 
+     -        60d0*r**4*dLog(1d0 - r**2) - 24d0*dLog(1d0 - r**2)**2 + 
+     -        48d0*r**2*dLog(1d0 - r**2)**2 - 
+     -        24d0*r**4*dLog(1d0 - r**2)**2 - 
+     -        6d0*(-1d0 + r**2)**2*dLog(ms**2/sca)*
+     -         (-5d0 + 4d0*Log(1d0 - r**2)) - 
+     -        24*(-1d0 + r**2)**2*SD_CCSpen(1d0-r**2*DCMPLX(1d0)))/
+     -    (18.*Pi**2*(-1 + r**2))/4d0
+
+       call dGisl(indquark,1,1,Gisll, Gislr, mg)
+      
+c----- counterterm must be multiplied by a 2 for M_LO*M_NLO      
+      counterterm=2d0*(ms**2-mneu**2)*(coupL
+     . *(Gisll(1)+Gisll(2))
+     .+coupR*(Gislr(1)+Gislr(2)))
+      
+      qcdlightstop=gluonvirt+gluinovirt+realcorrections+counterterm
+
+      
+      return 
+      end
+
+c------------------------------------------------------------------------
+      subroutine dGisl(i,s,l, Gisll, gislr, mg)
+c------------------------------------------------------------------------
+c------ this subroutine calculates the counterterms Gisl
+c------ Gisll(1) is non yukawa part of left-handed part
+c------ Gisll(2) Yukawa part of left-handed part
+c------ Gislr(1) non yukawa part of right handed part
+c------ Gislr(2) yukawa part of right handed part
+c------------------------------------------------------------------------
+       implicit none
+       integer i, s, l, j, ifavvio
+       integer imod(1:2)
+        double precision Gisll(2), Gislr(2), mf(3), mg, zwi, zwi2
+        double precision mtop, dmu, vewsb
+        complex*16 sigmami(4), dsigmami(4) 
+        double precision alphaval, msquark(6), dZu(2,2), dZsquark
+      double precision sdgf, amz, amw, pi, g2
+      double precision amsupq(6), amsdownq(6), amslepton(6)
+      double precision sw, cw, alp_mssm, tanbeta, amt, amb, amtau
+      double precision uu(2,2), vv(2,2), zz(4,4), zp(4,4)
+      double precision vckm(3,3), msq2(3,3), msu2(3,3), 
+     .msd2(3,3), td(3,3), tu(3,3),
+     . usqmix(6,6), dsqmix(6,6), amsneutrino(3)
+      double precision sinbeta,alsew,g2ew,g1ew
+      COMMON/SD_param/sdgf,amz,amw,pi,g2
+      COMMON/flavviolation/vckm, msq2, msd2, msu2, td, 
+     .tu, usqmix, ifavvio, dsqmix
+      COMMON/msfermion/ amsupq, amsdownq, amslepton, amsneutrino
+      COMMON/SD_weinberg/sw,cw
+      COMMON/SD_mixang/alp_mssm,tanbeta
+      COMMON/SD_fermion/amt,amb,amtau
+      COMMON/SD_mixmat/uu,vv,zz,zp
+      COMMON/SD_coupewsb/alsew,g2ew,g1ew
+	common/masses/msquark, mtop
+c---- set fermion mass
+        mf(1)=0d0
+        mf(2)=0d0
+        mf(3)=mtop
+
+	
+	sinbeta=dSin(dAtan(tanbeta))
+      vewsb=amw/g2ew*2d0
+      Gisll(1)=0d0
+      Gisll(2)=0d0
+      Gislr(1)=0d0
+      Gislr(2)=0d0
+      
+      do j=1,3
+         call dZfermion(j,i, mg, mf(j), mf(i), dZu)
+	
+	zwi= -1d0/6d0*(Sqrt(2d0)*g1ew*zz(l,1)
+     .	      *usqmix(s, j)*dZu(1,1) + 
+     .	      3d0*dSqrt(2d0)*g2ew*zz(l,2)*usqmix(s, j)*dZu(1,1))
+
+	 zwi2=2d0/3d0*dSqrt(2d0)*g1ew*zz(l, 1)
+     .	      *usqmix(s, 3 + j)*dZu(2,1)
+	
+	Gisll(1)=Gisll(1)+zwi
+        Gislr(1)=Gislr(1)+zwi2
+            
+	end do
+       do j=1,6
+	zwi= -1d0/6d0*(Sqrt(2d0)*g1ew*zz(l,1)*usqmix(j, i)
+     .	     + 3d0*dSqrt(2d0)*g2ew*zz(l,2)*usqmix(j, i))
+     .	     *dZsquark(s,j, msquark(s), msquark(j), mg)
+
+       zwi2=2d0/3d0*dSqrt(2d0)*g1ew*zz(l, 1)
+     .	      *usqmix(j, 3 + i)
+     .	      *dZsquark(s,j, msquark(s), msquark(j), mg)
+      
+      Gisll(1)=Gisll(1)+zwi
+      Gislr(1)=Gislr(1)+zwi2
+      
+	end do
+      
+c----Yukawa parts
+      do j=1,3
+      call dZfermion(i,j, mg, mf(i), mf(j), dZu)
+      zwi=-1d0*dsqrt(2d0)/(vewsb*sinbeta)*zz(l, 4)
+     . *usqmix(s, 3 + j)*dZu(1,2)
+
+      zwi2=(-1d0*dsqrt(2d0)/(vewsb*sinbeta)*zz(l, 4)*
+     .usqmix(s, j))*dZu(2,2)
+       
+      Gislr(2)=Gislr(2)+zwi2
+      Gisll(2)=Gisll(2)+zwi
+      
+      end do
+      do j=1,6
+       zwi=-mf(i)*dsqrt(2d0)/(vewsb*sinbeta)*zz(l, 4)
+     . *usqmix(j, 3 + i)*dZsquark(s,j,msquark(s), msquark(j), mg)
+
+      zwi2=(-mf(i)*dsqrt(2d0)/(vewsb*sinbeta)*zz(l, 4)*
+     .usqmix(j, i))*dZsquark(s,j,msquark(s), msquark(j), mg)
+      
+      Gislr(2)=Gislr(2)+zwi2
+      Gisll(2)=Gisll(2)+zwi
+      
+      end do
+      call sigfermion(i,i, sigmami, dsigmami, mf(i)**2, mg)
+      dmu=1d0/2d0*Real(Real(mf(i)*sigmami(1)+mf(i)*sigmami(2)
+     .    +sigmami(3)+sigmami(4)))
+
+      Gisll(2)=Gisll(2)-dmu*dsqrt(2d0)/(vewsb*sinbeta)
+     .*zz(l, 4)*usqmix(s, 3 + i)
+
+      Gislr(2)=Gislr(2)+(-dmu*dsqrt(2d0)
+     ./(vewsb*sinbeta)*zz(l, 4)*
+     .usqmix(s, i))
+ 
+    
+	return
+	end
+
+c--------------------------------------------------------------------------
+      subroutine dZfermion(a,b,mg, ma, mb, dZu)
+c---------------------------------------------------------------------------
+c---- This subroutine calculates the combinations dZdu
+c---- dZdu(1,1)=1/4(dZL+Transpose(dZL))
+c---- dZdu(2,1)=1/4(dZR+Transpose(dZR))
+c---- dZdu(1,2)=1/2(dZLba mb +1/2Transpose(dZRab) ma-1/2 dZRba ma)
+c---- dZdu(2,2)=1/2(dZR mj +1/2Transpose(dZL) mi-1/2 dZL mi)
+c---------------------------------------------------------------------------
+      implicit none
+      integer a, b
+      double precision ma, mb, mg, eps
+      double precision dZu(2,2)
+      complex*16 sigmama(4), dsigmama(4), sigmamb(4), dsigmamb(4) 
+      eps=0.0001
+      call sigfermion(a,b, sigmama, dsigmama, ma**2, mg)
+      call sigfermion(a,b, sigmamb, dsigmamb, mb**2, mg)
+      
+      if(a.eq.b)then
+
+      dZu(1,1)=-Real(Real(sigmama(1)-
+     .ma**2*(dsigmama(1)+dsigmama(2))
+     . -ma*(dsigmama(3)+dsigmama(4))))/2d0
+
+       dZu(2,1)=-Real(Real(sigmama(2)-ma**2*(dsigmama(1)+dsigmama(2))
+     . -ma*(dsigmama(3)+dsigmama(4))))/2d0
+
+      dZu(1,2)=dZu(1,1)*ma
+
+      dZu(2,2)=dZu(2,1)*ma
+      else
+      if(Abs(ma-mb).le.eps) then
+
+      dZu(1,1)=-Real(Real(sigmama(1)-ma**2*(dSigmama(1)+dsigmama(2))
+     .-ma*(dsigmama(3)+dsigmama(4))))/2d0
+
+      dZu(2,1)=-Real(Real(sigmama(2)-ma**2*(dSigmama(1)+dsigmama(2))
+     .-ma*(dsigmama(3)+dsigmama(4))))/2d0
+
+
+        dZu(1,2)=1d0/2d0*Real(-ma*mb*dsigmama(3)
+     - +2d0*sigmama(4)-ma**2*dsigmama(4)-ma**2*mb*dsigmama(1)
+     - +ma*sigmama(2)-ma*mb**2*dsigmamb(2))
+
+      dZu(2,2)=1d0/2d0*Real(-ma*mb*dsigmama(4)
+     - +2d0*sigmama(3)-ma**2*dsigmama(3)-ma**2*mb*dsigmama(2)
+     - +ma*sigmama(1)-ma*mb**2*dsigmamb(1))   
+      else 
+      
+      dZu(1,1)=1d0/(ma**2-mb**2)*Real(Real(
+     .mb**2*sigmamb(1)-ma**2*sigmama(1)
+     . +ma*mb*(-sigmama(2)+sigmamb(2))+ma*sigmamb(3)-ma*sigmama(3)
+     . +mb*sigmamb(4)-mb*sigmama(4)))/2d0
+
+      dZu(2,1)=1d0/(ma**2-mb**2)*Real(Real(mb**2*sigmamb(2)
+     . -ma**2*sigmama(2)
+     . +ma*mb*(-sigmama(1)+sigmamb(1))+ma*sigmamb(4)-ma*sigmama(4)
+     . +mb*sigmamb(3)-mb*sigmama(3)))/2d0
+
+
+      dZu(1,2)=1d0/(ma**2-mb**2)/2d0*Real(-ma*mb*sigmama(3)+
+     - ma*mb*sigmamb(3)+ma**2*sigmama(4)-2d0*mb**2*sigmama(4)
+     - +ma**2*sigmamb(4)-ma**2*mb*sigmama(1)+ma**2*mb*sigmamb(1)
+     --2d0*ma*mb**2*sigmama(2)+ma*mb**2*sigmamb(2)+ma**3*sigmama(2))
+      
+
+
+
+      dZu(2,2)=1d0/(ma**2-mb**2)/2d0*Real(-ma*mb*sigmama(4)+
+     - ma*mb*sigmamb(4)+ma**2*sigmama(3)-2d0*mb**2*sigmama(3)
+     - +ma**2*sigmamb(3)-ma**2*mb*sigmama(2)+ma**2*mb*sigmamb(2)
+     --2d0*ma*mb**2*sigmama(1)+ma*mb**2*sigmamb(1)+ma**3*sigmama(1)) 
+
+    
+
+ 
+      end if
+      end if
+     
+
+      return
+      end
+c----------------------------------------------------------------------------
+c--- this routine computes the fermion self-energies
+      subroutine sigfermion(a,b, sigma, dsigma, p2, mg)
+      implicit none
+      integer a, b, i
+      complex*16 sigma(4), dsigma(4), zwi(4)
+      double precision ma, mb, mg, msquark(6), mtop, gluinoleft, Pi,
+     . gluinoleft1, gluinoright, gluinoright1, KroneckerDelta, p2, g3
+      double precision SD_B02, SD_BP02, SD_B1, SD_BP1, sca
+      common/alfas/g3
+      common/masses/msquark, mtop
+      common/scalelightstop/sca
+      PI = 4d0*DATAN(1D0)
+    
+      sigma(1)=(0d0,0d0)
+      dsigma(1)=(0d0,0d0)
+      sigma(2)=(0d0,0d0)
+      dsigma(2)=(0d0,0d0)
+      sigma(3)=(0d0,0d0)
+      dsigma(3)=(0d0,0d0)
+      sigma(4)=(0d0,0d0)
+      dsigma(4)=(0d0,0d0)
+
+
+      do i=1,6
+      call coupfavgluino(gluinoleft, gluinoright, a, i)
+      call coupfavgluino(gluinoright1, gluinoleft1, b, i)
+c---- sigmaL
+       zwi(1)=-SD_B1(p2,mg,msquark(i), sca)
+     -*(gluinoleft
+     - *gluinoright1)/(3d0*Pi**2)
+
+      sigma(1)=sigma(1)+zwi(1)
+      
+c---- sigmaR
+      zwi(2)=-SD_B1(p2,mg,msquark(i), sca)*
+     -     (gluinoleft1*gluinoright
+     -          )/(3d0*Pi**2)
+      sigma(2)=zwi(2)+sigma(2)
+      
+c----- sigmalS
+      zwi(3)= (SD_B02(p2,mg,
+     -      msquark(i), sca)*(gluinoright
+     -       *gluinoright1*mg
+     -          )/(3d0*Pi**2))
+
+      sigma(3)=sigma(3)+zwi(3)
+c------- sigmaRs
+      zwi(4)=(SD_B02(p2,mg,
+     -      msquark(i), sca)*
+     -     gluinoleft*
+     -           gluinoleft1*mg)/(3d0*Pi**2)
+
+      sigma(4)=sigma(4)+zwi(4)
+
+      end do
+      
+      do i=1,6
+      call coupfavgluino(gluinoleft, gluinoright, a, i)
+      call coupfavgluino(gluinoright1, gluinoleft1, b, i)
+c----- dsigmaL
+      zwi(1)= -SD_BP1(p2,mg,
+     -      msquark(i), sca)*(gluinoleft
+     - *gluinoright1)/(3d0*Pi**2)
+c------ dSigmaR
+      zwi(2)=-SD_BP1(p2,mg,
+     -      msquark(i), sca)*
+     -     (gluinoleft1*gluinoright
+     -          )/(3d0*Pi**2)
+c----- dsigmals
+      zwi(3)=(SD_BP02(p2,mg,
+     -      msquark(i), sca)*(gluinoleft
+     -       *gluinoleft1*mg
+     -          )/(3d0*Pi**2))
+c---- dsigmars
+      zwi(4)= (SD_BP02(p2,mg,
+     -      msquark(i), sca)*
+     -     gluinoright*
+     -           gluinoright1*mg)/(3d0*Pi**2)
+
+      dsigma(1)=dsigma(1)+zwi(1)
+      dsigma(2)=dsigma(2)+zwi(2)
+      dsigma(3)=dsigma(3)+zwi(3)
+      dsigma(4)=dsigma(4)+zwi(4)
+
+      enddo
+c--- add gluon contribution
+      if(a.eq.b)then
+      sigma(1)=sigma(1)+1d0/2d0*g3**2
+     .*SD_B1(p2,0d0,0d0,sca)/(3d0*Pi**2)
+      sigma(2)=sigma(2)+1d0/2d0*g3**2
+     .*SD_B1(p2,0d0,0d0, sca)/(3d0*Pi**2)
+        endif
+      
+      return
+      end
+c----------------------------------------------------------------------------
+      double precision function dZsquark(a,b, ma, mb, mg)
+c----------------------------------------------------------------------------
+c---- this function calculates the combination 1/2 dZ-(dw)^T for the squarks
+c----------------------------------------------------------------------------
+      implicit none
+      integer a, b
+      double precision ma, mb, mg, eps
+      complex*16 sigmama, sigmamb, dsigmama, dsigmamb
+      eps=0.001d0
+	
+      call sigmasquark(a,b, ma**2, sigmama, dsigmama, mg)
+      
+      
+      call sigmasquark(a,b, mb**2, sigmamb, dsigmamb, mg)
+
+
+      if(Abs(ma-mb).le.eps) then
+      dZsquark=-1d0/2d0*Real(Real(dsigmamb))
+      else
+      dZsquark=1d0/(2d0*(ma**2-mb**2))*Real(Real(sigmamb-sigmama))
+      
+      endif
+      
+      return
+      end
+c-----------------------------------------------------------------------------
+c---- this routine computes the self-energies of the squarks
+      subroutine sigmasquark(a,b, p2, sigma, dsigma, mg)
+! a, b are indices of self-energy, p2 is momentum and lim=1 is a switch for the case where the masses for two squarks are degenerated 
+      implicit none
+      integer a, b, i
+      double precision g3, alphas, Pi, ms, mneu, mg, mtop, msquark(6)
+      double precision gluinoleft, gluinoleft1, gluinoright,
+     - gluinoright1, quarticsup, p2, sigmaquartic, mf(3), 
+     . sca, coupfavquartic
+       complex*16 zwi, dsigma, sigma
+      double precision SD_A01, SD_B02, SD_BP02
+ 	common/alfas/g3
+	common/masses/msquark, mtop 
+      common/scalelightstop/sca
+      PI = 4d0*DATAN(1D0)
+       mf(1)=0d0
+      mf(2)=0d0
+      mf(3)=mtop
+c---- counterterms
+       zwi=(0d0, 0d0)
+       sigma=(0d0,0d0)
+       dsigma=(0d0,0d0)
+	
+       do i=1,3
+      call coupfavgluino(gluinoleft, gluinoright, i, b)
+      call coupfavgluino(gluinoright1, gluinoleft1, i, a)
+	zwi=((SD_B02(p2,mf(i),
+     -         mg, sca)*
+     -        (gluinoleft1*
+     -           gluinoright + 
+     -          gluinoleft*
+     -           gluinoright1) - 
+     -       SD_BP02(p2,mf(i),
+     -         mg, sca)*
+     -        (gluinoright1*
+     -           (2*gluinoright*mf(i)*
+     -              mg + 
+     -             gluinoleft*
+     -              (mf(i)**2 + mg**2 - 
+     -                p2)) + 
+     -          gluinoleft1*
+     -           (2*gluinoleft*mf(i)*
+     -              mg + 
+     -             gluinoright*
+     -              (mf(i)**2 + mg**2 - 
+     -                p2)))))/
+     -  (3d0*Pi**2)
+        dsigma=dsigma+zwi
+
+        enddo
+       if(a.eq.b)then
+        dsigma=dsigma -(g3**2*
+     -   (SD_B02(p2,0d0,dsqrt(p2), sca) + 
+     -    SD_BP02(p2,0d0,dsqrt(p2), sca)*
+     -        (2d0*p2)))/(6d0*Pi**2) 
+        
+	endif
+       zwi=(0d0, 0d0)
+        do i=1,3
+      call coupfavgluino(gluinoleft, gluinoright, i, b)
+      call coupfavgluino(gluinoright1, gluinoleft1, i, a)
+	zwi=-(SD_A01(mf(i)**2, sca)*
+     -        (gluinoleft1*
+     -           gluinoright + 
+     -          gluinoleft*
+     -           gluinoright1) + 
+     -       SD_A01(mg**2, sca)*
+     -        (gluinoleft1*
+     -           gluinoright + 
+     -          gluinoleft*
+     -           gluinoright1) + 
+     -       SD_B02(p2,mf(i),mg, sca)*
+     -        (gluinoright1*
+     -           (2d0*gluinoright*mf(i)*
+     -              mg + 
+     -             gluinoleft*
+     -              (mf(i)**2 + mg**2 - 
+     -                p2)) + 
+     -          gluinoleft1*
+     -           (2d0*gluinoleft*mf(i)*
+     -              mg + 
+     -             gluinoright*
+     -              (mf(i)**2 + mg**2 - 
+     -                p2))))/
+     -   (3.*Pi**2)
+	
+	 sigma=zwi+sigma
+	  
+         enddo
+	
+        do i=1,6
+	 zwi=SD_A01(msquark(i)**2, sca)*coupfavquartic(a,b,i)/Pi**2
+        
+	
+	sigma=zwi+sigma
+       
+	end do
+	
+      return
+       end
+c---- end ramona changed
 c -------------------------------------------------------------------- c
 c ------------------ A.Bartl et al., hep-ph/9710286 ------------------ c
 c -------------------------------------------------------------------- c
@@ -37230,7 +39618,9 @@ c --- QCD corrections to the light squark decays --- c
      .     dreal(cdlog(dcmplx((gam-1.D0)/gam)))
      .     + (3.D0*gam**2-4.D0*gam+2.D0)/
      .     (4.D0*(1.D0-gam)**2)*dlog(gam) -3.D0/2.D0*dlog(1.D0-kap) +
+c--- maggie changed 14 July 2012
      .     1.D0/4.D0*(3.D0*kap**2-4.D0*kap)/(kap-1.D0)**2*dlog(kap)
+c---- end maggie changed 14 July 2012
      .     -dlog(kap)*dlog(1.D0-kap) + dsqrt(kap*gam)*
      .     (1.D0/kap*dlog(1.D0-kap)+1.D0/(1.D0-kap)*(gam*dlog(gam)
      .     -(gam-1.D0)*dreal(cdlog(dcmplx(gam-1.D0))) )
@@ -39901,9 +42291,15 @@ c ---------- The A function for the higher order corrections --------- c
       double precision function SD_A01(s,mu2)
 
       implicit double precision (a-h,k-z)
-
+c---- ramona changed 5/6/13
+      if(s.eq.0d0) then
+      SD_A01=0d0
+      else
+c---- end ramona chnaged
       SD_A01 = s*(-dlog(s/mu2)+1.D0)
-
+c--- ramona changed 5/6/13
+      endif
+c----- end ramona changed
       return
 
       end
@@ -39927,10 +42323,21 @@ c -------- The function B1 for the higher order corrections ---------- c
       double precision function SD_B1(s,m1,m2,mu2)
 
       implicit double precision (a-h,k-z)
-
+c---- ramona changed 5/6/13
+      if(s.eq.0d0)then
+      if(m1.eq.0d0.and.m2.eq.0d0)then
+      SD_B1=0d0
+      else
+      SD_B1=(m2**2-m1**2)/2d0*SD_BP02(0d0, m1, m2, mu2)
+     .-1d0/2d0*SD_B02(0d0,m1, m2, mu2)
+      endif
+      else
+c----end ramona chnaged
       SD_B1 = 1.D0/2.D0/s*( SD_A01(m1**2,mu2)-SD_A01(m2**2,mu2)
      .     +(m2**2-m1**2-s)*SD_B02(s,m1,m2,mu2) )
-      
+c---- ramona chnaged 5/6/13
+      endif
+c--- end ramona chnaged         
       return 
 
       end 
@@ -39955,12 +42362,22 @@ c ------------------- The derivative of B1: dB1/ ds ------------------ c
       double precision function SD_BP1(s,m1,m2,mu2)
 
       implicit double precision (a-h,k-z)
-
+c---- ramona changed 5/6/13
+      if(s.eq.0d0) then
+      SD_BP1=-1d0/2d0*SD_BP02(0d0,m1, m2, mu2)
+     .-(m1**2-m2**2)/4d0*((m1**4+10d0*m1**2*m2**2+m2**4)
+     ./(3d0*(m1**2-m2**2)**4)
+     .-(2d0*m1**2*m2**2*(m1**2+m2**2))/(m1**2-m2**2)**5
+     .*dlog(m1**2/m2**2))
+      else
+c---- end ramona changed  
       SD_BP1 = -1.D0/2.D0/s**2*( SD_A01(m1**2,mu2)-
      .     SD_A01(m2**2,mu2)+(m2**2-m1**2)*SD_B02(s,m1,m2,mu2) )
      .     +1.D0/2.D0/s*(m2**2-m1**2)*SD_BP02(s,m1,m2,mu2)
      .     -1.D0/2.D0*SD_BP02(s,m1,m2,mu2)
-
+c---- ramona changed 5/6/13
+      endif
+c--- end ramona changed
       return 
 
       end 
@@ -40031,7 +42448,31 @@ c -------------------------------------------------------------------- c
       endif
 
       end
+c----ramona chnaged 4/6/13
+c---------------------------------------------------------------------
+       complex*16 function infc0func(pp,m, sca)
+c---- function for the infrared divergent c03 function
+        implicit none 
+	double precision EulerGamma, pp, m, sca, pi
+        complex*16 SD_Ccspen
+       	PI = 4d0*DATAN(1D0)
+        EulerGamma=0.5772156649015329d0 
+       
+        
 
+        infc0func=(1d0/4d0*dLog(sca/m**2)**2+
+     .dLog(m**2/(m**2-pp))*dLog(sca/m**2)+
+     . Pi**2/12d0+1d0/2d0*dLog(m**2/(m**2-pp))**2
+     .-SD_CCspen(-pp*CMPLX(1d0)/(m**2-pp)))/(pp-m**2)
+
+
+        return
+        end
+c----------------------------------------------------------------------
+
+
+
+c---- end ramona changed
 ************************************************************************
       FUNCTION SD_C03(P1,P2,P3,M1,M2,M3)
 ************************************************************************
@@ -40257,6 +42698,14 @@ c -------------------------------------------------------------------- c
          elseif(m12.lt.s) then
             SD_BP02=( -1.D0 - m12/s*dlog((-m12+s)/m12) )/s
          endif
+c----- ramona changed 5/6/13
+            elseif (m12.eq.0.D0) then
+         if(m22.ge.s) then
+            SD_BP02=( -1.D0 - m22/s*dlog((m22-s)/m22) )/s
+         elseif(m22.lt.s) then
+            SD_BP02=( -1.D0 - m22/s*dlog((-m22+s)/m22) )/s
+         endif
+c--- end ramona changed 
       else 
          x1=dcmplx( (s-m22+m12+zkappa)/(2.D0*s) )
          x2=dcmplx( (s-m22+m12-zkappa)/(2.D0*s) )
@@ -40693,7 +43142,7 @@ c      COMMON/SD_flagmixang/flagcu,flagcd,flagce
       irunz=15000
       irunw=irunz
       irunsl=irunz
-
+      
       bet = datan(tanbeta)
       tw  = sw/cw
 
@@ -40845,8 +43294,10 @@ c ------------------------- slepton exchange ------------------------- c
      .                   +4.d0/Dchi(i)/Dchi(k)/Dsto(m)/Dsto(n)*alto(m,i)
      .                   *alto(n,k)*(bto(m,1)*bto(n,1)+ato(m,1)*
      .                   ato(n,1))*p0pfb*(aksto(1,i)*aksto(1,k)*(2.d0*
-     .                   pchipb*pchipf-pbpf*pchipchi)+amchar(i)*
-     .                   amchar(k)*pbpf*alsto(1,k)*alsto(1,i))
+c---- ramona changed 14/10/14 amchar-->xmchar
+     .                   pchipb*pchipf-pbpf*pchipchi)+xmchar(i)*
+     .                   xmchar(k)*pbpf*alsto(1,k)*alsto(1,i))
+c---- end ramona changed
                      enddo
                   enddo
                enddo
@@ -40860,14 +43311,17 @@ c ------------------------- slepton exchange ------------------------- c
      .                 alsto(1,i)*alsto(1,k)*alsneu(i)*alsneu(k)
      .                 +aksto(1,i)*aksto(1,k)*aksne(i)*aksne(k)
      .                 )*(2.d0*pchipb*pchipfb-pbpfb*pchipchi)
-     .                 +amchar(i)*amchar(k)*pbpfb*(
+c---- ramona changed 14/10/14 amchar-->xmchar
+     .                 +xmchar(i)*xmchar(k)*pbpfb*(
      .                 aksto(1,k)*aksto(1,i)*alsneu(i)*alsneu(k)
      .                 +alsto(1,k)*alsto(1,i)*aksne(i)*aksne(k)
      .                 ))
                   do m=1,2
                      atosnatosn=atosnatosn
-     .                    +(2.d0*amchar(i)/Dchi(i)/Dchi(k)/Dsn/Dsto(m)
-     .                    *amneut(1)*asnL*ato(m,1)*alsto(1,i)*
+c---- ramona changed 14/10/14 amchar-->xmchar
+     .                    +(2.d0*xmchar(i)/Dchi(i)/Dchi(k)/Dsn/Dsto(m)
+c---- ramona changed 14/10/14 amneut-->xmneut
+     .                    *xmneut(1)*asnL*ato(m,1)*alsto(1,i)*
      .                    alsto(1,k)*alto(m,i)*alsneu(k))
      .                    *(pchipb*pfpfb-pbpfb*pchipf+pbpf*pchipfb)
                   enddo
@@ -40884,7 +43338,8 @@ c ---------------------- non-massive slepton case -------------------- c
      .                 *(asnL**2)*p0pf*
      .                 (alsto(1,i)*alsto(1,k)*alsneu(i)*alsneu(k)
      .                 *(2.d0*pchipb*pchipfb-pbpfb*pchipchi)
-     .                 +amchar(i)*amchar(k)*pbpfb*
+c---- ramona changed 14/10/14 amchar-->xmchar
+     .                 +xmchar(i)*xmchar(k)*pbpfb*
      .                 aksto(1,k)*aksto(1,i)*alsneu(i)*alsneu(k))
                enddo
             enddo
@@ -40897,14 +43352,16 @@ c ---------------------- non-massive slepton case -------------------- c
      .                 ale4bod(2,1)**2*p0pfb
      .                 *(aksto(1,i)*aksto(1,k)*(2.d0*pchipb*pchipf
      .                 -pbpf*pchipchi)
-     .                 +amchar(i)*amchar(k)*pbpf*alsto(1,k)*alsto(1,i))
+c---- ramona changed 14/10/14 amchar-->xmchar
+     .                 +xmchar(i)*xmchar(k)*pbpf*alsto(1,k)*alsto(1,i))
                enddo
             enddo
 
             do i=1,2
                do k=1,2
                   aesnaesnesn=aesnaesnesn
-     .                 +(2.d0*amchar(i)*amneut(1)/Dchi(i)/Dchi(k)/Dsn/
+c---- ramona changed 14/10/14 amchar-->xmchar, amneut--> xmneut
+     .                 +(2.d0*xmchar(i)*xmneut(1)/Dchi(i)/Dchi(k)/Dsn/
      .                 Dsel*asnL*ale4bod(2,1)*alsto(1,i)*alsto(1,k)*
      .                 ale4bod(2,i)*alsneu(k))
      .                 *(pchipb*pfpfb-pbpfb*pchipf+pbpf*pchipfb)
@@ -40922,7 +43379,8 @@ c ---------------------- non-massive squark case --------------------- c
      .                 *(aup4bod(2,1)**2)*p0pf*
      .                 alsto(1,i)*alsto(1,k)*alup4bod(2,i)*alup4bod(2,k)
      .                 *((2.d0*pchipb*pchipfb-pbpfb*pchipchi)
-     .                 +amchar(i)*amchar(k)*pbpfb*
+c---- ramona changed 14/10/14 amchar-->xmchar
+     .                 +xmchar(i)*xmchar(k)*pbpfb*
      .                 aksto(1,k)*aksto(1,i)*alup4bod(2,i)*alup4bod(2,k)
      .                 )
                enddo
@@ -40936,14 +43394,16 @@ c ---------------------- non-massive squark case --------------------- c
      .                 ado4bod(2,1)**2*p0pfb
      .                 *(aksto(1,i)*aksto(1,k)*(2.d0*pchipb*pchipf-
      .                 pbpf*pchipchi)
-     .                 +amchar(i)*amchar(k)*pbpf*alsto(1,k)*alsto(1,i))
+c---- ramona changed 14/10/14 amchar-->xmchar
+     .                 +xmchar(i)*xmchar(k)*pbpf*alsto(1,k)*alsto(1,i))
                enddo
             enddo
 
             do i=1,2
                do k=1,2
                   asusdasusdsusd=asusdasusdsusd
-     .                 +(2.d0*amchar(i)*amneut(1)/Dchi(i)/Dchi(k)/Dsu/
+c---- ramona changed 14/10/14 amchar-->xmchar
+     .                 +(2.d0*xmchar(i)*xmneut(1)/Dchi(i)/Dchi(k)/Dsu/
      .                 Dsd
      .                 *aup4bod(2,1)*ado4bod(2,1)*alsto(1,i)*alsto(1,k)
      .                 *aldo4bod(2,i)*alup4bod(2,k))
@@ -41070,7 +43530,8 @@ c ------------------------- top exchange ----------------------------- c
             pab=2.d0*pbpf*ptpfb
             
             a1a1=a*(atop(1,1)**2*pa2+btop(1,1)**2*amt**2*pb2
-     .           -2.d0*amneut(1)*amt*atop(1,1)*btop(1,1)*pab)
+c---- ramona changed 14/10/14 amneut-->xmneut
+     .           -2.d0*xmneut(1)*amt*atop(1,1)*btop(1,1)*pab)
 
 c ------------------------- sbottom exchange ------------------------- c
 
@@ -41105,10 +43566,11 @@ c --------------------------- chargino exchange ---------------------- c
      .                 +aksto(1,i)*aksto(1,j)*OR(1,i)*OL(1,j)
                   a4=alsto(1,i)*alsto(1,j)*OR(1,i)*OL(1,j)
      .                 +aksto(1,i)*aksto(1,j)*OL(1,i)*OR(1,j)
-                  
-                  achiachi=achiachi+a*(a1*p1+amchar(i)*amchar(j)*a2*p2
-     .                 -xmneut(1)*amchar(j)*a3*p3-xmneut(1)*
-     .                 amchar(i)*a4*p4)
+c---- ramona changed 14/10/14 amchar-->xmchar                  
+                  achiachi=achiachi+a*(a1*p1+xmchar(i)*xmchar(j)*a2*p2
+     .                 -xmneut(1)*xmchar(j)*a3*p3-xmneut(1)*
+     .                 xmchar(i)*a4*p4)
+c---- end ramona changed
                enddo
             enddo
 
@@ -41128,7 +43590,8 @@ c ---------------------- interference btilde t ----------------------- c
      .              +ptpf*ppb*p0pfb-ptpf*pbpfb*p0p-p0pf*ppb*ptpfb
      .              +pbpf*p0p*ptpfb+p0p*pbpfb*ptp-ppb*p0pfb*ptp
                p2=pbpfb*ppf+ppfb*pbpf-pfpfb*ppb
-               atab=atab+a*(a1*p1-amneut(1)*amt*a2*p2)
+c---- ramona changed 14/10/14 amchar-->xmchar
+               atab=atab+a*(a1*p1-xmneut(1)*amt*a2*p2)
             enddo
 
 c ------------------------ interference btilde chi+ ------------------ c
@@ -41151,7 +43614,8 @@ c ------------------------ interference btilde chi+ ------------------ c
      .                 +pbpf*pchip*p0pfb+pchipf*pbpfb*p0p-pbpf*
      .                 pchipfb*p0p
                   p2=pbpf*ppfb+pbpfb*ppf-pfpfb*ppb
-                  abachi=abachi+a*(a1*p1+amneut(1)*amchar(j)*a2*p2)
+c---- ramona changed 14/10/14 amneut-->xmneut, amchar-> xmchar
+                  abachi=abachi+a*(a1*p1+xmneut(1)*xmchar(j)*a2*p2)
                enddo
             enddo
 
@@ -41174,8 +43638,10 @@ c -------------------------- interference chi+ t --------------------- c
                p2=4.d0*(pbpfb*ptpf)
                p3=2.d0*(pchipb*pfpfb+pbpfb*pchipf-pchipfb*pbpf)
                p4=4.d0*(pbpfb*p0pf)
-               achiat=achiat+a*(a1*p1+amchar(i)*amneut(1)*a2*p2
-     .              +amneut(1)*amt*a3*p3-amchar(i)*amt*a4*p4)
+c---- ramona changed 14/10/14 amneut-->xmneut, amchar-> xmchar
+               achiat=achiat+a*(a1*p1+xmchar(i)*xmneut(1)*a2*p2
+c---- ramona changed 14/10/14 amneut-->xmneut, amchar-> xmchar
+     .              +xmneut(1)*amt*a3*p3-xmchar(i)*amt*a4*p4)
             enddo
 
 c --------------------- interference stau bottom --------------------- c
@@ -41189,7 +43655,8 @@ c --------------------- interference stau bottom --------------------- c
                      astoasb=astoasb+2.d0*g2**3*
      .                    dsqrt(2.d0)*aw(1,m)*abo(m,1)*ato(j,1)*
      .                    alsto(1,i)*alto(j,i)
-     .                    *amchar(i)*amneut(1)/(dw*dchi(i)*dsto(j)*
+c---- ramona changed 14/10/14 amneut-->xmneut, amchar-> xmchar
+     .                    *xmchar(i)*xmneut(1)/(dw*dchi(i)*dsto(j)*
      .                    dsb(m))*pa
                   enddo
                enddo
@@ -41202,12 +43669,14 @@ c ---------------------- interference stau top ----------------------- c
             do i=1,2
                do j=1,2
                   a1=btop(1,1)*amt
-                  a2=atop(1,1)*amneut(1)
+c---- ramona changed 14/10/14 amneut-->xmneut
+                  a2=atop(1,1)*xmneut(1)
                   p1=pbpf*p0pfb
                   p2=pbpf*ptpfb
                   astoato=astoato-4.d0*g2**3*ato(j,1)*alsto(1,i)*
      .                 alto(j,i)
-     .                 *amchar(i)/(dw*dt*dchi(i)*dsto(j))*(a1*p1-a2*p2)
+c---- ramona changed 14/10/14 amchar-> xmchar
+     .                 *xmchar(i)/(dw*dt*dchi(i)*dsto(j))*(a1*p1-a2*p2)
                enddo
             enddo
 
@@ -41218,13 +43687,16 @@ c -------------------------- interference stau chi ------------------- c
 	do i=1,2
            do j=1,2
               do m=1,2
-                 a1=amneut(1)*ol(1,i)
-                 a2=amchar(i)*or(1,i)
+c---- ramona changed 14/10/14 amneut-->xmneut
+                 a1=xmneut(1)*ol(1,i)
+c---- ramona changed 14/10/14 amchar-->xmchar
+                 a2=xmchar(i)*or(1,i)
                  p1=pbpf*pchipfb-pbpfb*pchipf+pbpchi*pfpfb
                  p2=pbpf*p0pfb
                  astoachi=astoachi+4.d0*g2**3*alsto(1,i)*ato(m,1)*
      .                alsto(1,j)
-     .                *alto(m,j)*amchar(j)/(dsqrt(2.d0)*dw*dsto(m)*
+c---- ramona changed 14/10/14  amchar-> xmchar
+     .                *alto(m,j)*xmchar(j)/(dsqrt(2.d0)*dw*dsto(m)*
      .                dchi(i)*dchi(j))
      .                *(a1*p1-2.d0*a2*p2)
               enddo
@@ -41254,7 +43726,8 @@ c ------------------------ interference sneutrino top ---------------- c
 	asnatop=0.d0
 
 	do i=1,2
-           a1=btop(1,1)*amneut(1)*amt
+c---- ramona changed 14/10/14 amneut-->xmneut
+           a1=btop(1,1)*xmneut(1)*amt
            a2=atop(1,1)
            p1=pbpf*pchipfb-pbpfb*pchipf+pchipb*pfpfb
            p2=pbpfb*ptpchi*p0pf - ptpb*pchipfb*p0pf - pbpfb*p0pchi*ptpf
@@ -41274,11 +43747,13 @@ c ----------------------- interference sneutrino chi ----------------- c
               asnachi=asnachi+4.d0*g2**3*alsto(1,i)*alsto(1,j)*alsneu(j)
      .             *asnl/
      .             (dsqrt(2.d0)*dchi(i)*dw*dchi(j)*dsn)*
-     .             (amchar(i)*amneut(1)*or(1,i)*(pbpfb*pchipf-pbpf*
+c---- ramona changed 14/10/14 amneut-->xmneut, amchar-> xmchar
+     .             (xmchar(i)*xmneut(1)*or(1,i)*(pbpfb*pchipf-pbpf*
      .             pchipfb)
      .             -2.d0*ol(1,i)*pchipchi*pbpfb*p0pf+4.d0*ol(1,i)*
      .             pchipb*pchipfb
-     .             *p0pf-amchar(i)*amneut(1)*or(1,i)*pchipb*pfpfb)
+c---- ramona changed 14/10/14 amneut-->xmneut, amchar-> xmchar
+     .             *p0pf-xmchar(i)*xmneut(1)*or(1,i)*pchipb*pfpfb)
            enddo
 	enddo
 
@@ -41292,7 +43767,8 @@ c ------------------- interference selectron sbottom ----------------- c
               aeasb=aeasb+2.d0*g2**3*
      .             dsqrt(2.d0)*aw(1,m)*abo(m,1)*ale4bod(2,1)*
      .             alsto(1,i)*ale4bod(2,i)
-     .             *amchar(i)*amneut(1)/(dw*dchi(i)*dsel*dsb(m))*pa
+c---- ramona changed 14/10/14 amneut-->xmneut, amchar-> xmchar
+     .             *xmchar(i)*xmneut(1)/(dw*dchi(i)*dsel*dsb(m))*pa
            enddo
 	enddo
 
@@ -41302,11 +43778,13 @@ c -------------------- interference selectron top -------------------- c
 
 	do i=1,2
            a1=btop(1,1)*amt
-           a2=atop(1,1)*amneut(1)
+c---- ramona changed 14/10/14 amneut-->xmneut
+           a2=atop(1,1)*xmneut(1)
            p1=pbpf*p0pfb
            p2=pbpf*ptpfb
            aeatop=aeatop-4.d0*g2**3*ale4bod(2,1)*alsto(1,i)*ale4bod(2,i)
-     .          *amchar(i)/(DW*Dt*Dchi(i)*Dsel)*(a1*p1-a2*p2)
+c---- ramona changed 14/10/14 amneut-->xmneut, amchar-> xmchar
+     .          *xmchar(i)/(DW*Dt*Dchi(i)*Dsel)*(a1*p1-a2*p2)
 	enddo
         
 c --------------------- interference selectron chi ------------------- c
@@ -41315,13 +43793,16 @@ c --------------------- interference selectron chi ------------------- c
 
 	do i=1,2
            do j=1,2
-              a1=amneut(1)*ol(1,i)
-              a2=amchar(i)*or(1,i)
+c---- ramona changed 14/10/14 amneut-->xmneut
+              a1=xmneut(1)*ol(1,i)
+c---- ramona changed 14/10/14 amchar-> xmchar
+              a2=xmchar(i)*or(1,i)
               p1=pbpf*pchipfb-pbpfb*pchipf+pbpchi*pfpfb
               p2=pbpf*p0pfb
               aeachi=aeachi+4.d0*g2**3*alsto(1,i)*ale4bod(2,1)*
      .             alsto(1,j)
-     .             *ale4bod(2,j)*amchar(j)/(dsqrt(2.d0)*DW*Dsel*
+c---- ramona changed 14/10/14 amchar-> xmchar
+     .             *ale4bod(2,j)*xmchar(j)/(dsqrt(2.d0)*DW*Dsel*
      .             Dchi(i)*Dchi(j))
      .             *(a1*p1-2.d0*a2*p2)
            enddo
@@ -41351,7 +43832,8 @@ c ------------------- interference sneutrino_el top ------------------ c
 	asneatop=0.d0
 
 	do i=1,2
-           a1=btop(1,1)*amneut(1)*amt
+c---- ramona changed 14/10/14 amneut-->xmneut
+           a1=btop(1,1)*xmneut(1)*amt
            a2=atop(1,1)
            p1=pbpf*pchipfb-pbpfb*pchipf+pchipb*pfpfb
            p2=pbpfb*ptpchi*p0pf - ptpb*pchipfb*p0pf - pbpfb*p0pchi*ptpf
@@ -41371,11 +43853,12 @@ c --------------------- interference sneutrino_el chi ---------------- c
               asneachi=asneachi+4.d0*g2**3*alsto(1,i)*alsto(1,j)*
      .             alsneu(j)*asnl/
      .             (dsqrt(2.d0)*dchi(i)*dw*dchi(j)*dsn)*
-     .             (amchar(i)*amneut(1)*or(1,i)*(pbpfb*pchipf-
+c---- ramona changed 14/10/14 amneut-->xmneut, amchar-> xmchar
+     .             (xmchar(i)*xmneut(1)*or(1,i)*(pbpfb*pchipf-
      .             pbpf*pchipfb)
      .             -2.d0*ol(1,i)*pchipchi*pbpfb*p0pf+4.d0*ol(1,i)*
      .             pchipb*pchipfb
-     .             *p0pf-amchar(i)*amneut(1)*or(1,i)*pchipb*pfpfb)
+     .             *p0pf-xmchar(i)*xmneut(1)*or(1,i)*pchipb*pfpfb)
            enddo
 	enddo
 
@@ -41389,7 +43872,8 @@ c ----------------------- interference sdown sbottom ----------------- c
               asdasb=asdasb+2.d0*g2**3*
      .             dsqrt(2.d0)*aw(1,m)*abo(m,1)*ado4bod(2,1)*
      .             alsto(1,i)*aldo4bod(2,i)
-     .             *amchar(i)*amneut(1)/(dw*dchi(i)*dsd*dsb(m))*pa
+c---- ramona changed 14/10/14 amneut-->xmneut, amchar-> xmchar
+     .             *xmchar(i)*xmneut(1)/(dw*dchi(i)*dsd*dsb(m))*pa
            enddo
 	enddo
 
@@ -41399,12 +43883,14 @@ c ------------------------ interference sdown top -------------------- c
 
 	do i=1,2
            a1=btop(1,1)*amt
-           a2=atop(1,1)*amneut(1)
+c---- ramona changed 14/10/14 amneut-->xmneut
+           a2=atop(1,1)*xmneut(1)
            p1=pbpf*p0pfb
            p2=pbpf*ptpfb
            asdatop=asdatop-4.d0*g2**3*ado4bod(2,1)*alsto(1,i)*
      .          aldo4bod(2,i)
-     .          *amchar(i)/(DW*Dt*Dchi(i)*Dsd)*(a1*p1-a2*p2)
+c---- ramona changed 14/10/14 amchar-> xmchar
+     .          *xmchar(i)/(DW*Dt*Dchi(i)*Dsd)*(a1*p1-a2*p2)
 	enddo
 
 c ------------------------- interference sdown chi ------------------- c
@@ -41413,13 +43899,16 @@ c ------------------------- interference sdown chi ------------------- c
 
 	do i=1,2
            do j=1,2
-              a1=amneut(1)*ol(1,i)
-              a2=amchar(i)*or(1,i)
+c---- ramona changed 14/10/14 amneut-->xmneut
+              a1=xmneut(1)*ol(1,i)
+c---- ramona changed 14/10/14 amchar-> xmchar
+              a2=xmchar(i)*or(1,i)
               p1=pbpf*pchipfb-pbpfb*pchipf+pbpchi*pfpfb
               p2=pbpf*p0pfb
               asdachi=asdachi+4.d0*g2**3*alsto(1,i)*ado4bod(2,1)*
      .             alsto(1,j)
-     .             *aldo4bod(2,j)*amchar(j)/(dsqrt(2.d0)*dw*dsd*
+c---- ramona changed 14/10/14 amneut-->xmneut, amchar-> xmchar
+     .             *aldo4bod(2,j)*xmchar(j)/(dsqrt(2.d0)*dw*dsd*
      .             dchi(i)*dchi(j))
      .             *(a1*p1-2.d0*a2*p2)
            enddo
@@ -41450,7 +43939,8 @@ c ------------------------ interference sup top ---------------------- c
 	asuatop=0.d0
 
 	do i=1,2
-           a1=btop(1,1)*amneut(1)*amt
+c---- ramona changed 14/10/14 amneut-->xmneut
+           a1=btop(1,1)*xmneut(1)*amt
            a2=atop(1,1)
            p1=pbpf*pchipfb-pbpfb*pchipf+pchipb*pfpfb
            p2=pbpfb*ptpchi*p0pf - ptpb*pchipfb*p0pf - pbpfb*p0pchi*ptpf
@@ -41471,11 +43961,13 @@ c ------------------------- interference sup chi --------------------- c
               asuachi=asuachi+4.d0*g2**3*alsto(1,i)*alsto(1,j)
      .             *alup4bod(2,j)*aup4bod(2,1)/
      .             (dsqrt(2.d0)*Dchi(i)*DW*Dchi(j)*Dsu)*
-     .             (amchar(i)*amneut(1)*or(1,i)*(pbpfb*pchipf-
+c---- ramona changed 14/10/14 amneut-->xmneut, amchar-> xmchar
+     .             (xmchar(i)*xmneut(1)*or(1,i)*(pbpfb*pchipf-
      .             pbpf*pchipfb)
      .             -2.d0*ol(1,i)*pchipchi*pbpfb*p0pf+4.d0*ol(1,i)*
      .             pchipb*pchipfb
-     .             *p0pf-amchar(i)*amneut(1)*or(1,i)*pchipb*pfpfb)
+c---- ramona changed 14/10/14 amneut-->xmneut, amchar-> xmchar
+     .             *p0pf-xmchar(i)*xmneut(1)*or(1,i)*pchipb*pfpfb)
            enddo
 	enddo
 
@@ -41510,7 +44002,8 @@ c -------------------------------- result ---------------------------- c
       pab=2.d0*pbpf*ptpfb
 
       a1a1=a*(atop(1,1)**2*pa2+btop(1,1)**2*amt**2*pb2
-     .     -2.d0*amneut(1)*amt*atop(1,1)*btop(1,1)*pab)
+c---- ramona changed 14/10/14 amneut-->xmneut
+     .     -2.d0*xmneut(1)*amt*atop(1,1)*btop(1,1)*pab)
 
       else
          sigmaw=0.d0
@@ -41591,8 +44084,8 @@ c -------------------------- top exchange ---------------------------- c
             p1=2.d0*ptpb*ptp0-ptpt*p0pb
             p2=ptpb
             p3=p0pb
-            
-            ahtaht=a*(a1*p1-2.d0*amt*amneut(1)*a2*p2+amt**2*a3*p3)     
+c---- ramona changed 14/10/14 amneut-->xmneut         
+            ahtaht=a*(a1*p1-2.d0*amt*xmneut(1)*a2*p2+amt**2*a3*p3)     
 
 c ------------------------- sbottom exchange ------------------------- c
 
@@ -41627,9 +44120,11 @@ c --------------------------- chi exchange --------------------------- c
                   p2=pchipb
                   p3=p0pb
                   p4=pchipb
-                  ahchiahchi=ahchiahchi+a*(a1*p1+amchar(i)*amneut(1)*
+c---- ramona changed 14/10/14 amneut-->xmneut, amchar-> xmchar
+                  ahchiahchi=ahchiahchi+a*(a1*p1+xmchar(i)*xmneut(1)*
      .                 a2*p2+
-     .                 amchar(i)*amchar(k)*a3*p3+amneut(1)*amchar(k)*
+c---- ramona changed 14/10/14 amneut-->xmneut, amchar-> xmchar
+     .                 xmchar(i)*xmchar(k)*a3*p3+xmneut(1)*xmchar(k)*
      .                 a4*p4)	
                enddo
             enddo
@@ -41644,7 +44139,8 @@ c ---------------------- interference top sbottom -------------------- c
                a2=btop(1,1)
                p1=p0pb
                p2=ptpb
-               ahtahb=ahtahb-a*(a1*amt*p1-amneut(1)*a2*p2)	
+c---- ramona changed 14/10/14 amneut-->xmneut
+               ahtahb=ahtahb-a*(a1*amt*p1-xmneut(1)*a2*p2)	
             enddo
 
 c ---------------------- interference sbottom chi -------------------- c
@@ -41660,7 +44156,8 @@ c ---------------------- interference sbottom chi -------------------- c
      .                 bbo(i,1)
                   p1=pchipb
                   p2=p0pb
-                  ahbahchi=ahbahchi-a*(amneut(1)*a1*p1+amchar(k)*a2*p2)
+c---- ramona changed 14/10/14 amneut-->xmneut, amchar-> xmchar
+                  ahbahchi=ahbahchi-a*(xmneut(1)*a1*p1+xmchar(k)*a2*p2)
                enddo
             enddo
 
@@ -41678,8 +44175,10 @@ c ----------------------- interference top chi ----------------------- c
                p2=pchipb
                p3=p0pb
                p4=ptpb
-               achiat=a*(a1*p1-amchar(i)*amt*a2*p2-amchar(i)*amt*a3*p3
-     .              +amneut(1)*amchar(i)*a4*p4)
+c---- ramona changed 14/10/14 amchar-> xmchar
+               achiat=a*(a1*p1-xmchar(i)*amt*a2*p2-xmchar(i)*amt*a3*p3
+c---- ramona changed 14/10/14 amneut-->xmneut, amchar-> xmchar
+     .              +xmneut(1)*xmchar(i)*a4*p4)
             enddo
             
             atotatot=ahtaht+ahbahb+2.d0*ahtahb
@@ -41767,9 +44266,9 @@ C -------------------------------------------------------------------- C
 C LA LIGNE SUIVANTE A ETE AJOUTEE POUR QUE LA SOUS-ROUTINE
 C RAMBO N'OUBLIT PAS CES VARIABLES: Z, TWOPI, PO2LOG.
 C "ELLE EST NECESSAIRE POUR LE 'LPSHPD'."          
-          SAVE TWOPI
+          SAVE TWOPI, Z, PO2LOG
 
-C
+		
 C INITIALIZATION STEP@D FACTORIALS FOR THE PHASE SPACE WEIGHT
 	      IF(IBEGIN.NE.0) GOTO 103
 	      IBEGIN=1
@@ -41806,9 +44305,11 @@ c	write(*,*)'µµµµµµµµµµRN(1)',RN(1),RN(2),RN(3),RN(4)
 	      S=DSQRT(1.-C*C)
 	      F=TWOPI*SD_RN(2)
 	      Q(4,I)=-DLOG(SD_RN(3)*SD_RN(4))
+
 	      Q(3,I)=Q(4,I)*C
 	      Q(2,I)=Q(4,I)*S*DCOS(F)
  202          Q(1,I)=Q(4,I)*S*DSIN(F)
+              
 C
 C CALCULATE THE PARAMETERS OF THE CONFORMAL TRANSFORMATION
 	      DO 203 I=1,4
@@ -41838,9 +44339,11 @@ c	write(*,*)'P2(I)2',P(4,I),X,Q(4,I),B(3),A,BQ
 C
 C CALCULATE WEIGHT AND POSSIBLE WARNINGS
 	      WT=DLOG(TWOPI/4.)
+             
 c	write(*,*)'*********wt1*********',WT,PO2LOG,
 c     .TWOPI/4.,DLOG(TWOPI/4.)
 	      IF(N.NE.2) WT=(2.*N-4.)*DLOG(ET)+Z(N)
+              
 c	write(*,*)'*********wt2*********',WT
 	      IF(WT.GE.-180.D0) GOTO 208
 	      IF(IWARN(1).LE.5) PRINT 1004,WT
@@ -41854,6 +44357,7 @@ C
 C RETURN FOR WEIGHTED MASSLESS MOMENTA
  209          IF(NM.NE.0) GOTO 210
 	      WT=DEXP(WT)
+              
 	      RETURN
 C
 C MASSIVE PARTICLES@D RESCALE THE MOMENTA BY A FACTOR X
@@ -41901,9 +44405,11 @@ C CALCULATE THE MASS-EFFECT WEIGHT FACTOR
 	      WT2=WT2*V(I)/E(I)
  308          WT3=WT3+V(I)**2/E(I)
 	      WTM=(2.*N-3.)*DLOG(X)+DLOG(WT2/WT3*ET)
+	      
 C
 C RETURN FOR  WEIGHTED MASSIVE MOMENTA
 	      WT=WT+WTM
+	      
 	      IF(WT.GE.-180.D0) GOTO 309
 	      IF(IWARN(3).LE.5) PRINT 1004,WT
 	      IWARN(3)=IWARN(3)+1
@@ -41911,20 +44417,22 @@ C RETURN FOR  WEIGHTED MASSIVE MOMENTA
 	      IF(IWARN(4).LE.5) PRINT 1005,WT
 	      IWARN(4)=IWARN(4)+1
  310          WT=DEXP(WT)
+              
 	      RETURN
 C
  1001         FORMAT(' RAMBO FAILS@D # OF PARTICLES =',I5,
      . ' IS NOT ALLOWED')
  1002         FORMAT(' RAMBO FAILS@D TOTAL MASS =',D15.6,' IS NOT',
-     .		 ' SMALLER THAN TOTAL ENERGY =',D15.6)
+     . ' SMALLER THAN TOTAL ENERGY =',D15.6)
  1004         FORMAT(' RAMBO WARNS@D WEIGHT = EXP(',F20.9,
      . ') MAY UNDERFLOW')
  1005	      FORMAT(' RAMBO WARNS@D WEIGHT = EXP(',F20.9,
      . ') MAY  OVERFLOW')
  1006         FORMAT(' RAMBO WARNS@D',I3,' ITERATIONS DID NOT GIVE THE',
-     . 		 ' DESIRED ACCURACY =',D15.6)
+     . ' DESIRED ACCURACY =',D15.6)
 	      END
- 
+c--- ramona removed in 1002 and 1006 tab character
+c--- to get rid of warning at compliation 11/9/14
  
 C -------------------------------------------------------------------- C
  

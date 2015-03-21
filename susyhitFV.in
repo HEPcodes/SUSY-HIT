@@ -3,7 +3,7 @@
   (1) link SuSpect-Sdecay-Hdecay and take the input parameters from SuSpect
   (2) link Sdecay-Hdecay, not SuSpect, take the input parameters from any SLHA
       input, called slhaspectrum.in or slhaspectrumFV.in in the FV case
-1
+2
 * Choice of the output, SLHA format (1) or simple (0):
 ------------------------------------------------------
 1
@@ -22,7 +22,7 @@ VUB/VCB  = 0.08D0
 ----------------------------------------
   (0) No flavour violation at tree-level.
   (1) FCNC stop decays in SDECAY. Works only with output in SLHA format, and input parameters have to be provided in an SLHA2 file.
-0
+1
   (0) Light stop four-body decay widths summed up.
   (1) Stop four-body decay separated by final states.
 1
