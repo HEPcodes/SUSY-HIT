@@ -1,6 +1,6 @@
 c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc c
 c                                                                      c
-c   This is the version SUSY-HIT 1.5                                   c
+c   This is the version SUSY-HIT 1.5a                                  c
 c              ------------------------------------------              c
 c              SUSY-HIT - SUspect-SdecaY-Hdecay-InTerface              c
 c              ------------------------------------------              c
@@ -14,7 +14,7 @@ c                                                                      c
 c   The authors of the main subprograms are:                           c
 c   SuSpect 2.41 - A.Djouadi, J.-L.Kneur, G.Moultaka                   c
 c   HDECAY 3.4 - A.Djouadi, J.Kalinowski, M. Muehlleitner, M.Spira     c
-c   SDECAY 1.3b - M.Muehlleitner, A.Djouadi, Y.Mambrini                c
+c   SDECAY 1.5a - M.Muehlleitner, A.Djouadi, Y.Mambrini                c
 c                                                                      c
 c  The reference to be used for the package is: hep-ph/0609292         c
 c								       c
@@ -40,8 +40,8 @@ c -------------------------------------------------------------------- c
 c                                                                      c
 c  The program is written by M.Muhlleitner, A.Djouadi and Y.Mambrini   c
 c                                                                      c
-c  VERSION 1.5                                                         c
-c  Last changes: FEB 21, 2015                                          c
+c  VERSION 1.5a                                                        c
+c  Last changes: Sept 27, 2016                                         c
 c  The reference to be used for the program is: hep-ph/0311167         c
 c                                                                      c
 c -------------------------------------------------------------------- c
@@ -61,7 +61,7 @@ c  possibly important higher order decay modes: the three-body decays  c
 c  of charginos, neutralinos, gluinos and the top squarks and the      c
 c  four-body decays of the top squark. The program also calculates     c
 c  the decay widths and branching ratios of the heavy top quark.       c
-c								                                       c
+c					                               c
 c  New in the version 1.4:                                             c
 c  The new SUSY-HIT version of 20 Aug 2014 supports the calculation of c
 c  light stop decays including flavour-changing neutral current (FCNC) c
@@ -81,6 +81,10 @@ c  The W boson width and the top width are included in the four-body   c
 c  and three-body stop decay, respectively, and a proper description   c
 c  of the threshold region is implemented.                             c
 c                                                                      c
+c  New in the version 1.5a:                                            c
+c  In the chargino and neutralino 3-body decays the mass effects of    c
+c  the muon, the charm quark and the strange quark have been taken     c
+c  into account.                                                       c
 c                                                                      c
 c -------------------------------------------------------------------- c
 c                                                                      c
@@ -347,6 +351,9 @@ c ------- common blocks of the couplings needed for the widths ------- c
       COMMON/SD_coup20/gwtb,gwntau
       COMMON/SD_coup21/gtr,gtl,gbr,gbl,gur,gul,gdr,gdl
       COMMON/SD_yukawa/yt,yb,ytau
+c maggie changed 27/9/2016
+      COMMON/SD_yukawasc/ysewsb,ycewsb,ymuewsb
+c end maggie changed 27/9/2016
       COMMON/SD_coupewsb/alsew,g2ew,g1ew
       COMMON/SD_runcoupscale/scalechoice,scaleofcoupling,inumloop
       COMMON/SD_scheme/idrbar
@@ -2672,7 +2679,7 @@ c---- end ramona changed
      .rams           |'
       write(nout,50)'             |                                     
      .               |'
-      write(nout,50)'             |                     SDECAY 1.5
+      write(nout,50)'             |                     SDECAY 1.5a    
      .               |'
       write(nout,50)'             |                                     
      .               |'
@@ -2879,7 +2886,7 @@ c ----------------------------------- c
       write(nout,105)
       write(nout,51) 'DCINFO','Decay Program information'
       write(nout,61) 1,'SDECAY/HDECAY # decay calculator'
-      write(nout,61) 2,'1.5  /3.4    # version number'
+      write(nout,61) 2,'1.5a /3.4    # version number'
 
 c ----------------------------------------------------------------- c
 c The program information: Which spectrum calculator has been used. c
@@ -5480,20 +5487,20 @@ c
       write(nout,104) brnupdb(1,4),3,in4,iu,idb,     'BR(~chi_1+ -> ~chi
      ._40 u    db)'
       endif
-      if(brnupdb(1,1).ne.0.D0) then
-      write(nout,104) brnupdb(1,1),3,in1,ic,isb,     'BR(~chi_1+ -> ~chi
+      if(brnchsb(1,1).ne.0.D0) then
+      write(nout,104) brnchsb(1,1),3,in1,ic,isb,     'BR(~chi_1+ -> ~chi
      ._10 c    sb)'
       endif
-      if(brnupdb(1,2).ne.0.D0) then
-      write(nout,104) brnupdb(1,2),3,in2,ic,isb,     'BR(~chi_1+ -> ~chi
+      if(brnchsb(1,2).ne.0.D0) then
+      write(nout,104) brnchsb(1,2),3,in2,ic,isb,     'BR(~chi_1+ -> ~chi
      ._20 c    sb)'
       endif
-      if(brnupdb(1,3).ne.0.D0) then
-      write(nout,104) brnupdb(1,3),3,in3,ic,isb,     'BR(~chi_1+ -> ~chi
+      if(brnchsb(1,3).ne.0.D0) then
+      write(nout,104) brnchsb(1,3),3,in3,ic,isb,     'BR(~chi_1+ -> ~chi
      ._30 c    sb)'
       endif
-      if(brnupdb(1,4).ne.0.D0) then
-      write(nout,104) brnupdb(1,4),3,in4,ic,isb,     'BR(~chi_1+ -> ~chi
+      if(brnchsb(1,4).ne.0.D0) then
+      write(nout,104) brnchsb(1,4),3,in4,ic,isb,     'BR(~chi_1+ -> ~chi
      ._40 c    sb)'
       endif
       if(brntopbb(1,1).ne.0.D0) then
@@ -5771,20 +5778,20 @@ c
       write(nout,104) brnupdb(2,4),3,in4,iu,idb,     'BR(~chi_2+ -> ~chi
      ._40 u    db)'
       endif
-      if(brnupdb(2,1).ne.0.D0) then
-      write(nout,104) brnupdb(2,1),3,in1,ic,isb,     'BR(~chi_2+ -> ~chi
+      if(brnchsb(2,1).ne.0.D0) then
+      write(nout,104) brnchsb(2,1),3,in1,ic,isb,     'BR(~chi_2+ -> ~chi
      ._10 c    sb)'
       endif
-      if(brnupdb(2,2).ne.0.D0) then
-      write(nout,104) brnupdb(2,2),3,in2,ic,isb,     'BR(~chi_2+ -> ~chi
+      if(brnchsb(2,2).ne.0.D0) then
+      write(nout,104) brnchsb(2,2),3,in2,ic,isb,     'BR(~chi_2+ -> ~chi
      ._20 c    sb)'
       endif
-      if(brnupdb(2,3).ne.0.D0) then
-      write(nout,104) brnupdb(2,3),3,in3,ic,isb,     'BR(~chi_2+ -> ~chi
+      if(brnchsb(2,3).ne.0.D0) then
+      write(nout,104) brnchsb(2,3),3,in3,ic,isb,     'BR(~chi_2+ -> ~chi
      ._30 c    sb)'
       endif
-      if(brnupdb(2,4).ne.0.D0) then
-      write(nout,104) brnupdb(2,4),3,in4,ic,isb,     'BR(~chi_2+ -> ~chi
+      if(brnchsb(2,4).ne.0.D0) then
+      write(nout,104) brnchsb(2,4),3,in4,ic,isb,     'BR(~chi_2+ -> ~chi
      ._40 c    sb)'
       endif
       if(brntopbb(2,1).ne.0.D0) then
@@ -8410,7 +8417,7 @@ c ---------------- output not a la Les Houches accord ---------------- c
       write(21,*)
 
       write(21,*)'MSSM Spectrum + Decays based on the decay programs'
-      write(21,*)'SDECAY 1.5'
+      write(21,*)'SDECAY 1.5a'
       write(21,*)'Authors: M.Muhlleitner, A.Djouadi and Y.Mambrini'
       write(21,*)'Comput.Phys.Commun.168(2005)46 [hep-ph/0311167]'
       write(21,*)'HDECAY 3.4'  
@@ -8652,7 +8659,7 @@ c ----------------------------------- c
       write(21,*) " Decay Program information"
       write(21,*) " -------------------------"
       write(21,*) " SDECAY/HDECAY      decay calculator"
-      write(21,*) " 1.5  /3.4         version number"
+      write(21,*) " 1.5a /3.4         version number"
 
 c ----------------------------------------------------------------- c
 c The program information: Which spectrum calculator has been used. c
@@ -10254,14 +10261,14 @@ c ---------------- c
      .                                            brnupdb(1,3)
       write(21,201) " chi+_1 --> chi0_4 up   db ",xchiup(1,4),
      .                                            brnupdb(1,4)
-      write(21,201) " chi+_1 --> chi0_1 ch   sb ",xchiup(1,1),
-     .                                            brnupdb(1,1)
-      write(21,201) " chi+_1 --> chi0_2 ch   sb ",xchiup(1,2),
-     .                                            brnupdb(1,2)
-      write(21,201) " chi+_1 --> chi0_3 ch   sb ",xchiup(1,3),
-     .                                            brnupdb(1,3)
-      write(21,201) " chi+_1 --> chi0_4 ch   sb ",xchiup(1,4),
-     .                                            brnupdb(1,4)
+      write(21,201) " chi+_1 --> chi0_1 ch   sb ",xchich(1,1),
+     .                                            brnchsb(1,1)
+      write(21,201) " chi+_1 --> chi0_2 ch   sb ",xchich(1,2),
+     .                                            brnchsb(1,2)
+      write(21,201) " chi+_1 --> chi0_3 ch   sb ",xchich(1,3),
+     .                                            brnchsb(1,3)
+      write(21,201) " chi+_1 --> chi0_4 ch   sb ",xchich(1,4),
+     .                                            brnchsb(1,4)
       write(21,201) " chi+_1 --> chi0_1 tp   bb ",xchitop(1,1),
      .                                            brntopbb(1,1)
       write(21,201) " chi+_1 --> chi0_2 tp   bb ",xchitop(1,2),
@@ -10381,14 +10388,14 @@ c ---------------- c
      .                                             brnupdb(2,3)
       write(21,201) " chi+_2 --> chi0_4 up   db  ",xchiup(2,4),
      .                                             brnupdb(2,4)
-      write(21,201) " chi+_2 --> chi0_1 ch   sb  ",xchiup(2,1),
-     .                                             brnupdb(2,1)
-      write(21,201) " chi+_2 --> chi0_2 ch   sb  ",xchiup(2,2),
-     .                                             brnupdb(2,2)
-      write(21,201) " chi+_2 --> chi0_3 ch   sb  ",xchiup(2,3),
-     .                                             brnupdb(2,3)
-      write(21,201) " chi+_2 --> chi0_4 ch   sb  ",xchiup(2,4),
-     .                                             brnupdb(2,4)
+      write(21,201) " chi+_2 --> chi0_1 ch   sb  ",xchich(2,1),
+     .                                             brnchsb(2,1)
+      write(21,201) " chi+_2 --> chi0_2 ch   sb  ",xchich(2,2),
+     .                                             brnchsb(2,2)
+      write(21,201) " chi+_2 --> chi0_3 ch   sb  ",xchich(2,3),
+     .                                             brnchsb(2,3)
+      write(21,201) " chi+_2 --> chi0_4 ch   sb  ",xchich(2,4),
+     .                                             brnchsb(2,4)
       write(21,201) " chi+_2 --> chi0_1 tp   bb  ",xchitop(2,1),
      .                                             brntopbb(2,1)
       write(21,201) " chi+_2 --> chi0_2 tp   bb  ",xchitop(2,2),
@@ -11805,6 +11812,9 @@ c      COMMON/SD_flagmixang/flagcu,flagcd,flagce
       COMMON/SD_break4/sd_msl,sd_mtaur,sd_msq,sd_mtr,sd_mbr
       COMMON/SD_break6/m_softval,m_softcom
       COMMON/SD_yukawa/yt,yb,ytau
+c maggie changed 27/9/2016
+      COMMON/SD_yukawasc/ysewsb,ycewsb,ymuewsb
+c end maggie changed 27/9/2016
       COMMON/SD_coupewsb/alsew,g2ew,g1ew
       COMMON/SD_runmcalc/rmtc,rmbc,rmtauc
       COMMON/SD_refscale/amuref
@@ -12411,6 +12421,12 @@ c -- (ytau = g*mtau/(sqrt(2)*mw*cos\beta) --
       ytewsb   = yuval(3,3)
       ybewsb   = ydval(3,3)
       ytauewsb = yeval(3,3)
+
+c maggie changed 27/9/2016
+      ycewsb  = yuval(2,2)
+      ysewsb  = ydval(2,2)
+      ymuewsb = yeval(2,2)
+c end maggie changed 27/9/2016
 
 c -- Here the running mt,mb,mtau masses are calculated from yt,yb, --- c
 c -- ytau given at the scale Q - needed for the QCD corrections    --- c
@@ -14875,6 +14891,12 @@ c -------------------------------------------------------------------- c
       dimension opl(2,2),opr(2,2),onl(4,4),onr(4,4)
       dimension ale(2,2),altau(2,2),alsne(2,2),blsne(2,2),alsnt(2,2),
      .          blsnt(2,2)
+c maggie changed 27/9/2016
+      dimension almu(2,2),amucoup(2,4),bmucoup(2,4),alsnmu(2,2),
+     .     blsnmu(2,2),anmuon(2,4),bnmuon(2,4)
+      dimension alsstr(2,2),aksstr(2,2),astr(2,4),bstr(2,4),
+     .     alschar(2,2),akschar(2,2),achar(2,4),bchar(2,4)
+c end maggie changed 27/9/2016
       dimension alsbo(2,2),aksbo(2,2),alsto(2,2),aksto(2,2)
       dimension alup(2,2),aldo(2,2)
       dimension ae(2,4),be(2,4),atau(2,4),btau(2,4),anu(2,4),bnu(2,4),
@@ -14932,6 +14954,15 @@ c ------ common blocks for the couplings needed for the widths ------- c
       COMMON/SD_coup20/gwtb,gwntau
       COMMON/SD_coup21/gtr,gtl,gbr,gbl,gur,gul,gdr,gdl
       COMMON/SD_yukawa/ytewsb,ybewsb,ytauewsb
+c maggie changed 27/9/2016
+      COMMON/SD_coup22/almu,amucoup,bmucoup,alsnmu,blsnmu,anmuon,
+     .     bnmuon,achmuon,vchmuon
+      COMMON/SD_coup23/alsstr,aksstr,astr,bstr,alschar,akschar,achar,
+     .     bchar,vchchar,achchar
+      COMMON/SUSYHITIN/flagshsin,amsin,amcin,ammuon,alphin,gamwin,
+     .                 gamzin,vusin,vcbin,rvubin
+      COMMON/SD_yukawasc/ysewsb,ycewsb,ymuewsb
+c end maggie changed 27/9/2016
 
 c ------------------------- the mixing angles ------------------------ c
 
@@ -14955,6 +14986,14 @@ c -- the Yukawa couplings at the scale of EWSB --
       ytc   = ytewsb/dsqrt(g2)
       ybc   = ybewsb/dsqrt(g2)
       ytauc = ytauewsb/dsqrt(g2)
+c maggie changed 27/9/2016
+      ymuc = ammuon/dsqrt(2.D0)/amw/dcos(bet)
+      ysc = amsin/dsqrt(2.D0)/amw/dcos(bet)
+      ycc = amcin/dsqrt(2.D0)/amw/dsin(bet)
+c      ymuc = ymuewsb/dsqrt(g2)
+c      ysc = ysewsb/dsqrt(g2)
+c      ycc = ycewsb/dsqrt(g2)
+c end maggie changed 27/9/2016
 
 c -------------------------------------------------------------------- c
 c           Higgs-neutralino_i-neutralino_j couplings
@@ -15073,6 +15112,19 @@ c -------------------------------------------------------------------- c
 
 c Feynman rule: ig*[ale(1/2,k)*P_R]
 
+c maggie changed 27/9/2016
+c -------------------------------------------------------------------- c
+c             the chargino_k-smuon-neutrino_mu couplings
+c -------------------------------------------------------------------- c
+
+      do k=1,2
+         almu(1,k) = -U(k,1)*ce+se*ymuc*U(k,2)
+         almu(2,k) = U(k,1)*se+ce*ymuc*U(k,2)
+      enddo
+
+c Feynman rule: ig*[almu(1/2,k)*P_R]
+c end maggie changed 27/9/2016
+
 c -------------------------------------------------------------------- c
 c               the chargino_k-stau-neutrino_tau couplings
 c -------------------------------------------------------------------- c
@@ -15097,6 +15149,21 @@ c -------------------------------------------------------------------- c
       enddo
 
 c Feynman rule: ig*[alsne(1/2,k)*P_R + blsne(1/2,k)*P_L]
+
+c maggie changed 27/9/2016
+c -------------------------------------------------------------------- c
+c             the chargino_k-sneutrino_muon1/2-muon couplings
+c -------------------------------------------------------------------- c
+
+      do k=1,2
+         alsnmu(1,k) = -v(k,1)
+         alsnmu(2,k) = 0.D0
+         blsnmu(1,k) = ymuc*u(k,2)
+         blsnmu(2,k) = 0.D0
+      end do
+
+c Feynman rule: ig*[alsnmu(1/2,k)*P_L + blsnmu(1/2,k)*P_R ]
+c end maggie changed 27/9/2016
 
 c -------------------------------------------------------------------- c
 c             the chargino_k-sneutrino_tau1/2-tau couplings
@@ -15139,6 +15206,36 @@ c -------------------------------------------------------------------- c
 c Feynman rule: ig*[alsbo(1/2,k)*P_R+aksbo(1/2,k)*P_L]
 c incoming chargino+, outgoing top-quark
 
+c maggie changed 27/9/2016
+c -------------------------------------------------------------------- c
+c               the chargino_k-scharm1/2-strange couplings
+c -------------------------------------------------------------------- c
+
+      do k=1,2
+         alschar(1,k) = -cu*V(k,1)+su*Ycc*V(k,2)
+         alschar(2,k) =  su*V(k,1)+cu*Ycc*V(k,2)
+         akschar(1,k) =  cu*Ysc*U(k,2)
+         akschar(2,k) = -su*Ysc*U(k,2)
+      enddo
+
+c Feynman rule: ig*[alschar(1/2,k)*P_R+akschar(1/2,k)*P_L]
+c outgoing chargino+, outgoing strange-quark
+
+c -------------------------------------------------------------------- c
+c               the chargino_k-sstrange1/2-charm couplings
+c -------------------------------------------------------------------- c
+
+      do k=1,2
+         alsstr(1,k) = -cd*U(k,1)+sd*Ysc*U(k,2)
+         alsstr(2,k) =  sd*U(k,1)+cd*Ysc*U(k,2)
+         aksstr(1,k) =  cd*Ycc*V(k,2)
+         aksstr(2,k) = -sd*Ycc*V(k,2)
+      enddo
+
+c Feynman rule: ig*[alsstr(1/2,k)*P_R+aksstr(1/2,k)*P_L]
+c incoming chargino+, outgoing charm-quark
+c end maggie changed 27/9/2016
+
 c -------------------------------------------------------------------- c
 c               the chargino_k-sup1/2-down couplings 
 c -------------------------------------------------------------------- c
@@ -15176,6 +15273,25 @@ c -------------------------------------------------------------------- c
 
 c Feynman rule: ig*[ ae(1/2,k)*P_R + be(1/2,k)*P_L ]
 
+c maggie changed 27/9/2016
+c -------------------------------------------------------------------- c
+c                   neutralino_k-smuon-muon couplings
+c -------------------------------------------------------------------- c
+
+      do k=1,4
+         amucoup(1,k) = ce*dsqrt(2.D0)*(zp(k,1)*sw+(0.5D0-sw**2)*
+     .               zp(k,2)/cw)-se*ymuc*z(k,3)
+         amucoup(2,k) = -se*dsqrt(2.D0)*(zp(k,1)*sw+(0.5D0-sw**2)*
+     .               zp(k,2)/cw)-ce*ymuc*z(k,3)
+         bmucoup(1,k) = se*dsqrt(2.D0)*sw*(zp(k,2)*tw-zp(k,1))
+     .               -ce*ymuc*z(k,3)
+         bmucoup(2,k) = ce*dsqrt(2.D0)*sw*(zp(k,2)*tw-zp(k,1))
+     .               +se*ymuc*z(k,3)	
+      enddo
+
+c Feynman rule: ig*[ amucoup(1/2,k)*P_R + bmucoup(1/2,k)*P_L ] 
+c end maggie changed 27/9/2016
+
 c -------------------------------------------------------------------- c
 c                   neutralino_k-stau-tau couplings
 c -------------------------------------------------------------------- c
@@ -15205,6 +15321,21 @@ c -------------------------------------------------------------------- c
       enddo
 
 c Feynman rule: ig*[ anu(2,k)*P_R + bnu(2,k)*P_L ]
+
+c maggie changed 27/9/2016
+c -------------------------------------------------------------------- c
+c          neutralino-sneutrinomuon1/2-neutrinomu couplings
+c -------------------------------------------------------------------- c
+
+      do k=1,4
+         anmuon(1,k) = -zp(k,2)/dsqrt(2.D0)/cw
+         anmuon(2,k) = 0.D0
+         bnmuon(1,k) = 0.D0
+         bnmuon(2,k) = 0.D0	
+      enddo
+
+c Feynman rule: ig*[ anmuon(1/2,k)*P_R + bnmuon(1/2,k)*P_L ]
+c end maggie changed 27/9/2016
 
 c -------------------------------------------------------------------- c
 c          neutralino-sneutrinotau1/2-neutrinotau couplings
@@ -15284,6 +15415,42 @@ c -------------------------------------------------------------------- c
       enddo
 
 c Feynman rule: ig*[ ado(1/2,k)*P_R + bdo(1/2,k)*P_L ]
+
+c maggie changed 27/9/2016
+c -------------------------------------------------------------------- c
+c                the neutralino_k-scharm1/2-charm couplings
+c -------------------------------------------------------------------- c
+
+      do k=1,4
+         achar(1,k) = cu*dsqrt(2.D0)*(-2.D0*zp(k,1)*sw/3.D0
+     .               +(-0.5D0+2.D0/3.D0*sw**2)*zp(k,2)/cw)-su*ycc*z(k,4)
+         achar(2,k) = -su*dsqrt(2.D0)*(-2.D0*zp(k,1)*sw/3.D0+(-0.5D0
+     .               +2.D0/3.D0*sw**2)*zp(k,2)/cw)-cu*ycc*z(k,4)
+         bchar(1,k) = -2.D0*su*dsqrt(2.D0)*sw*(zp(k,2)*tw-zp(k,1))/3.D0
+     .               -cu*ycc*z(k,4)
+         bchar(2,k) = -2.D0*cu*dsqrt(2.D0)*sw*(zp(k,2)*tw-zp(k,1))/3.D0
+     .               +su*ycc*z(k,4)	
+      enddo
+
+c Feynman rule: ig*[ achar(1/2,k)*P_R + bchar(1/2,k)*P_L ]
+
+c -------------------------------------------------------------------- c
+c              the neutralino_k-sstrange1/2-strange couplings
+c -------------------------------------------------------------------- c
+
+      do k=1,4
+         astr(1,k) = cd*dsqrt(2.D0)*(zp(k,1)*sw/3.D0+(0.5D0
+     .              -1.d0/3.D0*sw**2)*zp(k,2)/cw)-sd*ysc*z(k,3)
+         astr(2,k) = -sd*dsqrt(2.D0)*(zp(k,1)*sw/3.D0+(0.5D0
+     .              -1.D0/3.D0*sw**2)*zp(k,2)/cw)-cd*ysc*z(k,3)
+         bstr(1,k) = sd*dsqrt(2.D0)*sw*(zp(k,2)*tw-zp(k,1))/3.D0
+     .              -cd*ysc*z(k,3)
+         bstr(2,k) = cd*dsqrt(2.D0)*sw*(zp(k,2)*tw-zp(k,1))/3.D0
+     .              +sd*ysc*z(k,3)	
+      enddo
+
+c Feynman rule: ig*[ astr(1/2,k)*P_R + bstr(1/2,k)*P_L ] 
+c end maggie changed 27/9/2016
 
 c -------------------------------------------------------------------- c
 c                   the Higgs-stop1-stop2 couplings
@@ -15424,6 +15591,14 @@ c up-type out, down-type in
 
       vchtau = -ytauc/2.D0*dsin(bet)
       achtau = -vchtau
+
+c maggie changed 27/9/2016
+      vchmuon = -ymuc/2.D0*dsin(bet)
+      achmuon = -vchmuon
+
+      vchchar = -ysc/2.D0*dsin(bet)-ycc/2.D0*dcos(bet)
+      achchar = ysc/2.D0*dsin(bet)-ycc/2.D0*dcos(bet)
+c end maggie changed 27/9/2016
 
       vchtop = -ybc/2.D0*dsin(bet)-ytc/2.D0*dcos(bet)
       achtop = ybc/2.D0*dsin(bet)-ytc/2.D0*dcos(bet)
@@ -16271,6 +16446,46 @@ c up out, down in
       chtbrunl = scalt*cb
 
       end 
+
+c maggie changed 27/92016
+c -------------------------------------------------------------------- c
+c                    The h/H/A-charm-charmbar couplings                c
+c -------------------------------------------------------------------- c
+
+      subroutine SD_phicharchar(hlccr,hhccr,haccr)
+
+      implicit double precision (a-h,m,o-z)
+
+      COMMON/SD_mixang/a,tanbeta
+      COMMON/SD_scalasc/scals,scalc
+
+      bet=datan(tanbeta)
+
+      hlccr = scalc*dcos(a)
+      hhccr = scalc*dsin(a)
+      haccr = -scalc*dcos(bet)
+
+      end
+
+c -------------------------------------------------------------------- c
+c                 The h/H/A-strange-strangebar couplings               c
+c -------------------------------------------------------------------- c
+
+      subroutine SD_phistrstr(hlssr,hhssr,hassr)
+
+      implicit double precision (a-h,o-z)
+
+      COMMON/SD_mixang/a,tanbeta
+      COMMON/SD_scalasc/scals,scalc
+
+      bet=datan(tanbeta)
+
+      hlssr = scals*(-dsin(a))
+      hhssr = scals*dcos(a)
+      hassr = -scals*dsin(bet)
+
+      end
+c end maggie changed 27/9/2016
 
 c -------------------------------------------------------------------- c
 c                    The h/H/A-top-topbar couplings                    c
@@ -17994,7 +18209,8 @@ c ==================================================================== c
       external SD_ay,SD_by,SD_ax,SD_bx
       external SD_chipmtau,SD_chipmel,SD_chipmup,SD_chipmtop,SD_charel,
      .         SD_chartau,SD_charnue,SD_charnutau,SD_charup,SD_chardow,
-     .         SD_charbot,SD_chartop,SD_gluiupdb,SD_gluitopbb
+     .         SD_charbot,SD_chartop,SD_gluiupdb,SD_gluitopbb,
+     .         SD_chipmmu,SD_chipmchar
 
       COMMON/SD_nx1/nx1t,ny1t
       COMMON/SD_massgino/amneut,xmneut,amchar,xmchar
@@ -18002,6 +18218,10 @@ c ==================================================================== c
       COMMON/SD_fermion/amt,amb,amtau
       COMMON/SD_param/sdgf,amz,amw,pi,g2
       COMMON/SD_indices/ni,nj
+c maggie changed 27/9/2016
+      COMMON/SUSYHITIN/flagshsin,amsin,amcin,ammuonin,alphin,gamwin,
+     .                 gamzin,vusin,vcbin,rvubin
+c end maggie changed 27/9/2016
 
 c -------------------------------------------------------------------- c
 c ------------------------ neutralino tau nutau ---------------------- c
@@ -18047,10 +18267,30 @@ c -------------------------------------------------------------------- c
 c ----------------------- neutralino mu+ nu_mu ----------------------- c
 c -------------------------------------------------------------------- c
 
-      do i=1,4,1
-         xchimu(1,i) = xchiel(1,i)
-         xchimu(2,i) = xchiel(2,i)
+c maggie changed 27/9/2016
+c      do i=1,4,1
+c         xchimu(1,i) = xchiel(1,i)
+c         xchimu(2,i) = xchiel(2,i)
+c      end do
+
+      ammuon = ammuonin
+      do ni = 1,2,1
+         do nj = 1,4,1
+            xmu1=0.D0
+            xmu2=ammuon**2/amchar(ni)**2
+            xmu3=amneut(nj)**2/amchar(ni)**2
+
+            if(amchar(ni).gt.(ammuon+amneut(nj))) then
+               call SD_integ2(SD_chipmmu,SD_ax,SD_bx,SD_ay,SD_by,xmu1,
+     .                     xmu2,xmu3,nx1t,ny1t,sum)
+               xchimu(ni,nj) = sum/64.D0/(2.D0*pi)**3*amchar(ni)
+            else
+               xchimu(ni,nj) = 0.D0
+            endif
+         end do
       end do
+
+c end maggie changed 27/9/2016
 
 c -------------------------------------------------------------------- c
 c ----------------------- neutralino up downbar ---------------------- c
@@ -18076,10 +18316,28 @@ c -------------------------------------------------------------------- c
 c -------------------- neutralino charm strangebar ------------------- c
 c -------------------------------------------------------------------- c
 
-      do i=1,4,1
-         xchich(1,i) = xchiup(1,i)
-         xchich(2,i) = xchiup(2,i)
+c maggie changed 27/9/2016
+c      do i=1,4,1
+c         xchich(1,i) = xchiup(1,i)
+c         xchich(2,i) = xchiup(2,i)
+c      end do
+
+      do ni = 1,2,1
+         do nj = 1,4,1
+            xmu1=amcin**2/amchar(ni)**2
+            xmu2=amsin**2/amchar(ni)**2
+            xmu3=amneut(nj)**2/amchar(ni)**2
+
+            if(amchar(ni).gt.(amneut(nj)+amcin+amsin)) then
+               call SD_integ2(SD_chipmchar,SD_ax,SD_bx,SD_ay,SD_by,xmu1,
+     .                     xmu2,xmu3,nx1t,ny1t,sum)
+               xchich(ni,nj) = sum/64.D0/(2.D0*pi)**3*amchar(ni)*3.D0
+            else
+               xchich(ni,nj) = 0.D0
+            endif
+         end do
       end do
+c end maggie changed 27/9/2016
 
 c -------------------------------------------------------------------- c
 c --------------------- neutralino top bottombar --------------------- c
@@ -18673,6 +18931,395 @@ c -------------------------------------------------------------------- c
 
       end
 
+c maggie changed 27/9/2016
+c ==================================================================== c
+c ======================== neutralino mu+ numu ======================= c
+c ==================================================================== c
+
+      double precision function SD_chipmmu(x1,x2)
+
+      implicit double precision (a-h,m,o-z)
+      integer ni,nj
+      
+      dimension amneut(4),xmneut(4),amchar(2),xmchar(2),sgn(2)
+      dimension dsmu(2),dsmub(2)
+      dimension ae(2,4),be(2,4),ato(2,4),bto(2,4),anu(2,4),bnu(2,4),
+     .          antau(2,4),bntau(2,4)
+      dimension ale(2,2),alto(2,2),alsne(2,2),blsne(2,2),alsnt(2,2),
+     .          blsnt(2,2),blto(2,2)
+      dimension ql(4,2),qr(4,2),or(4,2),ol(4,2)
+      dimension almu(2,2),blmu(2,2),amucoup(2,4),bmucoup(2,4),
+     .     alsnmu(2,2),blsnmu(2,2),anmuon(2,4),bnmuon(2,4)
+
+      COMMON/SD_indices/ni,nj
+      COMMON/SD_param/gf,amz,amw,pi,g2
+      COMMON/SD_massgino/amneut,xmneut,amchar,xmchar
+      COMMON/SD_hmass/ama,aml,amh,amch,amar
+      COMMON/SD_fermion/amt,amb,amtau
+      COMMON/SD_sfermionetau/ase1,ase2,astau1,astau2
+      COMMON/SD_sneutrino/asne1,asne2,asntau1,asntau2
+      COMMON/SD_coup5/ale,alto,alsne,blsne,alsnt,blsnt
+      COMMON/SD_coup8/ae,be,ato,bto,anu,bnu,antau,bntau    
+      COMMON/SD_coup3/ql,qr,ol,or
+      COMMON/SD_coup15/achtop,vchtop,achtau,vchtau
+      COMMON/SD_coup18/awff,vwff
+      COMMON/SD_mwmzpole/amwp,amzp
+      COMMON/SD_coup22/almu,amucoup,bmucoup,alsnmu,blsnmu,anmuon,
+     .     bnmuon,achmuon,vchmuon
+      COMMON/SUSYHITIN/flagshsin,amsin,amcin,ammuon,alphin,gamwin,
+     .                 gamzin,vusin,vcbin,rvubin
+
+c --- several definitions
+
+      do i=1,2,1
+         sgn(i) = 1.D0
+         if(xmchar(i).ge.0.D0) then
+            sgn(i) = 1.D0
+         elseif(xmchar(i).lt.0.D0) then
+            sgn(i) = -1.D0
+         endif
+      enddo
+
+c --- the neutrino mass ---
+      amne = 0.D0
+
+      xmusmu1 = ase1**2/amchar(ni)**2
+      xmusmu2 = ase2**2/amchar(ni)**2
+      xmusnmu1 = asne1**2/amchar(ni)**2
+      xmusnmu2 = asne2**2/amchar(ni)**2
+      xmumuon  = ammuon**2/amchar(ni)**2
+      xmun     = amne**2/amchar(ni)**2
+
+      xmuneut1 = amneut(nj)**2/amchar(ni)**2
+
+      x3 = 2.D0-x1-x2
+      y3 = 1.D0+xmuneut1-x3
+
+      do i=1,2,1
+         blmu(1,i)   = 0.D0
+         blmu(2,i)   = 0.D0
+      end do
+
+      uh = 1.D0-x1+xmun
+      th = 1.D0-x2+xmumuon
+
+c -------------------------------------------------------------------- c
+c                         smuon/sneutrino_muon exchange 
+c -------------------------------------------------------------------- c
+
+      dsmu(1)  = 1-x1-xmusmu1+xmun
+      dsmu(2)  = 1-x1-xmusmu2+xmun
+      dsmub(1) = 1-x2-xmusnmu1+xmumuon
+      dsmub(2) = 1-x2-xmusnmu2+xmumuon
+
+      chipmsmu=0.D0
+
+c ---- final state masses included ----
+
+      if((amneut(nj)+ammuon).le.amchar(ni)) then
+         do i=1,2
+            do k=1,2
+               chipmsmu=chipmsmu
+     .          +g2**2/dsmu(k)/dsmu(i)*(
+     .           (almu(i,ni)*blmu(k,ni)+blmu(i,ni)*almu(k,ni))*
+     .           (amucoup(i,nj)*bmucoup(k,nj)
+     .              +bmucoup(i,nj)*amucoup(k,nj))*
+     .           xmneut(nj)/xmchar(ni)*dsqrt(xmun*xmumuon)*(-4.D0)+
+     .           (almu(i,ni)*almu(k,ni)+blmu(i,ni)*blmu(k,ni))*
+     .           (amucoup(i,nj)*bmucoup(k,nj)
+     .              +bmucoup(i,nj)*amucoup(k,nj))*
+     .           xmneut(nj)/xmchar(ni)*dsqrt(xmumuon)*sgn(ni)*2.D0*
+     .           (uh-xmun-1.D0)+
+     .           (almu(i,ni)*blmu(k,ni)+blmu(i,ni)*almu(k,ni))*
+     .           (amucoup(i,nj)*amucoup(k,nj)
+     .              +bmucoup(i,nj)*bmucoup(k,nj))*
+     .           dsqrt(xmun)*sgn(ni)*2.D0*(uh-xmumuon-xmuneut1)+
+     .           (almu(i,ni)*almu(k,ni)+blmu(i,ni)*blmu(k,ni))*
+     .           (amucoup(i,nj)*amucoup(k,nj)
+     .              +bmucoup(i,nj)*bmucoup(k,nj))*
+     .           (-uh**2+uh*(1.D0+xmuneut1+xmun+xmumuon)-
+     .           (xmuneut1+xmumuon)*(1.D0+xmun)))
+     .           +g2**2/dsmub(k)/dsmub(i)*(
+     .           (alsnmu(i,ni)*blsnmu(k,ni)+blsnmu(i,ni)*alsnmu(k,ni))*
+     .           (anmuon(i,nj)*bnmuon(k,nj)+bnmuon(i,nj)*anmuon(k,nj))*
+     .           xmneut(nj)/xmchar(ni)*dsqrt(xmumuon*xmun)*(-4.D0)+
+     .           (alsnmu(i,ni)*alsnmu(k,ni)+blsnmu(i,ni)*blsnmu(k,ni))*
+     .           (anmuon(i,nj)*bnmuon(k,nj)+bnmuon(i,nj)*anmuon(k,nj))*
+     .           xmneut(nj)/xmchar(ni)*dsqrt(xmun)*sgn(ni)*2.D0*
+     .           (th-xmumuon-1.D0)+
+     .           (alsnmu(i,ni)*blsnmu(k,ni)+blsnmu(i,ni)*alsnmu(k,ni))*
+     .           (anmuon(i,nj)*anmuon(k,nj)+bnmuon(i,nj)*bnmuon(k,nj))*
+     .           dsqrt(xmumuon)*sgn(ni)*2.D0*(th-xmun-xmuneut1)+
+     .           (alsnmu(i,ni)*alsnmu(k,ni)+blsnmu(i,ni)*blsnmu(k,ni))*
+     .           (anmuon(i,nj)*anmuon(k,nj)+bnmuon(i,nj)*bnmuon(k,nj))*
+     .           (-th**2+th*(1.D0+xmuneut1+xmun+xmumuon)-
+     .           (xmuneut1+xmun)*(1.D0+xmumuon)))
+     .           -2.D0*g2**2/dsmu(k)/dsmub(i)*(
+     .           (blsnmu(i,ni)*blmu(k,ni)*anmuon(i,nj)*amucoup(k,nj)
+     .           +alsnmu(i,ni)*almu(k,ni)*bnmuon(i,nj)*bmucoup(k,nj))*
+     .           xmneut(nj)/xmchar(ni)*dsqrt(xmun*xmumuon)*(-2.D0)+
+     .           (alsnmu(i,ni)*blmu(k,ni)*anmuon(i,nj)*amucoup(k,nj)
+     .           +blsnmu(i,ni)*almu(k,ni)*bnmuon(i,nj)*bmucoup(k,nj))*
+     .           xmneut(nj)/xmchar(ni)*dsqrt(xmun)*sgn(ni)*
+     .           (th-xmumuon-1.D0)+
+     .           (blsnmu(i,ni)*almu(k,ni)*anmuon(i,nj)*amucoup(k,nj)
+     .           +alsnmu(i,ni)*blmu(k,ni)*bnmuon(i,nj)*bmucoup(k,nj))*
+     .           xmneut(nj)/xmchar(ni)*dsqrt(xmumuon)*sgn(ni)*
+     .           (uh-xmun-1.D0)+
+     .           (alsnmu(i,ni)*almu(k,ni)*anmuon(i,nj)*amucoup(k,nj)
+     .           +blsnmu(i,ni)*blmu(k,ni)*bnmuon(i,nj)*bmucoup(k,nj))*
+     .           xmneut(nj)/xmchar(ni)*(uh+th-xmuneut1-1.D0)+
+     .           (almu(k,ni)*blsnmu(i,ni)*amucoup(k,nj)*bnmuon(i,nj)
+     .           +blmu(k,ni)*alsnmu(i,ni)*bmucoup(k,nj)*anmuon(i,nj))*
+     .           dsqrt(xmun*xmumuon)*(uh+th-xmun-xmumuon)+
+     .           (almu(k,ni)*alsnmu(i,ni)*amucoup(k,nj)*bnmuon(i,nj)
+     .           +blmu(k,ni)*blsnmu(i,ni)*bmucoup(k,nj)*anmuon(i,nj))*
+     .           dsqrt(xmun)*sgn(ni)*(uh-xmumuon-xmuneut1)+
+     .           (blmu(k,ni)*blsnmu(i,ni)*amucoup(k,nj)*bnmuon(i,nj)
+     .           +almu(k,ni)*alsnmu(i,ni)*bmucoup(k,nj)*anmuon(i,nj))*
+     .           dsqrt(xmumuon)*sgn(ni)*(th-xmun-xmuneut1)+
+     .           (blmu(k,ni)*alsnmu(i,ni)*amucoup(k,nj)*bnmuon(i,nj)
+     .           +almu(k,ni)*blsnmu(i,ni)*bmucoup(k,nj)*anmuon(i,nj))*
+     .           (uh*th-xmun*xmumuon-xmuneut1))
+            enddo
+         enddo         
+      else
+         chipmsmu=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                              W exchange
+c -------------------------------------------------------------------- c
+
+      xmuw = amwp**2/amchar(ni)**2
+      dw   = y3-xmuw
+
+      chipmw = 0.D0
+
+c ---- final state masses included ----
+
+      rh = xmuneut1+xmun+xmumuon-th-uh+1.D0
+      sh = (xmuneut1-th-uh+1.D0)*(xmun+xmumuon)+4.D0*xmun*xmumuon
+      rk = xmuneut1*(xmun+xmumuon-th-uh+4.D0)+xmun+xmumuon-uh-th
+
+      if((amneut(nj)+ammuon).le.amchar(ni)) then
+         chipmw=chipmw+g2**2/dw**2*(
+     .    ol(nj,ni)*or(nj,ni)*2.D0*vwff**2*
+     .    xmneut(nj)/xmchar(ni)*(8.D0/xmuw**2*rh*sh-16.D0/xmuw*sh
+     .    -16.D0*(xmuneut1-uh-th+1.D0))
+     .    +(ol(nj,ni)**2+or(nj,ni)**2)*2.D0*vwff**2*
+     .    (-2.D0/xmuw**2*rk*sh+8.D0/xmuw*(xmuneut1*(2.D0*xmun*xmumuon+
+     .    2.D0*(xmun+xmumuon)-xmun*th-xmumuon*uh)+2.D0*xmun*xmumuon
+     .    -xmun*uh-xmumuon*th)+4.D0*(xmuneut1*(uh+th-xmun-xmumuon-2.D0)+
+     .    (xmun+xmumuon)*(uh+th-1.D0)-2.D0*xmun*xmumuon+th*(-th+1.D0)+
+     .    uh*(-uh+1.D0)))+
+     .    (ol(nj,ni)**2-or(nj,ni)**2)*vwff**2*8.D0*(
+     .    xmuneut1*(xmun-xmumuon+th-uh)+(xmun+xmumuon)*(th-uh)-xmun+
+     .    xmumuon+th*(-th+1.D0)+uh*(uh-1.D0))
+     .    )
+      else
+         chipmw=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                              H+ exchange
+c -------------------------------------------------------------------- c
+
+      xmuch = amch**2/amchar(ni)**2
+      dh    = y3-xmuch
+
+c ---- final state masses included ----
+
+      if((amneut(nj)+ammuon).le.amchar(ni)) then
+         chipmh=g2**2/dh**2*(
+     .    ql(nj,ni)*qr(nj,ni)*(
+     .    (vchmuon**2-achmuon**2)*
+     .    xmneut(nj)/xmchar(ni)*dsqrt(xmun*xmumuon)*(-16.D0)+
+     .    (vchmuon**2+achmuon**2)*
+     .    xmneut(nj)/xmchar(ni)*8.D0*(1.D0+xmuneut1-th-uh) ) 
+     .    +(ql(nj,ni)**2+qr(nj,ni)**2)*(
+     .    (vchmuon**2-achmuon**2)*
+     .    dsqrt(xmun*xmumuon)*4.D0*(xmun+xmumuon-th-uh)+
+     .    (vchmuon**2+achmuon**2)*
+     .    2.D0*(xmuneut1*(uh+th-xmun-xmumuon)+(xmun+xmumuon)*
+     .    (uh+th-1.D0)-(th+uh)**2+uh+th)) )
+      else
+         chipmh=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                    W+ smuon/sneutrino_mu interference
+c -------------------------------------------------------------------- c
+
+      chipmwsmuon=0.D0
+
+c ---- final state masses included ----
+
+      if((amneut(nj)+ammuon).le.amchar(ni)) then
+         do i=1,2
+            chipmwsmuon=chipmwsmuon
+     .       +g2**2/dsmu(i)/dw*2.D0*vwff*(
+     .      blmu(i,ni)*bmucoup(i,nj)*or(nj,ni)*
+     .      xmneut(nj)/xmchar(ni)*dsqrt(xmun*xmumuon)*(
+     .      1/xmuw*(-4.D0)*(1.D0+xmuneut1+xmun+xmumuon-uh-th)+16.D0) +
+     .      almu(i,ni)*amucoup(i,nj)*ol(nj,ni)*
+     .      xmneut(nj)/xmchar(ni)*(2.D0/xmuw*((xmuneut1+1.D0-uh-th)*
+     .      (xmun+xmumuon)+4.D0*xmun*xmumuon)+4.D0*(1.D0+xmuneut1-
+     .      uh-th)) +
+     .      blmu(i,ni)*bmucoup(i,nj)*ol(nj,ni)*dsqrt(xmun*xmumuon)*
+     .      (2.D0/xmuw*(xmuneut1*(xmun+xmumuon-th-uh+4.D0)+xmun+xmumuon
+     .      -th-uh)+4.D0*(xmun+xmumuon-th-uh)) +
+     .      almu(i,ni)*amucoup(i,nj)*or(nj,ni)*
+     .      (2.D0/xmuw*(xmuneut1*(-2.D0*xmun*xmumuon+xmun*th
+     .      -2.D0*xmun+xmumuon*uh-2.D0*xmumuon)+xmun*(-2.D0*xmumuon+uh)
+     .      +xmumuon*th)+4.D0*(xmuneut1*(xmun-uh+1.D0)+xmun*(xmumuon-uh)
+     .      +xmumuon*(1.D0-uh)+uh**2-uh)) + 
+     .      amucoup(i,nj)*blmu(i,ni)*ol(nj,ni)*
+     .      xmneut(nj)/xmchar(ni)*dsqrt(xmun)*sgn(ni)*(2.D0/xmuw*
+     .      (xmuneut1*(1.D0+xmun-uh)+1.D0+xmun*(xmumuon-uh)+xmumuon*
+     .      (xmumuon-th-2.D0*uh+3.D0)+th*(uh-1.D0)+uh*(uh-2.D0))+
+     .      4.D0*(1.D0+xmumuon-th)) +
+     .      bmucoup(i,nj)*almu(i,ni)*or(nj,ni)*
+     .      xmneut(nj)/xmchar(ni)*dsqrt(xmumuon)*sgn(ni)*
+     .      (2.D0/xmuw*(xmuneut1*(-1.D0-xmun+uh)-1.D0+xmumuon*(-1.D0+uh)
+     .      +uh*(2.D0-th-uh)+th+xmun*(-xmun-xmumuon+th+2.D0*uh-2.D0))+
+     .      8.D0*(1.D0+xmun-uh)) +
+     .      blmu(i,ni)*amucoup(i,nj)*or(nj,ni)*
+     .      dsqrt(xmun)*sgn(ni)*((-2.D0)/xmuw*(xmuneut1-uh+xmumuon)*
+     .      (xmuneut1+xmun+xmumuon-th-uh+1.D0)+8.D0*(xmuneut1+xmumuon
+     .      -uh)) +
+     .      almu(i,ni)*bmucoup(i,nj)*ol(nj,ni)*
+     .      dsqrt(xmumuon)*sgn(ni)*(2.D0/xmuw*(xmuneut1*(xmuneut1+
+     .      3.D0*xmun-th-2.D0*uh+1.D0)+xmun*(xmun+xmumuon-th-2.D0*uh)+
+     .      xmumuon*(1.D0-uh)+uh*th+uh**2-uh)+4.D0*(xmuneut1+xmun-th)) )
+     .      -g2**2/dsmub(i)/dw*2.D0*vwff*(
+     .      blsnmu(i,ni)*bnmuon(i,nj)*ol(nj,ni)*
+     .      xmneut(nj)/xmchar(ni)*dsqrt(xmun*xmumuon)*(
+     .      1/xmuw*(-4.D0)*(1.D0+xmuneut1+xmun+xmumuon-uh-th)+16.D0) +
+     .      alsnmu(i,ni)*anmuon(i,nj)*or(nj,ni)*
+     .      xmneut(nj)/xmchar(ni)*(2.D0/xmuw*((xmun+xmumuon)*(xmuneut1
+     .      +1.D0-th-uh)+4.D0*xmun*xmumuon)+4.D0*(1.D0+xmuneut1-uh
+     .      -th)) +
+     .      blsnmu(i,ni)*bnmuon(i,nj)*or(nj,ni)*dsqrt(xmun*xmumuon)*
+     .      (2.D0/xmuw*(xmuneut1*(xmun+xmumuon-th-uh+4.D0)+xmun+xmumuon
+     .      -th-uh)+4.D0*(xmun+xmumuon-th-uh)) +
+     .      alsnmu(i,ni)*anmuon(i,nj)*ol(nj,ni)*
+     .      (2.D0/xmuw*(xmuneut1*(-2.D0*xmun*xmumuon+xmun*th-2.D0*xmun
+     .      +xmumuon*uh-2.D0*xmumuon)+xmun*(-2.D0*xmumuon+uh)+
+     .           xmumuon*th)
+     .      +4.D0*(xmuneut1*(xmumuon-th+1.D0)+xmun*(xmumuon-th+1.D0)+
+     .      th*(-xmumuon+th-1.D0))) + 
+     .      anmuon(i,nj)*blsnmu(i,ni)*or(nj,ni)*
+     .      xmneut(nj)/xmchar(ni)*dsqrt(xmumuon)*sgn(ni)*
+     .      (2.D0/xmuw*(xmuneut1*(1.D0+xmumuon-th)+1.D0+xmun*(xmun+
+     .      xmumuon-2.D0*th-uh+3.D0)+th*(th-xmumuon+uh-2.D0)-uh)
+     .      +4.D0*(1.D0+xmun-uh)) +
+     .      alsnmu(i,ni)*bnmuon(i,nj)*ol(nj,ni)*
+     .      xmneut(nj)/xmchar(ni)*dsqrt(xmun)*sgn(ni)*
+     .      (2.D0/xmuw*(xmuneut1*(-1.D0-xmumuon+th)-1.D0+xmun*(-xmumuon+
+     .      th-1.D0)+xmumuon*(2.D0*th+uh-2.D0-xmumuon)-th*(th+uh)+2.D0*
+     .      th+uh)+8.D0*(1.D0+xmumuon-th)) +
+     .      blsnmu(i,ni)*anmuon(i,nj)*ol(nj,ni)*dsqrt(xmumuon)*sgn(ni)*(
+     .      2.D0/xmuw*(xmuneut1*(-xmuneut1-2.D0*xmun-xmumuon+2.D0*th+uh
+     .      -1.D0)+xmun*(-xmun-xmumuon+2.D0*th+uh-1.D0)+th*(xmumuon-th-
+     .      uh+1))+8.D0*(xmuneut1+xmun-th)) +
+     .      alsnmu(i,ni)*bnmuon(i,nj)*or(nj,ni)*dsqrt(xmun)*sgn(ni)*(
+     .      2.D0/xmuw*(xmuneut1*(xmuneut1+3.D0*xmumuon-uh-2.D0*th+1.D0)
+     .      +xmun*(xmumuon-th+1.D0)+xmumuon*(xmumuon-2.D0*th-uh)+uh*th+
+     .      th**2-th)+4.D0*(xmuneut1+xmumuon-uh)) )
+         enddo
+      else
+         chipmwsmuon=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                     H+ smuon/sneutrino_mu interference
+c -------------------------------------------------------------------- c
+	
+      chipmhsmuon = 0.D0
+
+c ---- final state masses included ----
+
+      if((amneut(nj)+ammuon).le.amchar(ni)) then
+         do i=1,2
+            chipmhsmuon=chipmhsmuon
+     .       -g2**2/dh/dsmu(i)*2.D0*vchmuon*(
+     .       bmucoup(i,nj)*blmu(i,ni)*qr(nj,ni)*(-2.D0)*
+     .       dsqrt(xmun)*sgn(ni)*(xmuneut1+xmumuon-uh) +
+     .       amucoup(i,nj)*almu(i,ni)*ql(nj,ni)*2.D0*
+     .       dsqrt(xmumuon)*sgn(ni)*(xmuneut1+xmun-th) +
+     .       bmucoup(i,nj)*blmu(i,ni)*ql(nj,ni)*2.D0*
+     .       xmneut(nj)/xmchar(ni)*dsqrt(xmun)*sgn(ni)*
+     .       (1.D0+xmumuon-th) +
+     .       amucoup(i,nj)*almu(i,ni)*qr(nj,ni)*(-2.D0)*
+     .       xmneut(nj)/xmchar(ni)*dsqrt(xmumuon)*sgn(ni)*
+     .       (1.D0+xmun-uh) +
+     .       bmucoup(i,nj)*almu(i,ni)*ql(nj,ni)*2.D0*
+     .       xmneut(nj)/xmchar(ni)*(1.D0+xmuneut1-uh-th) +
+     .       amucoup(i,nj)*blmu(i,ni)*qr(nj,ni)*(-4.D0)*
+     .       xmneut(nj)/xmchar(ni)*dsqrt(xmun*xmumuon) +
+     .       amucoup(i,nj)*blmu(i,ni)*ql(nj,ni)*2.D0*
+     .       dsqrt(xmun*xmumuon)*(xmun+xmumuon-th-uh) +
+     .       almu(i,ni)*bmucoup(i,nj)*qr(nj,ni)*2.D0*
+     .       (-uh**2-uh*th+uh*(1.D0+xmun+xmumuon+xmuneut1)-xmumuon-
+     .       xmuneut1*xmun) ) 
+     .       +2.D0*g2**2/dh/dsmub(i)*2.D0*vchmuon*(
+     .       bnmuon(i,nj)*blsnmu(i,ni)*ql(nj,ni)*
+     .       dsqrt(xmun)*sgn(ni)*(uh-xmuneut1-xmumuon) +
+     .       anmuon(i,nj)*alsnmu(i,ni)*qr(nj,ni)*
+     .       dsqrt(xmumuon)*sgn(ni)*(-th+xmun+xmuneut1) +
+     .       bnmuon(i,nj)*blsnmu(i,ni)*qr(nj,ni)*
+     .       dsqrt(xmun)*sgn(ni)*xmneut(nj)/xmchar(ni)*
+     .       (-th+1.D0+xmumuon) +
+     .       anmuon(i,nj)*alsnmu(i,ni)*ql(nj,ni)*
+     .       dsqrt(xmumuon)*sgn(ni)*xmneut(nj)/xmchar(ni)*
+     .       (uh-1.D0-xmun) +
+     .       bnmuon(i,nj)*alsnmu(i,ni)*qr(nj,ni)*
+     .       2.D0*xmneut(nj)/xmchar(ni)*dsqrt(xmun*xmumuon) +
+     .       anmuon(i,nj)*blsnmu(i,ni)*qr(nj,ni)*
+     .       (uh*th+th**2-th*(1.D0+xmun+xmumuon+xmuneut1)+xmun+
+     .       xmumuon*xmuneut1) +
+     .       anmuon(i,nj)*blsnmu(i,ni)*ql(nj,ni)*
+     .       xmneut(nj)/xmchar(ni)*(uh+th-xmuneut1-1.D0) +
+     .       bnmuon(i,nj)*alsnmu(i,ni)*ql(nj,ni)*
+     .       dsqrt(xmun*xmumuon)*(uh+th-xmun-xmumuon) )
+         enddo
+      else
+         chipmhsmuon=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c 	               interference W+ H-
+c -------------------------------------------------------------------- c
+
+      chipmwh=0.D0	
+
+      if((amneut(nj)+ammuon).le.amchar(ni)) then      
+         chipmwh=chipmwh-4.D0*g2**2/dh/dw*vwff*vchmuon*(
+     .    (ol(nj,ni)*ql(nj,ni)+or(nj,ni)*qr(nj,ni))*
+     .    xmneut(nj)/xmchar(ni)*dsqrt(xmumuon)*sgn(ni)*(
+     .    2.D0/xmuw*(-2.D0-xmuneut1*(xmun+xmumuon-th-uh+2.D0)-xmun*
+     .    (2.D0*xmun+xmumuon-3.D0*th-3.D0*uh+5.D0)-xmumuon*(xmun-th-uh
+     .    +1.D0)-(th+uh)**2+3.D0*(th+uh))+4.D0*(-uh+xmun+1.D0))
+     .    +(ol(nj,ni)*qr(nj,ni)+or(nj,ni)*ql(nj,ni))*dsqrt(xmumuon)*
+     .    sgn(ni)*(
+     .    2.D0/xmuw*(2.D0*xmuneut1**2-xmuneut1*(-5.D0*xmun-xmumuon+
+     .    3.D0*(th+uh)-2.D0)-xmun*(-2.D0*xmun-xmumuon
+     .    +3.D0*(th+uh)-1.D0)-
+     .    xmumuon*(-xmun+uh+th-1.D0)+(th+uh)**2-(th+uh))
+     .    -4.D0*(xmuneut1+xmun-th) ) )
+      else
+         chipmwh=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+
+      SD_chipmmu = chipmsmu+chipmw+chipmh+chipmwsmuon+chipmhsmuon+
+     .             chipmwh
+
+      end
+c end maggie changed 27/9/2016
+
 c ==================================================================== c
 c =========================== neutralino e+ nue ====================== c
 c ==================================================================== c
@@ -18973,6 +19620,404 @@ c -------------------------------------------------------------------- c
      .             chipmwsdown+chipmwsup
 
       end
+
+c maggie changed 27/9/2016
+c ==================================================================== c
+c ====================== neutralino charm strangebar ================= c
+c ==================================================================== c
+
+      double precision function SD_chipmchar(x1,x2)
+
+      implicit double precision (a-h,m,o-z)
+      
+      dimension amneut(4),xmneut(4),amchar(2),xmchar(2),sgn(2)
+      dimension dsb(2),dst(2)
+      dimension alsbot(2,2),aksbot(2,2),alstor(2,2),akstor(2,2)
+      dimension alsstr(2,2),aksstr(2,2),astr(2,4),bstr(2,4),
+     .     alschar(2,2),akschar(2,2),achar(2,4),bchar(2,4)
+      dimension abot(2,4),bbot(2,4),atopr(2,4),btopr(2,4)
+      dimension ql(4,2),qr(4,2),or(4,2),ol(4,2)
+
+      COMMON/SD_indices/ni,nj
+      COMMON/SD_param/gf,amz,amw,pi,g2
+      COMMON/SD_massgino/amneut,xmneut,amchar,xmchar
+      COMMON/SD_hmass/ama,aml,amh,amch,amar
+      COMMON/SD_squarkud/asup1,asup2,asdown1,asdown2
+      COMMON/SD_fermion/amt,amb,amtau
+      COMMON/SD_coup3/ql,qr,ol,or
+      COMMON/SD_coup18/awff,vwff
+      COMMON/SD_scala/scalb,scalt
+      COMMON/SD_yukawa/ytewsb,ybewsb,ytauewsb
+      COMMON/SD_runcoupscale/scalechoice,scaleofcoupling,inumloop
+      COMMON/SD_mwmzpole/amwp,amzp
+      COMMON/SUSYHITIN/flagshsin,amsin,amcin,ammuonin,alphin,gamwin,
+     .                 gamzin,vusin,vcbin,rvubin
+      COMMON/SD_coup23/alsstr,aksstr,astr,bstr,alschar,akschar,achar,
+     .     bchar,vchchar,achchar
+
+c --- some definitions ---
+
+      do i=1,2,1
+         sgn(i) = 1.D0
+         if(xmchar(i).ge.0.D0) then
+            sgn(i) = 1.D0
+         elseif(xmchar(i).lt.0.D0) then
+            sgn(i) = -1.D0
+         endif
+      enddo
+
+      xmuneut1 = amneut(nj)**2/amchar(ni)**2
+      xmustr1 = asdown1**2/amchar(ni)**2
+      xmustr2 = asdown2**2/amchar(ni)**2
+      xmusch1 = asup1**2/amchar(ni)**2
+      xmusch2 = asup2**2/amchar(ni)**2
+      xmuc    = amcin**2/amchar(ni)**2
+      xmus    = amsin**2/amchar(ni)**2
+
+      vch = vchchar
+      ach = achchar
+
+      x3 = 2.D0-x1-x2
+      y3 = 1.D0+xmuneut1-x3
+
+      uh = 1.D0-x1+xmuc
+      th = 1.D0-x2+xmus
+
+c -------------------------------------------------------------------- c
+c                      sstrange and scharm exchange
+c -------------------------------------------------------------------- c
+
+      dsb(1) = 1.D0-x1-xmustr1+xmuc
+      dsb(2) = 1.D0-x1-xmustr2+xmuc
+      dst(1) = 1.D0-x2-xmusch1+xmus
+      dst(2) = 1.D0-x2-xmusch2+xmus
+
+      chipmsfer=0.D0
+
+c ---- final state masses included ----
+
+      if ((amneut(nj)+amsin+amcin).le.amchar(ni)) then
+         do i=1,2
+            do k=1,2
+               chipmsfer=chipmsfer
+     .           +g2**2/dsb(k)/dsb(i)*(
+     .           (alsstr(i,ni)*aksstr(k,ni)+aksstr(i,ni)*alsstr(k,ni))*
+     .           (astr(i,nj)*bstr(k,nj)+bstr(i,nj)*astr(k,nj))*
+     .           xmneut(nj)/xmchar(ni)*dsqrt(xmuc*xmus)*(-4.D0)+
+     .           (alsstr(i,ni)*alsstr(k,ni)+aksstr(i,ni)*aksstr(k,ni))*
+     .           (astr(i,nj)*bstr(k,nj)+bstr(i,nj)*astr(k,nj))*
+     .           xmneut(nj)/xmchar(ni)*dsqrt(xmus)*sgn(ni)*2.D0*
+     .           (uh-xmuc-1.D0)+
+     .           (alsstr(i,ni)*aksstr(k,ni)+aksstr(i,ni)*alsstr(k,ni))*
+     .           (astr(i,nj)*astr(k,nj)+bstr(i,nj)*bstr(k,nj))*
+     .           dsqrt(xmuc)*sgn(ni)*2.D0*(uh-xmus-xmuneut1)+
+     .           (alsstr(i,ni)*alsstr(k,ni)+aksstr(i,ni)*aksstr(k,ni))*
+     .           (astr(i,nj)*astr(k,nj)+bstr(i,nj)*bstr(k,nj))*
+     .           (-uh**2+uh*(1.D0+xmuneut1+xmuc+xmus)-
+     .           (xmuneut1+xmus)*(1.D0+xmuc)))
+     .           +g2**2/dst(k)/dst(i)*(
+     .           (alschar(i,ni)*akschar(k,ni)+akschar(i,ni)*
+     .              alschar(k,ni))*
+     .           (achar(i,nj)*bchar(k,nj)+bchar(i,nj)*achar(k,nj))*
+     .           xmneut(nj)/xmchar(ni)*dsqrt(xmus*xmuc)*(-4.D0)+
+     .           (alschar(i,ni)*alschar(k,ni)+akschar(i,ni)*
+     .              akschar(k,ni))*
+     .           (achar(i,nj)*bchar(k,nj)+bchar(i,nj)*achar(k,nj))*
+     .           xmneut(nj)/xmchar(ni)*dsqrt(xmuc)*sgn(ni)*2.D0*
+     .           (th-xmus-1.D0)+
+     .           (alschar(i,ni)*akschar(k,ni)+akschar(i,ni)*
+     .              alschar(k,ni))*
+     .           (achar(i,nj)*achar(k,nj)+bchar(i,nj)*bchar(k,nj))*
+     .           dsqrt(xmus)*sgn(ni)*2.D0*(th-xmuc-xmuneut1)+
+     .           (alschar(i,ni)*alschar(k,ni)+akschar(i,ni)*
+     .              akschar(k,ni))*
+     .           (achar(i,nj)*achar(k,nj)+bchar(i,nj)*bchar(k,nj))*
+     .           (-th**2+th*(1.D0+xmuneut1+xmuc+xmus)-(xmuneut1+xmuc)*
+     .           (1.D0+xmus)))
+     .           -2.D0*g2**2/dsb(k)/dst(i)*(
+     .           (akschar(i,ni)*aksstr(k,ni)*achar(i,nj)*astr(k,nj)
+     .           +alschar(i,ni)*alsstr(k,ni)*bchar(i,nj)*bstr(k,nj))*
+     .           xmneut(nj)/xmchar(ni)*dsqrt(xmuc*xmus)*(-2.D0)+
+     .           (alschar(i,ni)*aksstr(k,ni)*achar(i,nj)*astr(k,nj)
+     .           +akschar(i,ni)*alsstr(k,ni)*bchar(i,nj)*bstr(k,nj))*
+     .           xmneut(nj)/xmchar(ni)*dsqrt(xmuc)*sgn(ni)*
+     .           (th-xmus-1.D0)+
+     .           (akschar(i,ni)*alsstr(k,ni)*achar(i,nj)*astr(k,nj)
+     .           +alschar(i,ni)*aksstr(k,ni)*bchar(i,nj)*bstr(k,nj))*
+     .           xmneut(nj)/xmchar(ni)*dsqrt(xmus)*sgn(ni)*
+     .           (uh-xmuc-1.D0)+
+     .           (alschar(i,ni)*alsstr(k,ni)*achar(i,nj)*astr(k,nj)
+     .           +akschar(i,ni)*aksstr(k,ni)*bchar(i,nj)*bstr(k,nj))*
+     .           xmneut(nj)/xmchar(ni)*(uh+th-xmuneut1-1.D0)+
+     .           (alsstr(k,ni)*akschar(i,ni)*astr(k,nj)*bchar(i,nj)
+     .           +aksstr(k,ni)*alschar(i,ni)*bstr(k,nj)*achar(i,nj))*
+     .           dsqrt(xmuc*xmus)*(uh+th-xmuc-xmus)+
+     .           (alsstr(k,ni)*alschar(i,ni)*astr(k,nj)*bchar(i,nj)
+     .           +aksstr(k,ni)*akschar(i,ni)*bstr(k,nj)*achar(i,nj))*
+     .           dsqrt(xmuc)*sgn(ni)*(uh-xmus-xmuneut1)+
+     .           (aksstr(k,ni)*akschar(i,ni)*astr(k,nj)*bchar(i,nj)
+     .           +alsstr(k,ni)*alschar(i,ni)*bstr(k,nj)*achar(i,nj))*
+     .           dsqrt(xmus)*sgn(ni)*(th-xmuc-xmuneut1)+
+     .           (aksstr(k,ni)*alschar(i,ni)*astr(k,nj)*bchar(i,nj)
+     .           +alsstr(k,ni)*akschar(i,ni)*bstr(k,nj)*achar(i,nj))*
+     .           (uh*th-xmuc*xmus-xmuneut1))
+            enddo
+         enddo         
+      else
+         chipmsfer=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                            W exchange
+c -------------------------------------------------------------------- c
+
+      xmuw = amwp**2/amchar(ni)**2
+      dw   = y3-xmuw
+
+      chipmw = 0.D0
+
+c ---- final state masses included ----
+
+      rh = xmuneut1+xmuc+xmus-th-uh+1.D0
+      sh = (xmuneut1-th-uh+1.D0)*(xmuc+xmus)+4.D0*xmuc*xmus
+      rk = xmuneut1*(xmuc+xmus-th-uh+4.D0)+xmuc+xmus-uh-th
+
+      if ((amneut(nj)+amcin+amsin).le.amchar(ni)) then
+         chipmw=chipmw+g2**2/dw**2*(
+     .    ol(nj,ni)*or(nj,ni)*2.D0*vwff**2*
+     .    xmneut(nj)/xmchar(ni)*(8.D0/xmuw**2*rh*sh-16.D0/xmuw*sh
+     .    -16.D0*(xmuneut1-uh-th+1.D0))
+     .    +(ol(nj,ni)**2+or(nj,ni)**2)*2.D0*vwff**2*
+     .    (-2.D0/xmuw**2*rk*sh+8.D0/xmuw*(xmuneut1*(2.D0*xmuc*xmus+
+     .    2.D0*(xmuc+xmus)-xmuc*th-xmus*uh)+2.D0*xmuc*xmus
+     .    -xmuc*uh-xmus*th)+4.D0*(xmuneut1*(uh+th-xmuc-xmus-2.D0)+
+     .    (xmuc+xmus)*(uh+th-1.D0)-2.D0*xmuc*xmus+th*(-th+1.D0)+
+     .    uh*(-uh+1.D0)))+
+     .    (ol(nj,ni)**2-or(nj,ni)**2)*vwff**2*8.D0*(
+     .    xmuneut1*(xmuc-xmus+th-uh)+(xmuc+xmus)*(th-uh)-xmuc+
+     .    xmus+th*(-th+1.D0)+uh*(uh-1.D0))
+     .    )
+      else
+         chipmw=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                            H+ exchange
+c -------------------------------------------------------------------- c
+
+      xmuch = amch**2/amchar(ni)**2
+      dh    = y3-xmuch
+
+c ---- final state masses included ----
+
+      if((amneut(nj)+amcin+amsin).le.amchar(ni)) then
+         chipmh=g2**2/dh**2*(
+     .    ql(nj,ni)*qr(nj,ni)*(
+     .    (vch**2-ach**2)*
+     .    xmneut(nj)/xmchar(ni)*dsqrt(xmuc*xmus)*(-16.D0)+
+     .    (vch**2+ach**2)*
+     .    xmneut(nj)/xmchar(ni)*8.D0*(1.D0+xmuneut1-th-uh) ) 
+     .    +(ql(nj,ni)**2+qr(nj,ni)**2)*(
+     .    (vch**2-ach**2)*
+     .    dsqrt(xmuc*xmus)*4.D0*(xmuc+xmus-th-uh)+
+     .    (vch**2+ach**2)*
+     .    2.D0*(xmuneut1*(uh+th-xmuc-xmus)+(xmuc+xmus)*(uh+th-1.D0)
+     .    -(th+uh)**2+uh+th)) )
+      else
+         chipmh=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                     W+ sstrange/scharm interference
+c -------------------------------------------------------------------- c
+
+      chipmwsstr = 0.D0
+
+c ---- final state masses included ----
+
+      if((amneut(nj)+amcin+amsin).le.amchar(ni)) then
+         do i=1,2
+            chipmwsstr=chipmwsstr
+     .       +g2**2/dsb(i)/dw*2.D0*vwff*(
+     .      aksstr(i,ni)*bstr(i,nj)*or(nj,ni)*
+     .      xmneut(nj)/xmchar(ni)*dsqrt(xmuc*xmus)*(
+     .      1/xmuw*(-4.D0)*(1.D0+xmuneut1+xmuc+xmus-uh-th)+16.D0) +
+     .      alsstr(i,ni)*astr(i,nj)*ol(nj,ni)*
+     .      xmneut(nj)/xmchar(ni)*(2.D0/xmuw*((xmuneut1+1.D0-uh-th)*
+     .      (xmuc+xmus)+4.D0*xmuc*xmus)+4.D0*(1.D0+xmuneut1-
+     .      uh-th)) +
+     .      aksstr(i,ni)*bstr(i,nj)*ol(nj,ni)*dsqrt(xmuc*xmus)*
+     .      (2.D0/xmuw*(xmuneut1*(xmuc+xmus-th-uh+4.D0)+xmuc+xmus
+     .      -th-uh)+4.D0*(xmuc+xmus-th-uh)) +
+     .      alsstr(i,ni)*astr(i,nj)*or(nj,ni)*
+     .      (2.D0/xmuw*(xmuneut1*(-2.D0*xmuc*xmus+xmuc*th
+     .      -2.D0*xmuc+xmus*uh-2.D0*xmus)+xmuc*(-2.D0*xmus+uh)
+     .      +xmus*th)+4.D0*(xmuneut1*(xmuc-uh+1.D0)+xmuc*(xmus-uh)
+     .      +xmus*(1.D0-uh)+uh**2-uh)) + 
+     .      astr(i,nj)*aksstr(i,ni)*ol(nj,ni)*
+     .      xmneut(nj)/xmchar(ni)*dsqrt(xmuc)*sgn(ni)*(2.D0/xmuw*
+     .      (xmuneut1*(1.D0+xmuc-uh)+1.D0+xmuc*(xmus-uh)+xmus*
+     .      (xmus-th-2.D0*uh+3.D0)+th*(uh-1.D0)+uh*(uh-2.D0))+
+     .      4.D0*(1.D0+xmus-th)) +
+     .      bstr(i,nj)*alsstr(i,ni)*or(nj,ni)*
+     .      xmneut(nj)/xmchar(ni)*dsqrt(xmus)*sgn(ni)*
+     .      (2.D0/xmuw*(xmuneut1*(-1.D0-xmuc+uh)-1.D0+xmus*(-1.D0+uh)
+     .      +uh*(2.D0-th-uh)+th+xmuc*(-xmuc-xmus+th+2.D0*uh-2.D0))+
+     .      8.D0*(1.D0+xmuc-uh)) +
+     .      aksstr(i,ni)*astr(i,nj)*or(nj,ni)*
+     .      dsqrt(xmuc)*sgn(ni)*((-2.D0)/xmuw*(xmuneut1-uh+xmus)*
+     .      (xmuneut1+xmuc+xmus-th-uh+1.D0)+8.D0*(xmuneut1+xmus
+     .      -uh)) +
+     .      alsstr(i,ni)*bstr(i,nj)*ol(nj,ni)*
+     .      dsqrt(xmus)*sgn(ni)*(2.D0/xmuw*(xmuneut1*(xmuneut1+
+     .      3.D0*xmuc-th-2.D0*uh+1.D0)+xmuc*(xmuc+xmus-th-2.D0*uh)+
+     .      xmus*(1.D0-uh)+uh*th+uh**2-uh)+4.D0*(xmuneut1+xmuc-th)) )
+     .      -g2**2/dst(i)/dw*2.D0*vwff*(
+     .      akschar(i,ni)*bchar(i,nj)*ol(nj,ni)*
+     .      xmneut(nj)/xmchar(ni)*dsqrt(xmuc*xmus)*(
+     .      1/xmuw*(-4.D0)*(1.D0+xmuneut1+xmuc+xmus-uh-th)+16.D0) +
+     .      alschar(i,ni)*achar(i,nj)*or(nj,ni)*
+     .      xmneut(nj)/xmchar(ni)*(2.D0/xmuw*((xmuc+xmus)*(xmuneut1
+     .      +1.D0-th-uh)+4.D0*xmuc*xmus)+4.D0*(1.D0+xmuneut1-uh
+     .      -th)) +
+     .      akschar(i,ni)*bchar(i,nj)*or(nj,ni)*dsqrt(xmuc*xmus)*
+     .      (2.D0/xmuw*(xmuneut1*(xmuc+xmus-th-uh+4.D0)+xmuc+xmus
+     .      -th-uh)+4.D0*(xmuc+xmus-th-uh)) +
+     .      alschar(i,ni)*achar(i,nj)*ol(nj,ni)*
+     .      (2.D0/xmuw*(xmuneut1*(-2.D0*xmuc*xmus+xmuc*th-2.D0*xmuc
+     .      +xmus*uh-2.D0*xmus)+xmuc*(-2.D0*xmus+uh)+xmus*th)
+     .      +4.D0*(xmuneut1*(xmus-th+1.D0)+xmuc*(xmus-th+1.D0)+
+     .      th*(-xmus+th-1.D0))) + 
+     .      achar(i,nj)*akschar(i,ni)*or(nj,ni)*
+     .      xmneut(nj)/xmchar(ni)*dsqrt(xmus)*sgn(ni)*
+     .      (2.D0/xmuw*(xmuneut1*(1.D0+xmus-th)+1.D0+xmuc*(xmuc+
+     .      xmus-2.D0*th-uh+3.D0)+th*(th-xmus+uh-2.D0)-uh)
+     .      +4.D0*(1.D0+xmuc-uh)) +
+     .      alschar(i,ni)*bchar(i,nj)*ol(nj,ni)*
+     .      xmneut(nj)/xmchar(ni)*dsqrt(xmuc)*sgn(ni)*
+     .      (2.D0/xmuw*(xmuneut1*(-1.D0-xmus+th)-1.D0+xmuc*(-xmus+
+     .      th-1.D0)+xmus*(2.D0*th+uh-2.D0-xmus)-th*(th+uh)+2.D0*
+     .      th+uh)+8.D0*(1.D0+xmus-th)) +
+     .      akschar(i,ni)*achar(i,nj)*ol(nj,ni)*dsqrt(xmus)*sgn(ni)*(
+     .      2.D0/xmuw*(xmuneut1*(-xmuneut1-2.D0*xmuc-xmus+2.D0*th+uh
+     .      -1.D0)+xmuc*(-xmuc-xmus+2.D0*th+uh-1.D0)+th*(xmus-th-
+     .      uh+1))+8.D0*(xmuneut1+xmuc-th)) +
+     .      alschar(i,ni)*bchar(i,nj)*or(nj,ni)*dsqrt(xmuc)*sgn(ni)*(
+     .      2.D0/xmuw*(xmuneut1*(xmuneut1+3.D0*xmus-uh-2.D0*th+1.D0)
+     .      +xmuc*(xmus-th+1.D0)+xmus*(xmus-2.D0*th-uh)+uh*th+
+     .      th**2-th)+4.D0*(xmuneut1+xmus-uh)) )
+         enddo
+      else
+         chipmwsstr=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                        H+ sstrange/scharm interference
+c -------------------------------------------------------------------- c
+	
+      chipmhsstr = 0.D0
+
+c ---- final state masses included ----
+
+      if((amneut(nj)+amcin+amsin).le.amchar(ni)) then
+         do i=1,2
+            chipmhsstr=chipmhsstr
+     .       -g2**2/dh/dsb(i)*(
+     .       (astr(i,nj)*alsstr(i,ni)*ql(nj,ni)*(vch+ach)
+     .       +bstr(i,nj)*aksstr(i,ni)*qr(nj,ni)*(vch-ach))*(-2.D0)*
+     .       dsqrt(xmuc)*sgn(ni)*(xmuneut1+xmus-uh) +
+     .       (astr(i,nj)*alsstr(i,ni)*ql(nj,ni)*(vch-ach)
+     .       +bstr(i,nj)*aksstr(i,ni)*qr(nj,ni)*(vch+ach))*2.D0*
+     .       dsqrt(xmus)*sgn(ni)*(xmuneut1+xmuc-th) +
+     .       (astr(i,nj)*alsstr(i,ni)*qr(nj,ni)*(vch+ach)
+     .       +bstr(i,nj)*aksstr(i,ni)*ql(nj,ni)*(vch-ach))*2.D0*
+     .       xmneut(nj)/xmchar(ni)*dsqrt(xmuc)*sgn(ni)*(1.D0+xmus-th) +
+     .       (astr(i,nj)*alsstr(i,ni)*qr(nj,ni)*(vch-ach)
+     .       +bstr(i,nj)*aksstr(i,ni)*ql(nj,ni)*(vch+ach))*(-2.D0)*
+     .       xmneut(nj)/xmchar(ni)*dsqrt(xmus)*sgn(ni)*(1.D0+xmuc-uh) +
+     .       (bstr(i,nj)*alsstr(i,ni)*ql(nj,ni)*(vch-ach)
+     .       +astr(i,nj)*aksstr(i,ni)*qr(nj,ni)*(vch+ach))*2.D0*
+     .       xmneut(nj)/xmchar(ni)*(1.D0+xmuneut1-uh-th) +
+     .       (astr(i,nj)*aksstr(i,ni)*qr(nj,ni)*(vch-ach)
+     .       +bstr(i,nj)*alsstr(i,ni)*ql(nj,ni)*(vch+ach))*(-4.D0)*
+     .       xmneut(nj)/xmchar(ni)*dsqrt(xmuc*xmus) +
+     .       (astr(i,nj)*aksstr(i,ni)*ql(nj,ni)*(vch-ach)
+     .       +bstr(i,nj)*alsstr(i,ni)*qr(nj,ni)*(vch+ach))*2.D0*
+     .       dsqrt(xmuc*xmus)*(xmuc+xmus-th-uh) +
+     .       (alsstr(i,ni)*bstr(i,nj)*qr(nj,ni)*(vch-ach)
+     .       +aksstr(i,ni)*astr(i,nj)*ql(nj,ni)*(vch+ach))*2.D0*
+     .       (-uh**2-uh*th+uh*(1.D0+xmuc+xmus+xmuneut1)-xmus-
+     .       xmuneut1*xmuc) ) 
+     .       +2.D0*g2**2/dh/dst(i)*(
+     .       (bchar(i,nj)*akschar(i,ni)*ql(nj,ni)*(vch-ach)
+     .       +achar(i,nj)*alschar(i,ni)*qr(nj,ni)*(vch+ach))*
+     .       dsqrt(xmuc)*sgn(ni)*(uh-xmuneut1-xmus) +
+     .       (achar(i,nj)*alschar(i,ni)*qr(nj,ni)*(vch-ach)
+     .       +bchar(i,nj)*akschar(i,ni)*ql(nj,ni)*(vch+ach))*
+     .       dsqrt(xmus)*sgn(ni)*(-th+xmuc+xmuneut1) +
+     .       (achar(i,nj)*alschar(i,ni)*ql(nj,ni)*(vch+ach)
+     .       +bchar(i,nj)*akschar(i,ni)*qr(nj,ni)*(vch-ach))*
+     .       dsqrt(xmuc)*sgn(ni)*xmneut(nj)/xmchar(ni)*(-th+1.D0+xmus) +
+     .       (achar(i,nj)*alschar(i,ni)*ql(nj,ni)*(vch-ach)
+     .       +bchar(i,nj)*akschar(i,ni)*qr(nj,ni)*(vch+ach))*
+     .       dsqrt(xmus)*sgn(ni)*xmneut(nj)/xmchar(ni)*(uh-1.D0-xmuc) +
+     .       (bchar(i,nj)*alschar(i,ni)*qr(nj,ni)*(vch-ach)
+     .       +achar(i,nj)*akschar(i,ni)*ql(nj,ni)*(vch+ach))*
+     .       2.D0*xmneut(nj)/xmchar(ni)*dsqrt(xmuc*xmus) +
+     .       (achar(i,nj)*akschar(i,ni)*qr(nj,ni)*(vch-ach)
+     .       +bchar(i,nj)*alschar(i,ni)*ql(nj,ni)*(vch+ach))*
+     .       (uh*th+th**2-th*(1.D0+xmuc+xmus+xmuneut1)+xmuc+
+     .       xmus*xmuneut1) +
+     .       (achar(i,nj)*akschar(i,ni)*ql(nj,ni)*(vch-ach)
+     .       +bchar(i,nj)*alschar(i,ni)*qr(nj,ni)*(vch+ach))*
+     .       xmneut(nj)/xmchar(ni)*(uh+th-xmuneut1-1.D0) +
+     .       (bchar(i,nj)*alschar(i,ni)*ql(nj,ni)*(vch-ach)
+     .       +achar(i,nj)*akschar(i,ni)*qr(nj,ni)*(vch+ach))*
+     .       dsqrt(xmuc*xmus)*(uh+th-xmuc-xmus) )
+         enddo
+      else
+         chipmhsstr=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c 	               interference W+ H-
+c -------------------------------------------------------------------- c
+
+      chipmwh=0.D0	
+
+      if((amneut(nj)+amcin+amsin).le.amchar(ni)) then      
+         chipmwh=chipmwh-2.D0*g2**2/dh/dw*vwff*(
+     .    (ol(nj,ni)*ql(nj,ni)+or(nj,ni)*qr(nj,ni))*(
+     .    (vch-ach)*xmneut(nj)/xmchar(ni)*dsqrt(xmus)*sgn(ni)*(
+     .    2.D0/xmuw*(-2.D0-xmuneut1*(xmuc+xmus-th-uh+2.D0)-xmuc*
+     .    (2.D0*xmuc+xmus-3.D0*th-3.D0*uh+5.D0)-xmus*(xmuc-th-uh
+     .    +1.D0)-(th+uh)**2+3.D0*(th+uh))+4.D0*(-uh+xmuc+1.D0)) +
+     .    (vch+ach)*xmneut(nj)/xmchar(ni)*dsqrt(xmuc)*sgn(ni)*(
+     .    2.D0/xmuw*(2.D0+xmuneut1*(xmuc+xmus-th-uh+2.D0)+xmuc*
+     .    (-th-uh+1.D0+xmus)+xmus*(xmuc+2.D0*xmus-3.D0*(th+uh)+5.D0)
+     .    +(th+uh)**2-3.D0*(th+uh))+4.D0*(th-xmus-1.D0) ) )
+     .    +(ol(nj,ni)*qr(nj,ni)+or(nj,ni)*ql(nj,ni))*(
+     .    (vch-ach)*dsqrt(xmus)*sgn(ni)*(
+     .    2.D0/xmuw*(2.D0*xmuneut1**2-xmuneut1*(-5.D0*xmuc-xmus+
+     .    3.D0*(th+uh)-2.D0)-xmuc*(-2.D0*xmuc-xmus+3.D0*(th+uh)-1.D0)-
+     .    xmus*(-xmuc+uh+th-1.D0)+(th+uh)**2-(th+uh))
+     .    -4.D0*(xmuneut1+xmuc-th) )+
+     .    (vch+ach)*dsqrt(xmuc)*sgn(ni)*(
+     .    2.D0/xmuw*(-2.D0*xmuneut1**2+xmuneut1*(-xmuc-5.D0*xmus+3.D0*
+     .    (th+uh)-2.D0)+xmuc*(-xmus+th+uh-1.D0)+xmus*(-xmuc-2.D0*xmus+
+     .    3.D0*(th+uh)-1.D0)-(th+uh)**2+(th+uh)) +4.D0*(xmuneut1+xmus
+     .    -uh) ) ) )
+      else
+         chipmwh=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+
+      SD_chipmchar = chipmsfer+chipmw+chipmh+chipmwsstr+chipmhsstr+
+     .              chipmwh
+
+      end
+c end maggie changed 27/9/2016
 
 c ==================================================================== c
 c ======================= neutralino top bottombar =================== c
@@ -23062,6 +24107,7 @@ c ==================================================================== c
       external SD_neutup,SD_neutdow,SD_neutbot,SD_neuttop
       external SD_chelne,SD_chtauntau,SD_chubd,SD_chtbb
       external SD_xgluibot,SD_xgluido,SD_xgluiup,SD_xgluitop
+      external SD_neutch,SD_neutst,SD_neutmu,SD_chmunmu,SD_chcbs
 
       COMMON/SD_param/gf,amz,amw,pi,g2
       COMMON/SD_massgino/amneut,xmneut,amchar,xmchar
@@ -23070,6 +24116,10 @@ c ==================================================================== c
       COMMON/SD_break/au,ad,al,amu
       COMMON/SD_indices/ni,nj
       COMMON/SD_nx1/nx1t,ny1t
+c maggie changed 27/9/2016
+      COMMON/SUSYHITIN/flagshsin,amsin,amcin,ammuon,alphin,gamwin,
+     .                 gamzin,vusin,vcbin,rvubin
+c end maggie changed 27/9/2016
 
 c -------------------------------------------------------------------- c
 c --------------------------- gluino up upbar ------------------------ c
@@ -23187,16 +24237,42 @@ c -------------------------------------------------------------------- c
          xneutel(1,i) = 0.D0
       end do
 
+c maggie changed 27/9/2016
 c -------------------------------------------------------------------- c
 c ------------------------ neutralino mu+ mu- ------------------------ c
 c -------------------------------------------------------------------- c
 
-      do ni = 1,4,1
-         xneutmu(1,ni) = xneutel(1,ni)
-         xneutmu(2,ni) = xneutel(2,ni)
-         xneutmu(3,ni) = xneutel(3,ni)
-         xneutmu(4,ni) = xneutel(4,ni)
+c      do ni = 1,4,1
+c         xneutmu(1,ni) = xneutel(1,ni)
+c         xneutmu(2,ni) = xneutel(2,ni)
+c         xneutmu(3,ni) = xneutel(3,ni)
+c         xneutmu(4,ni) = xneutel(4,ni)
+c      end do
+
+      do ni = 2,4,1
+         do nj = 1,4,1     
+            xmu1=ammuon**2/amneut(ni)**2
+            xmu2=ammuon**2/amneut(ni)**2
+            xmu3=amneut(nj)**2/amneut(ni)**2
+
+            if(nj.ge.ni) then
+               xneutmu(ni,nj) = 0.D0
+            else
+               if(amneut(ni).gt.(2.D0*ammuon+amneut(nj))) then
+                  call SD_integ2(SD_neutmu,SD_ax,SD_bx,SD_ay,SD_by,
+     .                        xmu1,xmu2,xmu3,nx1t,ny1t,sum)
+                  xneutmu(ni,nj) = sum/64.D0/(2*pi)**3*amneut(ni)
+               else
+                  xneutmu(ni,nj) = 0.d0
+               endif
+            endif
+         enddo
+      enddo
+
+      do i=1,4,1
+         xneutmu(1,i) = 0.D0
       end do
+c end maggie changed 27/9/2016
 
 c -------------------------------------------------------------------- c
 c ------------------------ neutralino tau+ tau- ---------------------- c
@@ -23355,23 +24431,77 @@ c -------------------------------------------------------------------- c
 c --------------------- neutralino charm charmbar -------------------- c
 c -------------------------------------------------------------------- c
 
-      do ni = 1,4,1
-         xneutch(1,ni) = xneutup(1,ni)
-         xneutch(2,ni) = xneutup(2,ni)
-         xneutch(3,ni) = xneutup(3,ni)
-         xneutch(4,ni) = xneutup(4,ni)
+c maggie changed 27/9/2016
+c      do ni = 1,4,1
+c         xneutch(1,ni) = xneutup(1,ni)
+c         xneutch(2,ni) = xneutup(2,ni)
+c         xneutch(3,ni) = xneutup(3,ni)
+c         xneutch(4,ni) = xneutup(4,ni)
+c      end do
+
+      do ni = 2,4,1
+         do nj = 1,4,1
+            xmu1=amcin**2/amneut(ni)**2
+            xmu2=amcin**2/amneut(ni)**2
+            xmu3=amneut(nj)**2/amneut(ni)**2
+
+            if(nj.ge.ni) then
+               xneutch(ni,nj) = 0.D0
+            else
+               if(amneut(ni).gt.(2.D0*amcin+amneut(nj))) then
+                  call SD_integ2(SD_neutch,SD_ax,SD_bx,SD_ay,SD_by,
+     .                        xmu1,xmu2,xmu3,nx1t,ny1t,sum)
+                  xneutch(ni,nj) = sum/64.D0/(2*pi)**3*amneut(ni)  
+                  xneutch(ni,nj) = 3.D0*xneutch(ni,nj)
+               else
+                  xneutch(ni,nj) = 0.D0
+               endif
+            endif
+         enddo
+      enddo
+
+      do i=1,4,1
+         xneutch(1,i) = 0.D0
       end do
+c end maggie changed 27/9/2016
 
 c -------------------------------------------------------------------- c
 c ----------------- neutralino strange strangebar -------------------- c
 c -------------------------------------------------------------------- c
 
-      do ni = 1,4,1
-         xneutst(1,ni) = xneutdow(1,ni)
-         xneutst(2,ni) = xneutdow(2,ni)
-         xneutst(3,ni) = xneutdow(3,ni)
-         xneutst(4,ni) = xneutdow(4,ni)
+c maggie changed 27/9/2016
+c      do ni = 1,4,1
+c         xneutst(1,ni) = xneutdow(1,ni)
+c         xneutst(2,ni) = xneutdow(2,ni)
+c         xneutst(3,ni) = xneutdow(3,ni)
+c         xneutst(4,ni) = xneutdow(4,ni)
+c      end do
+
+      do ni = 2,4,1
+         do nj = 1,4,1
+            xmu1=amsin**2/amneut(ni)**2
+            xmu2=amsin**2/amneut(ni)**2
+            xmu3=amneut(nj)**2/amneut(ni)**2
+
+            if(nj.ge.ni) then
+               xneutst(ni,nj) = 0.D0
+            else
+               if(amneut(ni).gt.(2.D0*amsin+amneut(nj))) then
+                  call SD_integ2(SD_neutst,SD_ax,SD_bx,SD_ay,SD_by,
+     .                        xmu1,xmu2,xmu3,nx1t,ny1t,sum)
+                  xneutst(ni,nj) = sum/64.D0/(2*pi)**3*amneut(ni)  
+                  xneutst(ni,nj) = 3.D0*xneutst(ni,nj)
+               else
+                  xneutst(ni,nj) = 0.D0
+               endif
+            endif
+         enddo
+      enddo
+
+      do i=1,4,1
+         xneutst(1,i) = 0.D0
       end do
+c end maggie changed 27/9/2016
 
 c -------------------------------------------------------------------- c
 c ----------------------- neutralino top topbar ---------------------- c
@@ -23455,11 +24585,29 @@ c -------------------------------------------------------------------- c
 c ---------------------- chargino- mu+ numubar ----------------------- c
 c -------------------------------------------------------------------- c
 
-      do ni=1,4,1
-         do nj=1,2,1
-            xchmunmu(ni,nj) = xchelne(ni,nj)
+c maggie changed 27/9/2016
+c      do ni=1,4,1
+c         do nj=1,2,1
+c            xchmunmu(ni,nj) = xchelne(ni,nj)
+c         end do
+c      end do
+
+      do ni = 1,4,1
+         do nj = 1,2,1     
+            xmu1=0.D0
+            xmu2=ammuon**2/amneut(ni)**2
+            xmu3=amchar(nj)**2/amneut(ni)**2
+
+            if(amneut(ni).gt.(amchar(nj)+ammuon)) then
+               call SD_integ2(SD_chmunmu,SD_ax,SD_bx,SD_ay,SD_by,
+     .                     xmu1,xmu2,xmu3,nx1t,ny1t,sum)
+               xchmunmu(ni,nj) = sum/64.D0/(2*pi)**3*amneut(ni)
+            else
+               xchmunmu(ni,nj) = 0.D0
+            endif
          end do
       end do
+c end maggie changed 27/9/2016
 
 c -------------------------------------------------------------------- c
 c --------------------- chargino- tau+ nutaubar ---------------------- c
@@ -23505,11 +24653,29 @@ c -------------------------------------------------------------------- c
 c --------------------- chargino- charm strangebar ------------------- c
 c -------------------------------------------------------------------- c
 
-      do ni=1,4,1
-         do nj=1,2,1
-            xchcbs(ni,nj) = xchubdow(ni,nj)
+c maggie changed 27/9/2016
+c      do ni=1,4,1
+c         do nj=1,2,1
+c            xchcbs(ni,nj) = xchubdow(ni,nj)
+c         end do
+c      end do
+
+      do ni = 1,4,1
+         do nj = 1,2,1     
+            xmu1=amcin**2/amneut(ni)**2
+            xmu2=amsin**2/amneut(ni)**2
+            xmu3=amchar(nj)**2/amneut(ni)**2
+
+            if(amneut(ni).gt.(amchar(nj)+amcin+amsin)) then
+               call SD_integ2(SD_chcbs,SD_ax,SD_bx,SD_ay,SD_by,xmu1,
+     .                     xmu2,xmu3,nx1t,ny1t,sum)
+               xchcbs(ni,nj) = 3.D0*sum/64.D0/(2*pi)**3*amneut(ni)
+            else
+               xchcbs(ni,nj) = 0.D0
+            endif
          end do
       end do
+c end maggie changed 27/9/2016
 
 c -------------------------------------------------------------------- c
 c ---------------------- chargino- top bottombar --------------------- c
@@ -24258,6 +25424,1085 @@ c -------------------------------------------------------------------- c
       SD_neutdow = xneutsdow+xneutzdow+xneutzsdow
 
       end
+
+c maggie changed 27/9/2016
+c ==================================================================== c
+c =====================  neutralino charm charmbar =================== c
+c ==================================================================== c
+
+      double precision function SD_neutch(x1,x2)
+
+      implicit double precision (a-h,m,o-z)
+      integer k,ni,nj
+
+      dimension amneut(4),xmneut(4),amchar(2),xmchar(2)
+      dimension ahl(4,4),ahh(4,4),aa(4,4)
+      dimension opl(2,2),opr(2,2),oppl(4,4),oppr(4,4)
+      dimension atopr(2,4),btopr(2,4)
+      dimension atopr1(2,4),btopr1(2,4),atopr2(2,4),btopr2(2,4)
+      dimension sgn(4)
+      dimension dst(2),dstb(2)
+      dimension alsstr(2,2),aksstr(2,2),astr(2,4),bstr(2,4),
+     .     alschar(2,2),akschar(2,2),achar(2,4),bchar(2,4)
+
+      COMMON/SD_scalasc/scals,scalc
+      COMMON/SD_yukawasc/ysewsb,ycewsb,ymuewsb
+      COMMON/SD_yukawa/ytewsb,ybewsb,ytauewsb
+      COMMON/SD_param/gf,amz,amw,pi,g2
+      COMMON/SD_hmass/ama,aml,amh,amch,amar
+      COMMON/SD_fermion/amt,amb,amtau
+      COMMON/SD_massgino/amneut,xmneut,amchar,xmchar
+      COMMON/SD_squarktb/ast1,ast2,asb1,asb2
+      COMMON/SD_squarkud/asup1,asup2,asdown1,asdown2
+      COMMON/SD_indices/ni,nj
+      COMMON/SD_coup1/ahl,ahh,aa
+      COMMON/SD_coup4/opl,opr,oppl,oppr
+      COMMON/SD_coup17/azztoptop,vzztoptop,azztautau,vzztautau,
+     .                 azzneutneut,vzzneutneut,azzbotbot,vzzbotbot
+      COMMON/SD_runcoupscale/scalechoice,scaleofcoupling,inumloop
+      COMMON/SD_mwmzpole/amwp,amzp
+      COMMON/SUSYHITIN/flagshsin,amsin,amcin,ammuonin,alphin,gamwin,
+     .                 gamzin,vusin,vcbin,rvubin
+      COMMON/SD_coup23/alsstr,aksstr,astr,bstr,alschar,akschar,achar,
+     .     bchar,vchchar,achchar
+      COMMON/SD_mixang/a,tanbeta
+
+c --- the running couplings ---
+
+      if(scalechoice.eq.1.D0) then
+c         scals = ysewsb/dsqrt(g2)
+c         scalc = ycewsb/dsqrt(g2)
+
+         bet = datan(tanbeta)
+
+         scals = amsin/dsqrt(2.D0)/amw/dcos(bet)
+         scalc = amcin/dsqrt(2.D0)/amw/dsin(bet)
+      endif
+
+      call SD_phicharchar(hlccr,hhccr,haccr)
+
+c --- several definitions ---
+
+      do i=1,4,1
+         sgn(i) = 1.D0
+         if(xmneut(i).ge.0.D0) then
+            sgn(i) = 1.D0
+         elseif(xmneut(i).lt.0.D0) then
+            sgn(i) = -1.D0
+         endif
+      enddo
+
+      xmuneut1 = amneut(nj)**2/amneut(ni)**2
+      xmusc1   = asup1**2/amneut(ni)**2
+      xmusc2   = asup2**2/amneut(ni)**2
+      xmuc     = amcin**2/amneut(ni)**2
+
+      x3 = 2.D0-x1-x2
+      y3 = 1.D0+xmuneut1-x3
+
+      uh = 1.D0-x1+xmuc
+      th = 1.D0-x2+xmuc
+
+      vzz = vzztoptop
+      azz = azztoptop
+
+c -------------------------------------------------------------------- c
+c                            scharm exchange
+c -------------------------------------------------------------------- c
+
+      dst(1)  = 1.D0-x1-xmusc1+xmuc
+      dst(2)  = 1.D0-x1-xmusc2+xmuc
+      dstb(1) = 1.D0-x2-xmusc1+xmuc
+      dstb(2) = 1.D0-x2-xmusc2+xmuc
+      
+      xneutschar=0.D0
+
+c ---- final state masses included ----
+
+      if ((amneut(nj)+2.D0*amcin).le.amneut(ni)) then
+         do i=1,2
+            do k=1,2
+               xneutschar=xneutschar
+     .          +g2**2/dst(k)/dst(i)*(
+     .           (achar(i,ni)*bchar(k,ni)+bchar(i,ni)*achar(k,ni))*
+     .           (achar(i,nj)*bchar(k,nj)+bchar(i,nj)*achar(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*xmuc*(-4.D0)+
+     .           (achar(i,ni)*achar(k,ni)+bchar(i,ni)*bchar(k,ni))*
+     .           (achar(i,nj)*bchar(k,nj)+bchar(i,nj)*achar(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*2.D0*
+     .           (uh-xmuc-1.D0)+
+     .           (achar(i,ni)*bchar(k,ni)+bchar(i,ni)*achar(k,ni))*
+     .           (achar(i,nj)*achar(k,nj)+bchar(i,nj)*bchar(k,nj))*
+     .           dsqrt(xmuc)*sgn(ni)*2.D0*(uh-xmuc-xmuneut1)+
+     .           (achar(i,ni)*achar(k,ni)+bchar(i,ni)*bchar(k,ni))*
+     .           (achar(i,nj)*achar(k,nj)+bchar(i,nj)*bchar(k,nj))*
+     .           (-uh**2+uh*(1.D0+xmuneut1+2.D0*xmuc)-(xmuneut1+xmuc)*
+     .           (1.D0+xmuc)))
+     .           +g2**2/dstb(k)/dstb(i)*(
+     .           (achar(i,ni)*bchar(k,ni)+bchar(i,ni)*achar(k,ni))*
+     .           (achar(i,nj)*bchar(k,nj)+bchar(i,nj)*achar(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*xmuc*(-4.D0)+
+     .           (achar(i,ni)*achar(k,ni)+bchar(i,ni)*bchar(k,ni))*
+     .           (achar(i,nj)*bchar(k,nj)+bchar(i,nj)*achar(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*2.D0*
+     .           (th-xmuc-1.D0)+
+     .           (achar(i,ni)*bchar(k,ni)+bchar(i,ni)*achar(k,ni))*
+     .           (achar(i,nj)*achar(k,nj)+bchar(i,nj)*bchar(k,nj))*
+     .           dsqrt(xmuc)*sgn(ni)*2.D0*(th-xmuc-xmuneut1)+
+     .           (achar(i,ni)*achar(k,ni)+bchar(i,ni)*bchar(k,ni))*
+     .           (achar(i,nj)*achar(k,nj)+bchar(i,nj)*bchar(k,nj))*
+     .           (-th**2+th*(1.D0+xmuneut1+2.D0*xmuc)-(xmuneut1+xmuc)*
+     .           (1.D0+xmuc)))
+     .           -2.D0*g2**2/dst(k)/dstb(i)*(
+     .           (bchar(i,ni)*bchar(k,ni)*achar(i,nj)*achar(k,nj)
+     .           +achar(i,ni)*achar(k,ni)*bchar(i,nj)*bchar(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*xmuc*(-2.D0)+
+     .           (achar(i,ni)*bchar(k,ni)*achar(i,nj)*achar(k,nj)
+     .           +achar(k,ni)*bchar(i,ni)*bchar(i,nj)*bchar(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*
+     .           (th-xmuc-1.D0)+
+     .           (achar(k,ni)*bchar(i,ni)*achar(i,nj)*achar(k,nj)
+     .           +achar(i,ni)*bchar(k,ni)*bchar(i,nj)*bchar(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*
+     .           (uh-xmuc-1.D0)+
+     .           (achar(k,ni)*achar(i,ni)*achar(i,nj)*achar(k,nj)
+     .           +bchar(i,ni)*bchar(k,ni)*bchar(i,nj)*bchar(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*(uh+th-xmuneut1-1.D0)+
+     .           (achar(k,ni)*bchar(i,ni)*achar(k,nj)*bchar(i,nj)
+     .           +bchar(k,ni)*achar(i,ni)*achar(i,nj)*bchar(k,nj))*
+     .           xmuc*(uh+th-2.D0*xmuc)+
+     .           (achar(k,ni)*achar(i,ni)*achar(k,nj)*bchar(i,nj)
+     .           +bchar(k,ni)*bchar(i,ni)*achar(i,nj)*bchar(k,nj))*
+     .           dsqrt(xmuc)*sgn(ni)*(uh-xmuc-xmuneut1)+
+     .           (bchar(k,ni)*bchar(i,ni)*achar(k,nj)*bchar(i,nj)
+     .           +achar(k,ni)*achar(i,ni)*achar(i,nj)*bchar(k,nj))*
+     .           dsqrt(xmuc)*sgn(ni)*(th-xmuc-xmuneut1)+
+     .           (bchar(k,ni)*achar(i,ni)*achar(k,nj)*bchar(i,nj)
+     .           +achar(k,ni)*bchar(i,ni)*achar(i,nj)*bchar(k,nj))*
+     .           (uh*th-xmuc**2-xmuneut1))
+            enddo
+         enddo         
+      else
+         xneutschar=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c 	                     Z exchange
+c -------------------------------------------------------------------- c
+
+      xmuz = amzp**2/amneut(ni)**2
+      dz   = y3-xmuz
+      
+      xneutzchar=0.D0
+ 
+c ---- final state masses included ----
+
+      rh = xmuneut1+2.D0*xmuc-th-uh+1.D0
+      sh = (xmuneut1-th-uh+1.D0)*2.D0*xmuc+4.D0*xmuc**2
+      rk = xmuneut1*(2.D0*xmuc-th-uh+4.D0)+2.D0*xmuc-uh-th
+
+      if ((amneut(nj)+2.D0*amcin).le.amneut(ni)) then
+         xneutzchar=xneutzchar+g2**2/dz**2*(
+     .    oppl(ni,nj)*oppr(ni,nj)*(vzz**2-azz**2)*
+     .    xmneut(nj)/xmneut(ni)*xmuc*(-16.D0/xmuz**2*rh**2+
+     .    32.D0/xmuz*rh-64.D0)+
+     .    oppl(ni,nj)*oppr(ni,nj)*(vzz**2+azz**2)*
+     .    xmneut(nj)/xmneut(ni)*(8.D0/xmuz**2*rh*sh-16.D0/xmuz*sh
+     .    -16.D0*(xmuneut1-uh-th+1.D0))+
+     .    (oppl(ni,nj)**2+oppr(ni,nj)**2)*(vzz**2-azz**2)*
+     .    xmuc*(4.D0/xmuz**2*rh*rk-8.D0/xmuz*rk+8.D0*(uh+th-2.D0*xmuc))
+     .    +(oppl(ni,nj)**2+oppr(ni,nj)**2)*(vzz**2+azz**2)*
+     .    (-2.D0/xmuz**2*rk*sh+8.D0/xmuz*(xmuneut1*(2.D0*xmuc**2+
+     .    4.D0*xmuc-xmuc*(th+uh))+2.D0*xmuc**2-xmuc*(uh+th))+4.D0*(
+     .    xmuneut1*(uh+th-2.D0*xmuc-2.D0)+2.D0*xmuc*(uh+th-1.D0)
+     .    -2.D0*xmuc**2+th*(-th+1.D0)+uh*(-uh+1.D0)))+
+     .    (oppl(ni,nj)**2-oppr(ni,nj)**2)*vzz*azz*8.D0*(
+     .    xmuneut1*(th-uh)+2.D0*xmuc*(th-uh)+th*(-th+1.D0)+uh*(uh-1.D0))
+     .    )
+      else
+         xneutzchar=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                              Hl exchange
+c -------------------------------------------------------------------- c
+
+      xmuhl = aml**2/amneut(ni)**2
+      dhl   = y3-xmuhl
+      
+      xneuthl=0.D0
+  
+c ---- final state masses included ----
+
+      if ((amneut(nj)+2.D0*amcin).le.amneut(ni)) then
+         xneuthl=g2**2/dhl**2*hlccr**2*ahl(ni,nj)**2*(
+     .    xmneut(nj)/xmneut(ni)*xmuc*(-32.D0)+
+     .    xmneut(nj)/xmneut(ni)*16.D0*(1.D0+xmuneut1-th-uh)+
+     .    xmuc*16.D0*(2.D0*xmuc-th-uh)+
+     .    8.D0*(xmuneut1*(uh+th-2.D0*xmuc)+2.D0*xmuc*(uh+th-1.D0)
+     .    -(th+uh)**2+uh+th))
+      else
+         xneuthl=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c 			     HH exhange
+c -------------------------------------------------------------------- c
+
+      xmuhh = amh**2/amneut(ni)**2
+      dhh   = y3-xmuhh
+
+      xneuthh=0.D0
+
+c ---- final state masses included ----
+
+      if ((amneut(nj)+2.D0*amcin).le.amneut(ni)) then
+         xneuthh=g2**2/dhh**2*hhccr**2*ahh(ni,nj)**2*(
+     .    xmneut(nj)/xmneut(ni)*xmuc*(-32.D0)+
+     .    xmneut(nj)/xmneut(ni)*16.D0*(1.D0+xmuneut1-th-uh)+
+     .    xmuc*16.D0*(2.D0*xmuc-th-uh)+
+     .    8.D0*(xmuneut1*(uh+th-2.D0*xmuc)+2.D0*xmuc*(uh+th-1.D0)
+     .    -(th+uh)**2+uh+th))
+      else
+         xneuthh=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                            HA exhange
+c -------------------------------------------------------------------- c
+
+      xmuha = ama**2/amneut(ni)**2
+      da    = y3-xmuha
+      
+      xneuta=0.D0
+
+c ---- final state masses included ----
+
+      if ((amneut(nj)+2.D0*amcin).le.amneut(ni)) then
+         xneuta=g2**2/da**2*haccr**2*aa(ni,nj)**2*(
+     .    xmneut(nj)/xmneut(ni)*xmuc*(-32.D0)+
+     .    xmneut(nj)/xmneut(ni)*(-16.D0)*(1.D0+xmuneut1-th-uh)+
+     .    xmuc*(-16.D0)*(2.D0*xmuc-th-uh)+
+     .    8.D0*(xmuneut1*(uh+th-2.D0*xmuc)+2.D0*xmuc*(uh+th-1.D0)
+     .    -(th+uh)**2+uh+th))
+      else
+         xneuta=0.D0
+      endif
+
+c ------------------------------------------------------------------- c
+c                         interference h-H
+c ------------------------------------------------------------------- c
+
+      xneuthhhl = 0.D0
+
+c ---- final state masses included ----
+
+      if((amneut(nj)+2.D0*amcin).le.amneut(ni)) then
+        xneuthhhl =2.D0*g2**2/dhh/dhl*hlccr*hhccr*(
+     .   xmneut(nj)/xmneut(ni)*xmuc*(-32.D0)+
+     .   xmneut(nj)/xmneut(ni)*16.D0*(1.D0+xmuneut1-uh-th)+
+     .   xmuc*16.D0*(2.D0*xmuc-th-uh)+
+     .   8.D0*(xmuneut1*(uh+th-2.D0*xmuc)+2.D0*xmuc*(uh+th-1.D0)+th+uh
+     .   -(th+uh)**2))*ahh(ni,nj)*ahl(ni,nj)
+      else
+         xneuthhhl =0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c    	                 interference Z-scharm
+c -------------------------------------------------------------------- c
+
+      xneutzschar=0.D0
+ 
+c ---- final state masses included ----
+
+      if ((amneut(nj)+2.D0*amcin).le.amneut(ni)) then
+         do i=1,2
+            xneutzschar=xneutzschar
+     .      +g2**2/dst(i)/dz*oppl(ni,nj)*(
+     .      ((achar(i,ni)*achar(i,nj)-bchar(i,ni)*bchar(i,nj))*vzz-
+     .       (achar(i,ni)*achar(i,nj)+bchar(i,ni)*bchar(i,nj))*azz)*
+     .      xmneut(nj)/xmneut(ni)*xmuc*(
+     .      1/xmuz*(-4.D0)*(1.D0+xmuneut1+2.D0*xmuc-uh-th)+16.D0) +
+     .      ((achar(i,ni)*achar(i,nj)-bchar(i,ni)*bchar(i,nj))*vzz+
+     .       (achar(i,ni)*achar(i,nj)+bchar(i,ni)*bchar(i,nj))*azz)*
+     .      xmneut(nj)/xmneut(ni)*(2.D0/xmuz*((xmuneut1+1.D0-uh-th)*
+     .      2.D0*xmuc+4.D0*xmuc**2)+4.D0*(1.D0+xmuneut1-uh-th)) +
+     .      ((bchar(i,ni)*bchar(i,nj)-achar(i,ni)*achar(i,nj))*vzz+
+     .       (bchar(i,ni)*bchar(i,nj)+achar(i,ni)*achar(i,nj))*azz)*
+     .      xmuc*(2.D0/xmuz*(xmuneut1*(2.D0*xmuc-th-uh+4.D0)+2.D0*xmuc
+     .      -th-uh)+4.D0*(2.D0*xmuc-th-uh)) +
+     .      ((bchar(i,ni)*bchar(i,nj)-achar(i,ni)*achar(i,nj))*vzz-
+     .       (bchar(i,ni)*bchar(i,nj)+achar(i,ni)*achar(i,nj))*azz)*
+     .      (2.D0/xmuz*(xmuneut1*(-2.D0*xmuc**2+xmuc*th-2.D0*xmuc+xmuc*
+     .       uh-2.D0*xmuc)+xmuc*(-2.D0*xmuc+uh)+xmuc*th)+4.D0*(
+     .      xmuneut1*(xmuc-uh+1.D0)+xmuc*(xmuc-uh)+xmuc*(1.D0-uh)+uh**2
+     .      -uh)) + 
+     .      (achar(i,nj)*bchar(i,ni)*(vzz+azz)-
+     .       achar(i,ni)*bchar(i,nj)*(vzz-azz))*
+     .      xmneut(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*(2.D0/xmuz*
+     .      (xmuneut1*(1.D0+xmuc-uh)+1.D0+xmuc*(xmuc-uh)+xmuc*
+     .      (xmuc-th-2.D0*uh+3.D0)+th*(uh-1.D0)+uh*(uh-2.D0))+
+     .      4.D0*(1.D0+xmuc-th)) +
+     .      (achar(i,nj)*bchar(i,ni)*(vzz-azz)-
+     .       achar(i,ni)*bchar(i,nj)*(vzz+azz))*
+     .      xmneut(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*
+     .      (2.D0/xmuz*(xmuneut1*(-1.D0-xmuc+uh)-1.D0+xmuc*(-1.D0+uh)
+     .      +uh*(2.D0-th-uh)+th+xmuc*(-2.D0*xmuc+th+2.D0*uh-2.D0))+
+     .      8.D0*(1.D0+xmuc-uh)) +
+     .      (achar(i,ni)*bchar(i,nj)*(vzz-azz)-
+     .       achar(i,nj)*bchar(i,ni)*(vzz+azz))*dsqrt(xmuc)*sgn(ni)*(
+     .      (-2.D0)/xmuz*(xmuneut1-uh+xmuc)*(xmuneut1+2.D0*xmuc-th-uh
+     .      +1.D0)+8.D0*(xmuneut1+xmuc-uh)) +
+     .      (achar(i,ni)*bchar(i,nj)*(vzz+azz)-
+     .       achar(i,nj)*bchar(i,ni)*(vzz-azz))*dsqrt(xmuc)*sgn(ni)*(
+     .      2.D0/xmuz*(xmuneut1*(xmuneut1+3.D0*xmuc-th-2.D0*uh+1.D0)+
+     .      xmuc*(2.D0*xmuc-th-2.D0*uh)+xmuc*(1.D0-uh)+uh*th+uh**2-uh)+
+     .      4.D0*(xmuneut1+xmuc-th)) )
+     .      -g2**2/dstb(i)/dz*oppl(ni,nj)*(
+     .      ((-achar(i,ni)*achar(i,nj)+bchar(i,ni)*bchar(i,nj))*vzz+
+     .       (achar(i,ni)*achar(i,nj)+bchar(i,ni)*bchar(i,nj))*azz)*
+     .      xmneut(nj)/xmneut(ni)*xmuc*(
+     .      1/xmuz*(-4.D0)*(1.D0+xmuneut1+2.D0*xmuc-uh-th)+16.D0) +
+     .      ((-achar(i,ni)*achar(i,nj)+bchar(i,ni)*bchar(i,nj))*vzz-
+     .       (achar(i,ni)*achar(i,nj)+bchar(i,ni)*bchar(i,nj))*azz)*
+     .      xmneut(nj)/xmneut(ni)*(2.D0/xmuz*(2.D0*xmuc*(xmuneut1+1.D0
+     .      -th-uh)+4.D0*xmuc**2)+4.D0*(1.D0+xmuneut1-uh-th)) +
+     .      ((achar(i,ni)*achar(i,nj)-bchar(i,ni)*bchar(i,nj))*vzz-
+     .       (achar(i,ni)*achar(i,nj)+bchar(i,ni)*bchar(i,nj))*azz)*
+     .      xmuc*(2.D0/xmuz*(xmuneut1*(2.D0*xmuc-th-uh+4.D0)+2.D0*xmuc
+     .      -th-uh)+4.D0*(2.D0*xmuc-th-uh)) +
+     .      ((achar(i,ni)*achar(i,nj)-bchar(i,ni)*bchar(i,nj))*vzz+
+     .       (achar(i,ni)*achar(i,nj)+bchar(i,ni)*bchar(i,nj))*azz)*
+     .      (2.D0/xmuz*(xmuneut1*(-2.D0*xmuc**2+xmuc*th-2.D0*xmuc+xmuc*
+     .       uh-2.D0*xmuc)+xmuc*(-2.D0*xmuc+uh)+xmuc*th)+4.D0*(
+     .      xmuneut1*(xmuc-th+1.D0)+xmuc*(xmuc-th)+xmuc*(1.D0-th)+th**2
+     .      -th)) + 
+     .      (achar(i,nj)*bchar(i,ni)*(-vzz-azz)+
+     .       achar(i,ni)*bchar(i,nj)*(vzz-azz))*
+     .      xmneut(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*
+     .      (2.D0/xmuz*(xmuneut1*(1.D0+xmuc-th)+1.D0+xmuc*(2.D0*xmuc
+     .      -2.D0*th-uh+3.D0)+th*(th-xmuc+uh-2.D0)-uh)+4.D0*(1.D0+xmuc
+     .      -uh)) +
+     .      (achar(i,nj)*bchar(i,ni)*(-vzz+azz)+
+     .       achar(i,ni)*bchar(i,nj)*(vzz+azz))*
+     .      xmneut(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*
+     .      (2.D0/xmuz*(xmuneut1*(-1.D0-xmuc+th)-1.D0+xmuc*(-xmuc+th
+     .      -1.D0)+xmuc*(2.D0*th+uh-2.D0-xmuc)-th*(th+uh)+2.D0*th+uh)+
+     .      8.D0*(1.D0+xmuc-th)) +
+     .      (achar(i,ni)*bchar(i,nj)*(-vzz+azz)+
+     .       achar(i,nj)*bchar(i,ni)*(vzz+azz))*dsqrt(xmuc)*sgn(ni)*(
+     .      2.D0/xmuz*(xmuneut1*(-xmuneut1-3.D0*xmuc+2.D0*th+uh-1.D0)
+     .      +xmuc*(-2.D0*xmuc+2.D0*th+uh-1.D0)+th*(xmuc-th-uh+1.D0))
+     .      +8.D0*(xmuneut1+xmuc-th)) +
+     .      (achar(i,ni)*bchar(i,nj)*(-vzz-azz)+
+     .       achar(i,nj)*bchar(i,ni)*(vzz-azz))*dsqrt(xmuc)*sgn(ni)*(
+     .      2.D0/xmuz*(xmuneut1*(xmuneut1+3.D0*xmuc-uh-2.D0*th+1.D0)+
+     .      xmuc*(xmuc-th+1.D0)+xmuc*(xmuc-2.D0*th-uh)+uh*th+th**2-th)+
+     .      4.D0*(xmuneut1+xmuc-uh)) )
+         enddo
+      else
+         xneutzschar=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                        interference Hl-scharm
+c -------------------------------------------------------------------- c
+
+      xneuthlschar=0.D0	
+
+c ---- final state masses included ----
+
+      if ((amneut(nj)+2.D0*amcin).le.amneut(ni)) then
+         do i=1,2
+            xneuthlschar=xneuthlschar
+     .       +2.D0*g2**2/dhl/dst(i)*(hlccr/dsqrt(2.D0))*
+     .       (-2.D0)*ahl(ni,nj)*(
+     .       (achar(i,nj)*achar(i,ni)+bchar(i,ni)*bchar(i,nj))*(
+     .       dsqrt(xmuc)*sgn(ni)*(xmuneut1+xmuc-uh) +
+     .       dsqrt(xmuc)*sgn(ni)*(-xmuneut1-xmuc+th) +
+     .       xmneut(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*(-1.D0-xmuc+th) +
+     .       xmneut(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*(1.D0+xmuc-uh) )
+     .       +(achar(i,nj)*bchar(i,ni)+achar(i,ni)*bchar(i,nj))*(
+     .       xmneut(nj)/xmneut(ni)*(-1.D0-xmuneut1+uh+th) +
+     .       2.D0*xmneut(nj)/xmneut(ni)*xmuc +
+     .       xmuc*(-2.D0*xmuc+th+uh) +
+     .       (uh**2+uh*th-uh*(1.D0+2.D0*xmuc+xmuneut1)+xmuc+xmuneut1*
+     .       xmuc)) ) 
+     .       +2.D0*g2**2/dhl/dstb(i)*(hlccr/dsqrt(2.D0))*
+     .       (-2.D0)*ahl(ni,nj)*(
+     .       (achar(i,nj)*achar(i,ni)+bchar(i,ni)*bchar(i,nj))*(
+     .       dsqrt(xmuc)*sgn(ni)*(uh-xmuneut1-xmuc) +
+     .       dsqrt(xmuc)*sgn(ni)*(-th+xmuc+xmuneut1) +
+     .       dsqrt(xmuc)*sgn(ni)*xmneut(nj)/xmneut(ni)*(-th+1.D0+xmuc) +
+     .       dsqrt(xmuc)*sgn(ni)*xmneut(nj)/xmneut(ni)*(uh-1.D0-xmuc)) +
+     .       (achar(i,nj)*bchar(i,ni)+achar(i,ni)*bchar(i,nj))*(
+     .       2.D0*xmuc*xmneut(nj)/xmneut(ni) +
+     .       (uh*th+th**2-th*(1.D0+2.D0*xmuc+xmuneut1)+xmuc+
+     .       xmuc*xmuneut1) +
+     .       xmneut(nj)/xmneut(ni)*(uh+th-xmuneut1-1.D0) +
+     .       xmuc*(uh+th-2.D0*xmuc)) )
+         enddo
+      else
+         xneuthlschar=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                      interference HH-scharm
+c -------------------------------------------------------------------- c
+
+      xneuthhschar=0.D0	
+
+c ---- final state masses included ----
+
+      if ((amneut(nj)+2.D0*amcin).le.amneut(ni)) then
+         do i=1,2
+            xneuthhschar=xneuthhschar
+     .       +2.D0*g2**2/dhh/dst(i)*(hhccr/dsqrt(2.D0))*
+     .       (-2.D0)*ahh(ni,nj)*(
+     .       (achar(i,nj)*achar(i,ni)+bchar(i,ni)*bchar(i,nj))*(
+     .       dsqrt(xmuc)*sgn(ni)*(xmuneut1+xmuc-uh) +
+     .       dsqrt(xmuc)*sgn(ni)*(-xmuneut1-xmuc+th) +
+     .       xmneut(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*(-1.D0-xmuc+th) +
+     .       xmneut(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*(1.D0+xmuc-uh) ) 
+     .       +(achar(i,nj)*bchar(i,ni)+achar(i,ni)*bchar(i,nj))*(
+     .       xmneut(nj)/xmneut(ni)*(-1.D0-xmuneut1+uh+th) +
+     .       2.D0*xmneut(nj)/xmneut(ni)*xmuc +
+     .       xmuc*(-2.D0*xmuc+th+uh) +
+     .       (uh**2+uh*th-uh*(1.D0+2.D0*xmuc+xmuneut1)+xmuc+xmuneut1*
+     .       xmuc)) ) 
+     .       +2.D0*g2**2/dhh/dstb(i)*(hhccr/dsqrt(2.D0))*
+     .       (-2.D0)*ahh(ni,nj)*(
+     .       (achar(i,nj)*achar(i,ni)+bchar(i,ni)*bchar(i,nj))*(
+     .       dsqrt(xmuc)*sgn(ni)*(uh-xmuneut1-xmuc) +
+     .       dsqrt(xmuc)*sgn(ni)*(-th+xmuc+xmuneut1) +
+     .       dsqrt(xmuc)*sgn(ni)*xmneut(nj)/xmneut(ni)*(-th+1.D0+xmuc) +
+     .       dsqrt(xmuc)*sgn(ni)*xmneut(nj)/xmneut(ni)*(uh-1.D0-xmuc)) +
+     .       (achar(i,nj)*bchar(i,ni)+achar(i,ni)*bchar(i,nj))*(
+     .       2.D0*xmuc*xmneut(nj)/xmneut(ni) +
+     .       (uh*th+th**2-th*(1.D0+2.D0*xmuc+xmuneut1)+xmuc+
+     .       xmuc*xmuneut1) +
+     .       xmneut(nj)/xmneut(ni)*(uh+th-xmuneut1-1.D0) +
+     .       xmuc*(uh+th-2.D0*xmuc)) )
+         enddo
+      else
+         xneuthhschar=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c 	                 interference HA-scharm
+c -------------------------------------------------------------------- c
+
+      xneutaschar=0.D0	
+      
+c ---- final state masses included ----
+
+      if ((amneut(nj)+2.D0*amcin).le.amneut(ni)) then
+         do i=1,2
+            xneutaschar=xneutaschar
+     .       +2.D0*g2**2/da/dst(i)*(haccr/dsqrt(2.D0))*
+     .       2.D0*aa(ni,nj)*(
+     .       (achar(i,nj)*achar(i,ni)+bchar(i,ni)*bchar(i,nj))*(
+     .       dsqrt(xmuc)*sgn(ni)*(xmuneut1+xmuc-uh) +
+     .       dsqrt(xmuc)*sgn(ni)*(-xmuneut1-xmuc+th)*(-1.D0) +
+     .       xmneut(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*(-1.D0-xmuc+th)*
+     .       (-1.D0) +
+     .       xmneut(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*(1.D0+xmuc-uh) ) 
+     .       +(achar(i,nj)*bchar(i,ni)+achar(i,ni)*bchar(i,nj))*(
+     .       xmneut(nj)/xmneut(ni)*(-1.D0-xmuneut1+uh+th)*(-1.D0) +
+     .       2.D0*xmneut(nj)/xmneut(ni)*xmuc +
+     .       xmuc*(-2.D0*xmuc+th+uh)*(-1.D0) +
+     .       (uh**2+uh*th-uh*(1.D0+2.D0*xmuc+xmuneut1)+xmuc+xmuneut1*
+     .       xmuc)) ) 
+     .       +2.D0*g2**2/da/dstb(i)*(haccr/dsqrt(2.D0))*
+     .       2.D0*aa(ni,nj)*(
+     .       (achar(i,nj)*achar(i,ni)+bchar(i,ni)*bchar(i,nj))*(
+     .       dsqrt(xmuc)*sgn(ni)*(uh-xmuneut1-xmuc)*(-1.D0) +
+     .       dsqrt(xmuc)*sgn(ni)*(-th+xmuc+xmuneut1) +
+     .       dsqrt(xmuc)*sgn(ni)*xmneut(nj)/xmneut(ni)*(-th+1.D0+xmuc) +
+     .       dsqrt(xmuc)*sgn(ni)*xmneut(nj)/xmneut(ni)*(uh-1.D0-xmuc)*
+     .       (-1.D0)) +
+     .       (achar(i,nj)*bchar(i,ni)+achar(i,ni)*bchar(i,nj))*(
+     .       2.D0*xmuc*xmneut(nj)/xmneut(ni) +
+     .       (uh*th+th**2-th*(1.D0+2.D0*xmuc+xmuneut1)+xmuc+
+     .       xmuc*xmuneut1) +
+     .       xmneut(nj)/xmneut(ni)*(uh+th-xmuneut1-1.D0)*(-1.D0) +
+     .       xmuc*(uh+th-2.D0*xmuc)*(-1.D0)) )
+         enddo
+      else
+         xneutaschar=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c 	                interference Z and H/h/A
+c -------------------------------------------------------------------- c
+
+      xneutza=0.D0	
+
+      if ((amneut(nj)+amcin+amcin).le.amneut(ni)) then      
+         xneutza=xneutza-4.D0*g2**2/da/dz*azz*
+     .    haccr/dsqrt(2.D0)*2.D0*aa(ni,nj)*oppl(ni,nj)*(
+     .    xmneut(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*(
+     .    4.D0/xmuz*(2.D0+xmuneut1*(2.D0*xmuc-th-uh+2.D0)+xmuc*(-uh-th
+     .    +1.D0+xmuc)+xmuc*(3.D0*xmuc-3.D0*(th+uh)+5.D0)+(th+uh)**2
+     .    -3.D0*(th+uh))+
+     .    4.D0*(th-xmuc-1.D0)+
+     .    4.D0*(uh-xmuc-1.D0))
+     .    -dsqrt(xmuc)*sgn(ni)*(
+     .    4.D0/xmuz*(-2.D0*xmuneut1**2+xmuneut1*(-6.D0*xmuc+
+     .    3.D0*(th+uh)-2.D0)+xmuc*(-xmuc+th+uh-1.D0)+xmuc*(-3.D0*xmuc
+     .    +3.D0*(uh+th)-1.D0)-(th+uh)**2+(th+uh))+
+     .    4.D0*(xmuneut1+xmuc-uh)+
+     .    4.D0*(xmuneut1+xmuc-th)) )
+      else
+         xneutza=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+
+      SD_neutch=xneutzchar+xneuthl+xneuthh+xneuthhhl+xneuta+xneutschar
+     .       +xneutzschar+xneuthlschar+xneuthhschar+xneutaschar+xneutza
+
+      end
+
+c ==================================================================== c
+c ====================  neutralino strange strangebar ================ c
+c ==================================================================== c
+
+      double precision function SD_neutst(x1,x2)
+
+      implicit double precision (a-h,m,o-z)
+      integer k,ni,nj
+
+      dimension amneut(4),xmneut(4),amchar(2),xmchar(2)
+      dimension ahl(4,4),ahh(4,4),aa(4,4)
+      dimension opl(2,2),opr(2,2),oppl(4,4),oppr(4,4)
+      dimension abot(2,4),bbot(2,4)
+      dimension abot1(2,4),bbot1(2,4),abot2(2,4),bbot2(2,4)
+      dimension sgn(4)
+      dimension dsbo(2),dsbob(2)
+      dimension alsstr(2,2),aksstr(2,2),astr(2,4),bstr(2,4),
+     .     alschar(2,2),akschar(2,2),achar(2,4),bchar(2,4)
+
+      COMMON/SD_scalasc/scals,scalc
+      COMMON/SD_yukawa/ytewsb,ybewsb,ytauewsb
+      COMMON/SD_param/gf,amz,amw,pi,g2
+      COMMON/SD_hmass/ama,aml,amh,amch,amar
+      COMMON/SD_fermion/amt,amb,amtau
+      COMMON/SD_massgino/amneut,xmneut,amchar,xmchar
+      COMMON/SD_squarktb/ast1,ast2,asb1,asb2
+      COMMON/SD_squarkud/asup1,asup2,asdown1,asdown2
+      COMMON/SD_indices/ni,nj
+      COMMON/SD_coup1/ahl,ahh,aa
+      COMMON/SD_coup4/opl,opr,oppl,oppr
+      COMMON/SD_coup17/azztoptop,vzztoptop,azztautau,vzztautau,
+     .                 azzneutneut,vzzneutneut,azzbotbot,vzzbotbot
+      COMMON/SD_runcoupscale/scalechoice,scaleofcoupling,inumloop
+      COMMON/SD_mwmzpole/amwp,amzp
+      COMMON/SUSYHITIN/flagshsin,amsin,amcin,ammuonin,alphin,gamwin,
+     .                 gamzin,vusin,vcbin,rvubin
+      COMMON/SD_coup23/alsstr,aksstr,astr,bstr,alschar,akschar,achar,
+     .     bchar,vchchar,achchar
+      COMMON/SD_mixang/a,tanbeta
+
+c --- the running couplings ---
+
+      if(scalechoice.eq.1.D0) then
+c         scals = ysewsb/dsqrt(g2)
+c         scalc = ycewsb/dsqrt(g2)
+
+         bet = datan(tanbeta)
+
+         scals = amsin/dsqrt(2.D0)/amw/dcos(bet)
+         scalc = amcin/dsqrt(2.D0)/amw/dsin(bet)
+      endif
+
+      call SD_phistrstr(hlssr,hhssr,hassr)
+
+c --- several definitions
+
+      do i=1,4,1
+         sgn(i) = 1.D0
+         if(xmneut(i).ge.0.D0) then
+            sgn(i) = 1.D0
+         elseif(xmneut(i).lt.0.D0) then
+            sgn(i) = -1.D0
+         endif
+      enddo
+
+      xmuneut1 = amneut(nj)**2/amneut(ni)**2
+      xmus     = amsin**2/amneut(ni)**2
+
+      x3 = 2.D0-x1-x2
+      y3 = 1.D0+xmuneut1-x3
+      
+      uh = 1.D0-x1+xmus
+      th = 1.D0-x2+xmus
+
+      vzz = vzzbotbot
+      azz = azzbotbot
+
+c -------------------------------------------------------------------- c
+c 	                    sstrange exchange
+c -------------------------------------------------------------------- c
+
+      xmuss1 = asdown1**2/amneut(ni)**2
+      xmuss2 = asdown2**2/amneut(ni)**2
+
+      dsbo(1)  = 1.D0-x1-xmuss1+xmus
+      dsbo(2)  = 1.D0-x1-xmuss2+xmus
+      dsbob(1) = 1.D0-x2-xmuss1+xmus
+      dsbob(2) = 1.D0-x2-xmuss2+xmus
+      
+      xneutsstr=0.D0
+
+c ---- final state masses included ----
+
+      if((amneut(nj)+2.D0*amsin).le.amneut(ni)) then
+         do i=1,2
+            do k=1,2
+               xneutsstr=xneutsstr
+     .          +g2**2/dsbo(k)/dsbo(i)*(
+     .           (astr(i,ni)*bstr(k,ni)+bstr(i,ni)*astr(k,ni))*
+     .           (astr(i,nj)*bstr(k,nj)+bstr(i,nj)*astr(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*xmus*(-4.D0)+
+     .           (astr(i,ni)*astr(k,ni)+bstr(i,ni)*bstr(k,ni))*
+     .           (astr(i,nj)*bstr(k,nj)+bstr(i,nj)*astr(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*2.D0*
+     .           (uh-xmus-1.D0)+
+     .           (astr(i,ni)*bstr(k,ni)+bstr(i,ni)*astr(k,ni))*
+     .           (astr(i,nj)*astr(k,nj)+bstr(i,nj)*bstr(k,nj))*
+     .           dsqrt(xmus)*sgn(ni)*2.D0*(uh-xmus-xmuneut1)+
+     .           (astr(i,ni)*astr(k,ni)+bstr(i,ni)*bstr(k,ni))*
+     .           (astr(i,nj)*astr(k,nj)+bstr(i,nj)*bstr(k,nj))*
+     .           (-uh**2+uh*(1.D0+xmuneut1+2.D0*xmus)-(xmuneut1+xmus)*
+     .           (1.D0+xmus)))
+     .           +g2**2/dsbob(k)/dsbob(i)*(
+     .           (astr(i,ni)*bstr(k,ni)+bstr(i,ni)*astr(k,ni))*
+     .           (astr(i,nj)*bstr(k,nj)+bstr(i,nj)*astr(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*xmus*(-4.D0)+
+     .           (astr(i,ni)*astr(k,ni)+bstr(i,ni)*bstr(k,ni))*
+     .           (astr(i,nj)*bstr(k,nj)+bstr(i,nj)*astr(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*2.D0*
+     .           (th-xmus-1.D0)+
+     .           (astr(i,ni)*bstr(k,ni)+bstr(i,ni)*astr(k,ni))*
+     .           (astr(i,nj)*astr(k,nj)+bstr(i,nj)*bstr(k,nj))*
+     .           dsqrt(xmus)*sgn(ni)*2.D0*(th-xmus-xmuneut1)+
+     .           (astr(i,ni)*astr(k,ni)+bstr(i,ni)*bstr(k,ni))*
+     .           (astr(i,nj)*astr(k,nj)+bstr(i,nj)*bstr(k,nj))*
+     .           (-th**2+th*(1.D0+xmuneut1+2.D0*xmus)-(xmuneut1+xmus)*
+     .           (1.D0+xmus)))
+     .           -2.D0*g2**2/dsbo(k)/dsbob(i)*(
+     .           (bstr(i,ni)*bstr(k,ni)*astr(i,nj)*astr(k,nj)
+     .           +astr(i,ni)*astr(k,ni)*bstr(i,nj)*bstr(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*xmus*(-2.D0)+
+     .           (astr(i,ni)*bstr(k,ni)*astr(i,nj)*astr(k,nj)
+     .           +astr(k,ni)*bstr(i,ni)*bstr(i,nj)*bstr(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*
+     .           (th-xmus-1.D0)+
+     .           (astr(k,ni)*bstr(i,ni)*astr(i,nj)*astr(k,nj)
+     .           +astr(i,ni)*bstr(k,ni)*bstr(i,nj)*bstr(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*
+     .           (uh-xmus-1.D0)+
+     .           (astr(k,ni)*astr(i,ni)*astr(i,nj)*astr(k,nj)
+     .           +bstr(i,ni)*bstr(k,ni)*bstr(i,nj)*bstr(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*(uh+th-xmuneut1-1.D0)+
+     .           (astr(k,ni)*bstr(i,ni)*astr(k,nj)*bstr(i,nj)
+     .           +bstr(k,ni)*astr(i,ni)*astr(i,nj)*bstr(k,nj))*
+     .           xmus*(uh+th-2.D0*xmus)+
+     .           (astr(k,ni)*astr(i,ni)*astr(k,nj)*bstr(i,nj)
+     .           +bstr(k,ni)*bstr(i,ni)*astr(i,nj)*bstr(k,nj))*
+     .           dsqrt(xmus)*sgn(ni)*(uh-xmus-xmuneut1)+
+     .           (bstr(k,ni)*bstr(i,ni)*astr(k,nj)*bstr(i,nj)
+     .           +astr(k,ni)*astr(i,ni)*astr(i,nj)*bstr(k,nj))*
+     .           dsqrt(xmus)*sgn(ni)*(th-xmus-xmuneut1)+
+     .           (bstr(k,ni)*astr(i,ni)*astr(k,nj)*bstr(i,nj)
+     .           +astr(k,ni)*bstr(i,ni)*astr(i,nj)*bstr(k,nj))*
+     .           (uh*th-xmus**2-xmuneut1))
+            enddo
+         enddo         
+      else
+         xneutsstr=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c 			        Z exchange
+c -------------------------------------------------------------------- c
+
+      xmuz = amzp**2/amneut(ni)**2
+      dz   = y3-xmuz
+      
+      xneutzstr=0.D0
+
+c ---- final state masses included ----
+
+      rh = xmuneut1+2.D0*xmus-th-uh+1.D0
+      sh = (xmuneut1-th-uh+1.D0)*2.D0*xmus+4.D0*xmus**2
+      rk = xmuneut1*(2.D0*xmus-th-uh+4.D0)+2.D0*xmus-uh-th
+
+      if((amneut(nj)+2.D0*amsin).le.amneut(ni)) then
+         xneutzstr=xneutzstr+g2**2/dz**2*(
+     .    oppl(ni,nj)*oppr(ni,nj)*(vzz**2-azz**2)*
+     .    xmneut(nj)/xmneut(ni)*xmus*(-16.D0/xmuz**2*rh**2+
+     .    32.D0/xmuz*rh-64.D0)+
+     .    oppl(ni,nj)*oppr(ni,nj)*(vzz**2+azz**2)*
+     .    xmneut(nj)/xmneut(ni)*(8.D0/xmuz**2*rh*sh-16.D0/xmuz*sh
+     .    -16.D0*(xmuneut1-uh-th+1.D0))+
+     .    (oppl(ni,nj)**2+oppr(ni,nj)**2)*(vzz**2-azz**2)*
+     .    xmus*(4.D0/xmuz**2*rh*rk-8.D0/xmuz*rk+8.D0*(uh+th-2.D0*xmus))
+     .    +(oppl(ni,nj)**2+oppr(ni,nj)**2)*(vzz**2+azz**2)*
+     .    (-2.D0/xmuz**2*rk*sh+8.D0/xmuz*(xmuneut1*(2.D0*xmus**2+
+     .    4.D0*xmus-xmus*(th+uh))+2.D0*xmus**2-xmus*(uh+th))+4.D0*(
+     .    xmuneut1*(uh+th-2.D0*xmus-2.D0)+2.D0*xmus*(uh+th-1.D0)
+     .    -2.D0*xmus**2+th*(-th+1.D0)+uh*(-uh+1.D0)))+
+     .    (oppl(ni,nj)**2-oppr(ni,nj)**2)*vzz*azz*8.D0*(
+     .    xmuneut1*(th-uh)+2.D0*xmus*(th-uh)+th*(-th+1.D0)+uh*(uh-1.D0))
+     .    )
+      else
+         xneutzstr=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                             Hl exchange
+c -------------------------------------------------------------------- c
+
+      xmuhl = aml**2/amneut(ni)**2
+      dhl   = y3-xmuhl
+      
+      xneuthl=0.D0
+  
+c ---- final state masses included ----
+
+      if((amneut(nj)+2.D0*amsin).le.amneut(ni)) then
+         xneuthl=g2**2/dhl**2*hlssr**2*ahl(ni,nj)**2*(
+     .    xmneut(nj)/xmneut(ni)*xmus*(-32.D0)+
+     .    xmneut(nj)/xmneut(ni)*16.D0*(1.D0+xmuneut1-th-uh)+
+     .    xmus*16.D0*(2.D0*xmus-th-uh)+
+     .    8.D0*(xmuneut1*(uh+th-2.D0*xmus)+2.D0*xmus*(uh+th-1.D0)
+     .    -(th+uh)**2+uh+th))
+      else
+         xneuthl=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                              HH exhange
+c -------------------------------------------------------------------- c
+
+      xmuhh = amh**2/amneut(ni)**2
+      dhh   = y3-xmuhh
+
+      xneuthh=0.D0
+
+c ---- final state masses included ----
+
+      if((amneut(nj)+2.D0*amsin).le.amneut(ni)) then
+         xneuthh=g2**2/dhh**2*hhssr**2*ahh(ni,nj)**2*(
+     .    xmneut(nj)/xmneut(ni)*xmus*(-32.D0)+
+     .    xmneut(nj)/xmneut(ni)*16.D0*(1.D0+xmuneut1-th-uh)+
+     .    xmus*16.D0*(2.D0*xmus-th-uh)+
+     .    8.D0*(xmuneut1*(uh+th-2.D0*xmus)+2.D0*xmus*(uh+th-1.D0)
+     .    -(th+uh)**2+uh+th))
+      else
+         xneuthh=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                              HA exhange
+c -------------------------------------------------------------------- c
+
+      xmuha = ama**2/amneut(ni)**2
+      da    = y3-xmuha
+      
+      xneuta=0.D0
+
+c ---- final state masses included ----
+
+      if((amneut(nj)+2.D0*amsin).le.amneut(ni)) then
+         xneuta=g2**2/da**2*hassr**2*aa(ni,nj)**2*(
+     .    xmneut(nj)/xmneut(ni)*xmus*(-32.D0)+
+     .    xmneut(nj)/xmneut(ni)*(-16.D0)*(1.D0+xmuneut1-th-uh)+
+     .    xmus*(-16.D0)*(2.D0*xmus-th-uh)+
+     .    8.D0*(xmuneut1*(uh+th-2.D0*xmus)+2.D0*xmus*(uh+th-1.D0)
+     .    -(th+uh)**2+uh+th))
+      else
+         xneuta=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c 	                     interference h-H
+c -------------------------------------------------------------------- c
+
+      xneuthhhl = 0.D0
+
+c ---- final state masses included ----
+
+      if((amneut(nj)+2.D0*amsin).le.amneut(ni)) then
+        xneuthhhl =2.D0*g2**2/dhh/dhl*hlssr*hhssr*(
+     .   xmneut(nj)/xmneut(ni)*xmus*(-32.D0)+
+     .   xmneut(nj)/xmneut(ni)*16.D0*(1.D0+xmuneut1-uh-th)+
+     .   xmus*16.D0*(2.D0*xmus-th-uh)+
+     .   8.D0*(xmuneut1*(uh+th-2.D0*xmus)+2.D0*xmus*(uh+th-1.D0)+th+uh
+     .   -(th+uh)**2))*ahh(ni,nj)*ahl(ni,nj)
+      else
+         xneuthhhl =0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c 	                 interference Z-sstrange
+c -------------------------------------------------------------------- c
+
+      xneutzsstr=0.D0
+
+c ---- final state masses included ----
+
+      if((amneut(nj)+2.D0*amsin).le.amneut(ni)) then
+         do i=1,2
+            xneutzsstr=xneutzsstr
+     .      +g2**2/dsbo(i)/dz*oppl(ni,nj)*(
+     .      ((astr(i,ni)*astr(i,nj)-bstr(i,ni)*bstr(i,nj))*vzz-
+     .       (astr(i,ni)*astr(i,nj)+bstr(i,ni)*bstr(i,nj))*azz)*
+     .      xmneut(nj)/xmneut(ni)*xmus*(
+     .      1/xmuz*(-4.D0)*(1.D0+xmuneut1+2.D0*xmus-uh-th)+16.D0) +
+     .      ((astr(i,ni)*astr(i,nj)-bstr(i,ni)*bstr(i,nj))*vzz+
+     .       (astr(i,ni)*astr(i,nj)+bstr(i,ni)*bstr(i,nj))*azz)*
+     .      xmneut(nj)/xmneut(ni)*(2.D0/xmuz*((xmuneut1+1.D0-uh-th)*
+     .      2.D0*xmus+4.D0*xmus**2)+4.D0*(1.D0+xmuneut1-uh-th)) +
+     .      ((bstr(i,ni)*bstr(i,nj)-astr(i,ni)*astr(i,nj))*vzz+
+     .       (bstr(i,ni)*bstr(i,nj)+astr(i,ni)*astr(i,nj))*azz)*
+     .      xmus*(2.D0/xmuz*(xmuneut1*(2.D0*xmus-th-uh+4.D0)+2.D0*xmus
+     .      -th-uh)+4.D0*(2.D0*xmus-th-uh)) +
+     .      ((bstr(i,ni)*bstr(i,nj)-astr(i,ni)*astr(i,nj))*vzz-
+     .       (bstr(i,ni)*bstr(i,nj)+astr(i,ni)*astr(i,nj))*azz)*
+     .      (2.D0/xmuz*(xmuneut1*(-2.D0*xmus**2+xmus*th-2.D0*xmus+xmus*
+     .       uh-2.D0*xmus)+xmus*(-2.D0*xmus+uh)+xmus*th)+4.D0*(
+     .      xmuneut1*(xmus-uh+1.D0)+xmus*(xmus-uh)+xmus*(1.D0-uh)+uh**2
+     .      -uh)) + 
+     .      (astr(i,nj)*bstr(i,ni)*(vzz+azz)-
+     .       astr(i,ni)*bstr(i,nj)*(vzz-azz))*
+     .      xmneut(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*
+     .      (2.D0/xmuz*(xmuneut1*(1.D0+xmus-uh)+1.D0+xmus*(xmus-uh)+
+     .      xmus*(xmus-th-2.D0*uh+3.D0)+th*(uh-1.D0)+uh*(uh-2.D0))+
+     .      4.D0*(1.D0+xmus-th)) +
+     .      (astr(i,nj)*bstr(i,ni)*(vzz-azz)-
+     .       astr(i,ni)*bstr(i,nj)*(vzz+azz))*
+     .      xmneut(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*(2.D0/xmuz*
+     .      (xmuneut1*(-1.D0-xmus+uh)-1.D0+xmus*(-1.D0+uh)+uh*(2.D0-th
+     .      -uh)+th+xmus*(-2.D0*xmus+th+2.D0*uh-2.D0))+8.D0*(1.D0+xmus-
+     .      uh)) +
+     .      (astr(i,ni)*bstr(i,nj)*(vzz-azz)-
+     .       astr(i,nj)*bstr(i,ni)*(vzz+azz))*dsqrt(xmus)*sgn(ni)*(
+     .      (-2.D0)/xmuz*(xmuneut1-uh+xmus)*(xmuneut1+2.D0*xmus-th-uh
+     .      +1.D0)+8.D0*(xmuneut1+xmus-uh)) +
+     .      (astr(i,ni)*bstr(i,nj)*(vzz+azz)-
+     .       astr(i,nj)*bstr(i,ni)*(vzz-azz))*dsqrt(xmus)*sgn(ni)*(
+     .      2.D0/xmuz*(xmuneut1*(xmuneut1+3.D0*xmus-th-2.D0*uh+1.D0)+
+     .      xmus*(2.D0*xmus-th-2.D0*uh)+xmus*(1.D0-uh)+uh*th+uh**2-uh)+
+     .      4.D0*(xmuneut1+xmus-th)) )
+     .      -g2**2/dsbob(i)/dz*oppl(ni,nj)*(
+     .      ((-astr(i,ni)*astr(i,nj)+bstr(i,ni)*bstr(i,nj))*vzz+
+     .       (astr(i,ni)*astr(i,nj)+bstr(i,ni)*bstr(i,nj))*azz)*
+     .      xmneut(nj)/xmneut(ni)*xmus*(
+     .      1/xmuz*(-4.D0)*(1.D0+xmuneut1+2.D0*xmus-uh-th)+16.D0) +
+     .      ((-astr(i,ni)*astr(i,nj)+bstr(i,ni)*bstr(i,nj))*vzz-
+     .       (astr(i,ni)*astr(i,nj)+bstr(i,ni)*bstr(i,nj))*azz)*
+     .      xmneut(nj)/xmneut(ni)*(2.D0/xmuz*(2.D0*xmus*(xmuneut1+1.D0
+     .      -th-uh)+4.D0*xmus**2)+4.D0*(1.D0+xmuneut1-uh-th)) +
+     .      ((astr(i,ni)*astr(i,nj)-bstr(i,ni)*bstr(i,nj))*vzz-
+     .       (astr(i,ni)*astr(i,nj)+bstr(i,ni)*bstr(i,nj))*azz)*
+     .      xmus*(2.D0/xmuz*(xmuneut1*(2.D0*xmus-th-uh+4.D0)+2.D0*xmus
+     .      -th-uh)+4.D0*(2.D0*xmus-th-uh)) +
+     .      ((astr(i,ni)*astr(i,nj)-bstr(i,ni)*bstr(i,nj))*vzz+
+     .       (astr(i,ni)*astr(i,nj)+bstr(i,ni)*bstr(i,nj))*azz)*
+     .      (2.D0/xmuz*(xmuneut1*(-2.D0*xmus**2+xmus*th-2.D0*xmus+xmus*
+     .       uh-2.D0*xmus)+xmus*(-2.D0*xmus+uh)+xmus*th)+4.D0*(
+     .      xmuneut1*(xmus-th+1.D0)+xmus*(xmus-th)+xmus*(1.D0-th)+th**2
+     .      -th)) + 
+     .      (astr(i,nj)*bstr(i,ni)*(-vzz-azz)+
+     .       astr(i,ni)*bstr(i,nj)*(vzz-azz))*
+     .      xmneut(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*(2.D0/xmuz*
+     .      (xmuneut1*(1.D0+xmus-th)+1.D0+xmus*(2.D0*xmus-2.D0*th-uh+
+     .      3.D0)+th*(th-xmus+uh-2.D0)-uh)+4.D0*(1.D0+xmus-uh)) +
+     .      (astr(i,nj)*bstr(i,ni)*(-vzz+azz)+
+     .       astr(i,ni)*bstr(i,nj)*(vzz+azz))*
+     .      xmneut(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*(2.D0/xmuz*
+     .      (xmuneut1*(-1.D0-xmus+th)-1.D0+xmus*(-xmus+th-1.D0)+xmus*
+     .      (2.D0*th+uh-2.D0-xmus)-th*(th+uh)+2.D0*th+uh)+8.D0*(1.D0
+     .      +xmus-th)) +
+     .      (astr(i,ni)*bstr(i,nj)*(-vzz+azz)+
+     .       astr(i,nj)*bstr(i,ni)*(vzz+azz))*dsqrt(xmus)*sgn(ni)*(
+     .      2.D0/xmuz*(xmuneut1*(-xmuneut1-3.D0*xmus+2.D0*th+uh-1.D0)
+     .      +xmus*(-2.D0*xmus+2.D0*th+uh-1.D0)+th*(xmus-th-uh+1))
+     .      +8.D0*(xmuneut1+xmus-th)) +
+     .      (astr(i,ni)*bstr(i,nj)*(-vzz-azz)+
+     .       astr(i,nj)*bstr(i,ni)*(vzz-azz))*dsqrt(xmus)*sgn(ni)*(
+     .      2.D0/xmuz*(xmuneut1*(xmuneut1+3.D0*xmus-uh-2.D0*th+1.D0)+
+     .      xmus*(xmus-th+1.D0)+xmus*(xmus-2.D0*th-uh)+uh*th+th**2-th)+
+     .      4.D0*(xmuneut1+xmus-uh)) )
+         enddo
+      else
+         xneutzsstr=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c 			interference Hl-sstrange
+c -------------------------------------------------------------------- c
+
+      xneuthlsstr=0.D0	
+
+c ---- final state masses included ----
+
+      if((amneut(nj)+2.D0*amsin).le.amneut(ni)) then
+         do i=1,2
+            xneuthlsstr=xneuthlsstr
+     .       +2.D0*g2**2/dhl/dsbo(i)*(hlssr/dsqrt(2.D0))*
+     .       (-2.D0)*ahl(ni,nj)*(
+     .       (astr(i,nj)*astr(i,ni)+bstr(i,ni)*bstr(i,nj))*(
+     .       dsqrt(xmus)*sgn(ni)*(xmuneut1+xmus-uh) +
+     .       dsqrt(xmus)*sgn(ni)*(-xmuneut1-xmus+th) +
+     .       xmneut(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*(-1.D0-xmus+th) +
+     .       xmneut(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*(1.D0+xmus-uh) )
+     .       +(astr(i,nj)*bstr(i,ni)+astr(i,ni)*bstr(i,nj))*(
+     .       xmneut(nj)/xmneut(ni)*(-1.D0-xmuneut1+uh+th) +
+     .       2.D0*xmneut(nj)/xmneut(ni)*xmus +
+     .       xmus*(-2.D0*xmus+th+uh) +
+     .       (uh**2+uh*th-uh*(1.D0+2.D0*xmus+xmuneut1)+xmus+xmuneut1*
+     .       xmus)) ) 
+     .       +2.D0*g2**2/dhl/dsbob(i)*(hlssr/dsqrt(2.D0))*
+     .       (-2.D0)*ahl(ni,nj)*(
+     .       (astr(i,nj)*astr(i,ni)+bstr(i,ni)*bstr(i,nj))*(
+     .       dsqrt(xmus)*sgn(ni)*(uh-xmuneut1-xmus) +
+     .       dsqrt(xmus)*sgn(ni)*(-th+xmus+xmuneut1) +
+     .       dsqrt(xmus)*sgn(ni)*xmneut(nj)/xmneut(ni)*(-th+1.D0+xmus) +
+     .       dsqrt(xmus)*sgn(ni)*xmneut(nj)/xmneut(ni)*(uh-1.D0-xmus)) +
+     .       (astr(i,nj)*bstr(i,ni)+astr(i,ni)*bstr(i,nj))*(
+     .       2.D0*xmus*xmneut(nj)/xmneut(ni) +
+     .       (uh*th+th**2-th*(1.D0+2.D0*xmus+xmuneut1)+xmus+
+     .       xmus*xmuneut1) +
+     .       xmneut(nj)/xmneut(ni)*(uh+th-xmuneut1-1.D0) +
+     .       xmus*(uh+th-2.D0*xmus)) )
+         enddo
+      else
+         xneuthlsstr=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                         interference HH-sstrange
+c -------------------------------------------------------------------- c
+
+      xneuthhsstr=0.D0	
+
+c ---- final state masses included ----
+
+      if((amneut(nj)+2.D0*amsin).le.amneut(ni)) then
+         do i=1,2
+            xneuthhsstr=xneuthhsstr
+     .       +2.D0*g2**2/dhh/dsbo(i)*(hhssr/dsqrt(2.D0))*
+     .       (-2.D0)*ahh(ni,nj)*(
+     .       (astr(i,nj)*astr(i,ni)+bstr(i,ni)*bstr(i,nj))*(
+     .       dsqrt(xmus)*sgn(ni)*(xmuneut1+xmus-uh) +
+     .       dsqrt(xmus)*sgn(ni)*(-xmuneut1-xmus+th) +
+     .       xmneut(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*(-1.D0-xmus+th) +
+     .       xmneut(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*(1.D0+xmus-uh) ) 
+     .       +(astr(i,nj)*bstr(i,ni)+astr(i,ni)*bstr(i,nj))*(
+     .       xmneut(nj)/xmneut(ni)*(-1.D0-xmuneut1+uh+th) +
+     .       2.D0*xmneut(nj)/xmneut(ni)*xmus +
+     .       xmus*(-2.D0*xmus+th+uh) +
+     .       (uh**2+uh*th-uh*(1.D0+2.D0*xmus+xmuneut1)+xmus+xmuneut1*
+     .       xmus)) ) 
+     .       +2.D0*g2**2/dhh/dsbob(i)*(hhssr/dsqrt(2.D0))*
+     .       (-2.D0)*ahh(ni,nj)*(
+     .       (astr(i,nj)*astr(i,ni)+bstr(i,ni)*bstr(i,nj))*(
+     .       dsqrt(xmus)*sgn(ni)*(uh-xmuneut1-xmus) +
+     .       dsqrt(xmus)*sgn(ni)*(-th+xmus+xmuneut1) +
+     .       dsqrt(xmus)*sgn(ni)*xmneut(nj)/xmneut(ni)*(-th+1.D0+xmus) +
+     .       dsqrt(xmus)*sgn(ni)*xmneut(nj)/xmneut(ni)*(uh-1.D0-xmus)) +
+     .       (astr(i,nj)*bstr(i,ni)+astr(i,ni)*bstr(i,nj))*(
+     .       2.D0*xmus*xmneut(nj)/xmneut(ni) +
+     .       (uh*th+th**2-th*(1.D0+2.D0*xmus+xmuneut1)+xmus+
+     .       xmus*xmuneut1) +
+     .       xmneut(nj)/xmneut(ni)*(uh+th-xmuneut1-1.D0) +
+     .       xmus*(uh+th-2.D0*xmus)) )
+         enddo
+      else
+         xneuthhsstr=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                        interference HA-sstrange
+c -------------------------------------------------------------------- c
+
+      xneutasstr=0.D0	
+
+c ---- final state masses included ----
+
+      if((amneut(nj)+2.D0*amsin).le.amneut(ni)) then
+         do i=1,2
+            xneutasstr=xneutasstr
+     .       +2.D0*g2**2/da/dsbo(i)*(hassr/dsqrt(2.D0))*
+     .       2.D0*aa(ni,nj)*(
+     .       (astr(i,nj)*astr(i,ni)+bstr(i,ni)*bstr(i,nj))*(
+     .       dsqrt(xmus)*sgn(ni)*(xmuneut1+xmus-uh) +
+     .       dsqrt(xmus)*sgn(ni)*(-xmuneut1-xmus+th)*(-1.D0) +
+     .       xmneut(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*(-1.D0-xmus+th)*
+     .       (-1.D0) +
+     .       xmneut(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*(1.D0+xmus-uh) ) 
+     .       +(astr(i,nj)*bstr(i,ni)+astr(i,ni)*bstr(i,nj))*(
+     .       xmneut(nj)/xmneut(ni)*(-1.D0-xmuneut1+uh+th)*(-1.D0) +
+     .       2.D0*xmneut(nj)/xmneut(ni)*xmus +
+     .       xmus*(-2.D0*xmus+th+uh)*(-1.D0) +
+     .       (uh**2+uh*th-uh*(1.D0+2.D0*xmus+xmuneut1)+xmus+xmuneut1*
+     .       xmus)) ) 
+     .       +2.D0*g2**2/da/dsbob(i)*(hassr/dsqrt(2.D0))*
+     .       2.D0*aa(ni,nj)*(
+     .       (astr(i,nj)*astr(i,ni)+bstr(i,ni)*bstr(i,nj))*(
+     .       dsqrt(xmus)*sgn(ni)*(uh-xmuneut1-xmus)*(-1.D0) +
+     .       dsqrt(xmus)*sgn(ni)*(-th+xmus+xmuneut1) +
+     .       dsqrt(xmus)*sgn(ni)*xmneut(nj)/xmneut(ni)*(-th+1.D0+xmus) +
+     .       dsqrt(xmus)*sgn(ni)*xmneut(nj)/xmneut(ni)*(uh-1.D0-xmus)*
+     .       (-1.D0)) +
+     .       (astr(i,nj)*bstr(i,ni)+astr(i,ni)*bstr(i,nj))*(
+     .       2.D0*xmus*xmneut(nj)/xmneut(ni) +
+     .       (uh*th+th**2-th*(1.D0+2.D0*xmus+xmuneut1)+xmus+
+     .       xmus*xmuneut1) +
+     .       xmneut(nj)/xmneut(ni)*(uh+th-xmuneut1-1.D0)*(-1.D0) +
+     .       xmus*(uh+th-2.D0*xmus)*(-1.D0)) )
+         enddo
+      else
+         xneutasstr=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c 	                interference Z and H/h/A
+c -------------------------------------------------------------------- c
+
+      xneutza=0.D0	
+
+      if((amneut(nj)+2.D0*amsin).le.amneut(ni)) then      
+         xneutza=-4.D0*g2**2/da/dz*azz*
+     .    hassr/dsqrt(2.D0)*2.D0*aa(ni,nj)*oppl(ni,nj)*(
+     .    xmneut(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*(
+     .    4.D0/xmuz*(2.D0+xmuneut1*(2.D0*xmus-th-uh+2.D0)+xmus*(-uh-th
+     .    +1.D0+xmus)+xmus*(3.D0*xmus-3.D0*(th+uh)+5.D0)+(th+uh)**2
+     .    -3.D0*(th+uh))+
+     .    4.D0*(th-xmus-1.D0)+
+     .    4.D0*(uh-xmus-1.D0))
+     .    -dsqrt(xmus)*sgn(ni)*(
+     .    4.D0/xmuz*(-2.D0*xmuneut1**2+xmuneut1*(-6.D0*xmus+
+     .    3.D0*(th+uh)-2.D0)+xmus*(-xmus+th+uh-1.D0)+xmus*(-3.D0*xmus
+     .    +3.D0*(uh+th)-1.D0)-(th+uh)**2+(th+uh))+
+     .    4.D0*(xmuneut1+xmus-uh)+
+     .    4.D0*(xmuneut1+xmus-th)) )
+      else
+         xneutza=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+
+      SD_neutst=xneutzstr+xneuthl+xneuthh+xneuthhhl+xneuta+xneutsstr
+     .        +xneutzsstr+xneuthlsstr+xneuthhsstr+xneutasstr+xneutza
+
+      end
+c end maggie changed 27/9/2016
 
 c ==================================================================== c
 c =======================  neutralino top topbar ===================== c
@@ -25469,6 +27714,585 @@ c -------------------------------------------------------------------- c
 
       end
 
+c maggie changed 27/9/2016
+c ==================================================================== c
+c =======================  neutralino tau+ tau- ====================== c
+c ==================================================================== c
+
+      double precision function SD_neutmu(x1,x2)
+
+      implicit double precision (a-h,m,o-z)
+      integer k
+
+      dimension amneut(4),xmneut(4),amchar(2),xmchar(2)
+      dimension opl(2,2),opr(2,2),oppl(4,4),oppr(4,4)
+      dimension dsto(2),dstob(2)
+      dimension ahl(4,4),ahh(4,4),aa(4,4)
+      dimension sgn(4)
+      dimension ae(2,4),be(2,4),ato(2,4),bto(2,4),anu(2,4),bnu(2,4),
+     .          antau(2,4),bntau(2,4)
+      dimension almu(2,2),amucoup(2,4),bmucoup(2,4),alsnmu(2,2),
+     .     blsnmu(2,2),anmuon(2,4),bnmuon(2,4)
+
+      COMMON/SD_param/gf,amz,amw,pi,g2
+      COMMON/SD_mixang/a,tanbeta
+      COMMON/SD_hmass/ama,aml,amh,amch,amar
+      COMMON/SD_massgino/amneut,xmneut,amchar,xmchar
+      COMMON/SD_fermion/amt,amb,amtau
+      COMMON/SD_sfermionetau/ase1,ase2,astau1,astau2
+      COMMON/SD_indices/ni,nj
+      COMMON/SD_yukawa/yt,yb,ytau
+      COMMON/SD_coup1/ahl,ahh,aa
+      COMMON/SD_coup4/opl,opr,oppl,oppr
+      COMMON/SD_coup8/ae,be,ato,bto,anu,bnu,antau,bntau      
+      COMMON/SD_coup17/azztoptop,vzztoptop,azztautau,vzztautau,
+     .                 azzneutneut,vzzneutneut,azzbotbot,vzzbotbot
+      COMMON/SD_mwmzpole/amwp,amzp
+      COMMON/SUSYHITIN/flagshsin,amsin,amcin,ammuon,alphin,gamwin,
+     .                 gamzin,vusin,vcbin,rvubin
+      COMMON/SD_yukawasc/ysewsb,ycewsb,ymuewsb
+      COMMON/SD_coup22/almu,amucoup,bmucoup,alsnmu,blsnmu,anmuon,
+     .     bnmuon,achmuon,vchmuon
+
+c --- several definitions ---
+
+      ymuc = ymuewsb/dsqrt(g2)
+
+      do i=1,4,1
+         sgn(i) = 1.D0
+         if(xmneut(i).ge.0.D0) then
+            sgn(i) = 1.D0
+         elseif(xmneut(i).lt.0.D0) then
+            sgn(i) = -1.D0
+         endif
+      enddo
+
+      bet = datan(tanbeta)
+      b   = bet 
+
+      vzz = vzztautau
+      azz = azztautau
+
+      xmuneut1 = amneut(nj)**2/amneut(ni)**2
+      xmusmu1 = ase1**2/amneut(ni)**2
+      xmusmu2 = ase2**2/amneut(ni)**2
+      xmumu   = ammuon**2/amneut(ni)**2
+
+      x3 = 2.D0-x1-x2
+      y3 = 1.D0+xmuneut1-x3
+
+      uh = 1.D0-x1+xmumu
+      th = 1.D0-x2+xmumu
+
+c -------------------------------------------------------------------- c
+c                              stau exchange 
+c -------------------------------------------------------------------- c
+
+      dsto(1)  = 1.D0-x1-xmusmu1+xmumu
+      dsto(2)  = 1.D0-x1-xmusmu2+xmumu
+      dstob(1) = 1.D0-x2-xmusmu1+xmumu
+      dstob(2) = 1.D0-x2-xmusmu2+xmumu
+      
+      xneutsmu = 0.D0
+  
+c ---- final state masses included ----
+
+      if ((amneut(nj)+2.D0*ammuon).le.amneut(ni)) then
+         do i=1,2
+            do k=1,2
+               xneutsmu=xneutsmu
+     .          +g2**2/dsto(k)/dsto(i)*(
+     .           (amucoup(i,ni)*bmucoup(k,ni)+bmucoup(i,ni)*
+     .              amucoup(k,ni))*(amucoup(i,nj)*bmucoup(k,nj)
+     .              +bmucoup(i,nj)*amucoup(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*xmumu*(-4.D0)+
+     .           (amucoup(i,ni)*amucoup(k,ni)+bmucoup(i,ni)*
+     .              bmucoup(k,ni))*(amucoup(i,nj)*bmucoup(k,nj)
+     .              +bmucoup(i,nj)*amucoup(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*2.D0*
+     .           (uh-xmumu-1.D0)+
+     .           (amucoup(i,ni)*bmucoup(k,ni)+bmucoup(i,ni)*
+     .              amucoup(k,ni))*(amucoup(i,nj)*amucoup(k,nj)+
+     .              bmucoup(i,nj)*bmucoup(k,nj))*
+     .           dsqrt(xmumu)*sgn(ni)*2.D0*(uh-xmumu-xmuneut1)+
+     .           (amucoup(i,ni)*amucoup(k,ni)+bmucoup(i,ni)*
+     .              bmucoup(k,ni))*(amucoup(i,nj)*amucoup(k,nj)+
+     .              bmucoup(i,nj)*bmucoup(k,nj))*
+     .           (-uh**2+uh*(1.D0+xmuneut1+2.D0*xmumu)-
+     .           (xmuneut1+xmumu)*(1.D0+xmumu)))
+     .           +g2**2/dstob(k)/dstob(i)*(
+     .           (amucoup(i,ni)*bmucoup(k,ni)+bmucoup(i,ni)*
+     .              amucoup(k,ni))*(amucoup(i,nj)*bmucoup(k,nj)+
+     .              bmucoup(i,nj)*amucoup(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*xmumu*(-4.D0)+
+     .           (amucoup(i,ni)*amucoup(k,ni)+bmucoup(i,ni)*
+     .              bmucoup(k,ni))*(amucoup(i,nj)*bmucoup(k,nj)+
+     .              bmucoup(i,nj)*amucoup(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*2.D0*
+     .           (th-xmumu-1.D0)+
+     .           (amucoup(i,ni)*bmucoup(k,ni)+bmucoup(i,ni)*
+     .              amucoup(k,ni))*(amucoup(i,nj)*amucoup(k,nj)+
+     .              bmucoup(i,nj)*bmucoup(k,nj))*
+     .           dsqrt(xmumu)*sgn(ni)*2.D0*(th-xmumu-xmuneut1)+
+     .           (amucoup(i,ni)*amucoup(k,ni)+bmucoup(i,ni)*
+     .              bmucoup(k,ni))*(amucoup(i,nj)*amucoup(k,nj)+
+     .              bmucoup(i,nj)*bmucoup(k,nj))*
+     .           (-th**2+th*(1.D0+xmuneut1+2.D0*xmumu)-
+     .           (xmuneut1+xmumu)*(1.D0+xmumu)))
+     .           -2.D0*g2**2/dsto(k)/dstob(i)*(
+     .           (bmucoup(i,ni)*bmucoup(k,ni)*amucoup(i,nj)*
+     .              amucoup(k,nj)+amucoup(i,ni)*amucoup(k,ni)*
+     .              bmucoup(i,nj)*bmucoup(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*xmumu*(-2.D0)+
+     .           (amucoup(i,ni)*bmucoup(k,ni)*amucoup(i,nj)*
+     .              amucoup(k,nj)+amucoup(k,ni)*bmucoup(i,ni)*
+     .              bmucoup(i,nj)*bmucoup(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*
+     .           (th-xmumu-1.D0)+
+     .           (amucoup(k,ni)*bmucoup(i,ni)*amucoup(i,nj)*
+     .              amucoup(k,nj)+amucoup(i,ni)*bmucoup(k,ni)*
+     .              bmucoup(i,nj)*bmucoup(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*
+     .           (uh-xmumu-1.D0)+
+     .           (amucoup(k,ni)*amucoup(i,ni)*amucoup(i,nj)*
+     .              amucoup(k,nj)+bmucoup(i,ni)*bmucoup(k,ni)*
+     .              bmucoup(i,nj)*bmucoup(k,nj))*
+     .           xmneut(nj)/xmneut(ni)*(uh+th-xmuneut1-1.D0)+
+     .           (amucoup(k,ni)*bmucoup(i,ni)*amucoup(k,nj)*
+     .              bmucoup(i,nj)+bmucoup(k,ni)*amucoup(i,ni)*
+     .              amucoup(i,nj)*bmucoup(k,nj))*
+     .           xmumu*(uh+th-2.D0*xmumu)+
+     .           (amucoup(k,ni)*amucoup(i,ni)*amucoup(k,nj)*
+     .              bmucoup(i,nj)+bmucoup(k,ni)*bmucoup(i,ni)*
+     .              amucoup(i,nj)*bmucoup(k,nj))*
+     .           dsqrt(xmumu)*sgn(ni)*(uh-xmumu-xmuneut1)+
+     .           (bmucoup(k,ni)*bmucoup(i,ni)*amucoup(k,nj)*
+     .              bmucoup(i,nj)+amucoup(k,ni)*amucoup(i,ni)*
+     .              amucoup(i,nj)*bmucoup(k,nj))*
+     .           dsqrt(xmumu)*sgn(ni)*(th-xmumu-xmuneut1)+
+     .           (bmucoup(k,ni)*amucoup(i,ni)*amucoup(k,nj)*
+     .              bmucoup(i,nj)+amucoup(k,ni)*bmucoup(i,ni)*
+     .              amucoup(i,nj)*bmucoup(k,nj))*
+     .           (uh*th-xmumu**2-xmuneut1))
+            enddo
+         enddo         
+      else
+         xneutsmu=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c 	                         Z exchange
+c -------------------------------------------------------------------- c
+
+      xmuz = amzp**2/amneut(ni)**2
+      dz   = y3-xmuz
+
+      xneutztau=0.D0
+
+c ---- final state masses included ----
+
+      rh = xmuneut1+2.D0*xmumu-th-uh+1.D0
+      sh = (xmuneut1-th-uh+1.D0)*2.D0*xmumu+4.D0*xmumu**2
+      rk = xmuneut1*(2.D0*xmumu-th-uh+4.D0)+2.D0*xmumu-uh-th
+
+      if ((amneut(nj)+2.D0*ammuon).le.amneut(ni)) then
+         xneutzmu=xneutzmu+g2**2/dz**2*(
+     .    oppl(ni,nj)*oppr(ni,nj)*(vzz**2-azz**2)*
+     .    xmneut(nj)/xmneut(ni)*xmumu*(-16.D0/xmuz**2*rh**2+
+     .    32.D0/xmuz*rh-64.D0)+
+     .    oppl(ni,nj)*oppr(ni,nj)*(vzz**2+azz**2)*
+     .    xmneut(nj)/xmneut(ni)*(8.D0/xmuz**2*rh*sh-16.D0/xmuz*sh
+     .    -16.D0*(xmuneut1-uh-th+1.D0))+
+     .    (oppl(ni,nj)**2+oppr(ni,nj)**2)*(vzz**2-azz**2)*
+     .    xmumu*(4.D0/xmuz**2*rh*rk-8.D0/xmuz*rk+8.D0*(uh+th-
+     .    2.D0*xmumu))
+     .    +(oppl(ni,nj)**2+oppr(ni,nj)**2)*(vzz**2+azz**2)*
+     .    (-2.D0/xmuz**2*rk*sh+8.D0/xmuz*(xmuneut1*(2.D0*xmumu**2+
+     .    4.D0*xmumu-xmumu*(th+uh))+2.D0*xmumu**2-xmumu*(uh+th))+
+     .    4.D0*(xmuneut1*(uh+th-2.D0*xmumu-2.D0)+2.D0*xmumu*(uh+th-
+     .    1.D0)-2.D0*xmumu**2+th*(-th+1.D0)+uh*(-uh+1.D0)))+
+     .    (oppl(ni,nj)**2-oppr(ni,nj)**2)*vzz*azz*8.D0*(
+     .    xmuneut1*(th-uh)+2.D0*xmumu*(th-uh)+th*(-th+1.D0)+uh*(uh-
+     .    1.D0)))
+      else
+         xneutzmu=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                               Hl exchange
+c -------------------------------------------------------------------- c
+
+      xmuhl = aml**2/amneut(ni)**2
+      dhl   = y3-xmuhl
+
+      xneuthl=0.D0
+
+c ---- final state masses included ----
+
+      if((amneut(nj)+2.D0*ammuon).le.amneut(ni)) then
+         xneuthl=g2**2/dhl**2*(ymuc*dsin(a))**2*ahl(ni,nj)**2*(
+     .    xmneut(nj)/xmneut(ni)*xmumu*(-32.D0)+
+     .    xmneut(nj)/xmneut(ni)*16.D0*(1.D0+xmuneut1-th-uh)+
+     .    xmumu*16.D0*(2.D0*xmumu-th-uh)+
+     .    8.D0*(xmuneut1*(uh+th-2.D0*xmumu)+2.D0*xmumu*(uh+th-1.D0)
+     .    -(th+uh)**2+uh+th))
+      else
+         xneuthl=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                              HH exchange
+c -------------------------------------------------------------------- c
+
+      xmuhh = amh**2/amneut(ni)**2
+      dhh   = y3-xmuhh
+      
+      xneuthh=0.D0
+
+c ---- final state masses included ----
+
+      if((amneut(nj)+2.D0*ammuon).le.amneut(ni)) then
+         xneuthh=g2**2/dhh**2*(ymuc*dcos(a))**2*ahh(ni,nj)**2*(
+     .    xmneut(nj)/xmneut(ni)*xmumu*(-32.D0)+
+     .    xmneut(nj)/xmneut(ni)*16.D0*(1.D0+xmuneut1-th-uh)+
+     .    xmumu*16.D0*(2.D0*xmumu-th-uh)+
+     .    8.D0*(xmuneut1*(uh+th-2.D0*xmumu)+2.D0*xmumu*(uh+th-1.D0)
+     .    -(th+uh)**2+uh+th))
+      else
+         xneuthh=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                              HA exchange
+c -------------------------------------------------------------------- c
+
+      xmuha = ama**2/amneut(ni)**2
+      da    = y3-xmuha
+      
+      xneuta=0.D0
+
+c ---- final state masses included ----
+
+      if((amneut(nj)+2.D0*ammuon).le.amneut(ni)) then
+         xneuta=g2**2/da**2*(ymuc*dsin(b))**2*aa(ni,nj)**2*(
+     .    xmneut(nj)/xmneut(ni)*xmumu*(-32.D0)+
+     .    xmneut(nj)/xmneut(ni)*(-16.D0)*(1.D0+xmuneut1-th-uh)+
+     .    xmumu*(-16.D0)*(2.D0*xmumu-th-uh)+
+     .    8.D0*(xmuneut1*(uh+th-2.D0*xmumu)+2.D0*xmumu*(uh+th-1.D0)
+     .    -(th+uh)**2+uh+th))
+      else
+         xneuta=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c 	                     interference h-H
+c -------------------------------------------------------------------- c
+
+      xneuthhhl = 0.D0
+
+c ---- final state masses included ----
+
+      if((amneut(nj)+2.D0*ammuon).le.amneut(ni)) then
+        xneuthhhl =2.D0*g2**2/dhh/dhl*ymuc*dcos(a)*ymuc*(-dsin(a))*(
+     .   xmneut(nj)/xmneut(ni)*xmumu*(-32.D0)+
+     .   xmneut(nj)/xmneut(ni)*16.D0*(1.D0+xmuneut1-uh-th)+
+     .   xmumu*16.D0*(2.D0*xmumu-th-uh)+
+     .   8.D0*(xmuneut1*(uh+th-2.D0*xmumu)+2.D0*xmumu*(uh+th-1.D0)
+     .   +th+uh-(th+uh)**2))*ahh(ni,nj)*ahl(ni,nj)
+      else
+         xneuthhhl =0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                           Z-smuon interference
+c -------------------------------------------------------------------- c
+
+      xneutzsmu=0.D0
+
+c ---- final state masses included ----
+
+      if((amneut(nj)+2.D0*ammuon).le.amneut(ni)) then
+         do i=1,2
+            xneutzsmu=xneutzsmu
+     .      +g2**2/dsto(i)/dz*oppl(ni,nj)*(
+     .      ((amucoup(i,ni)*amucoup(i,nj)-bmucoup(i,ni)*bmucoup(i,nj))*
+     .           vzz-
+     .       (amucoup(i,ni)*amucoup(i,nj)+bmucoup(i,ni)*bmucoup(i,nj))*
+     .           azz)*
+     .      xmneut(nj)/xmneut(ni)*xmumu*(
+     .      1/xmuz*(-4.D0)*(1.D0+xmuneut1+2.D0*xmumu-uh-th)+16.D0) +
+     .      ((amucoup(i,ni)*amucoup(i,nj)-bmucoup(i,ni)*bmucoup(i,nj))*
+     .           vzz+
+     .       (amucoup(i,ni)*amucoup(i,nj)+bmucoup(i,ni)*bmucoup(i,nj))*
+     .           azz)*
+     .      xmneut(nj)/xmneut(ni)*(2.D0/xmuz*((xmuneut1+1.D0-uh-th)*
+     .      2.D0*xmumu+4.D0*xmumu**2)+4.D0*(1.D0+xmuneut1-uh-th)) +
+     .      ((bmucoup(i,ni)*bmucoup(i,nj)-amucoup(i,ni)*amucoup(i,nj))*
+     .           vzz+
+     .       (bmucoup(i,ni)*bmucoup(i,nj)+amucoup(i,ni)*amucoup(i,nj))*
+     .           azz)*
+     .      xmumu*(2.D0/xmuz*(xmuneut1*(2.D0*xmumu-th-uh+4.D0)+
+     .      2.D0*xmumu-th-uh)+4.D0*(2.D0*xmumu-th-uh)) +
+     .      ((bmucoup(i,ni)*bmucoup(i,nj)-amucoup(i,ni)*amucoup(i,nj))*
+     .           vzz-
+     .       (bmucoup(i,ni)*bmucoup(i,nj)+amucoup(i,ni)*amucoup(i,nj))*
+     .           azz)*
+     .      (2.D0/xmuz*(xmuneut1*(-2.D0*xmumu**2+xmumu*th-
+     .      2.D0*xmumu+xmumu*uh-2.D0*xmumu)+xmumu*(-2.D0*xmumu+uh)
+     .      +xmumu*th)+4.D0*(xmuneut1*(xmumu-uh+1.D0)+xmumu*
+     .      (xmumu-uh)+xmumu*(1.D0-uh)+uh**2-uh)) + 
+     .      (amucoup(i,nj)*bmucoup(i,ni)*(vzz+azz)-
+     .       amucoup(i,ni)*bmucoup(i,nj)*(vzz-azz))*
+     .      xmneut(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*(2.D0/xmuz*
+     .      (xmuneut1*(1.D0+xmumu-uh)+1.D0+xmumu*(xmumu-uh)+xmumu*
+     .      (xmumu-th-2.D0*uh+3.D0)+th*(uh-1.D0)+uh*(uh-2.D0))+
+     .      4.D0*(1.D0+xmumu-th)) +
+     .      (amucoup(i,nj)*bmucoup(i,ni)*(vzz-azz)-
+     .       amucoup(i,ni)*bmucoup(i,nj)*(vzz+azz))*
+     .      xmneut(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*
+     .      (2.D0/xmuz*(xmuneut1*(-1.D0-xmumu+uh)-1.D0+xmumu*(-1.D0
+     .      +uh)+uh*(2.D0-th-uh)+th+xmumu*(-2.D0*xmumu+th+2.D0*uh
+     .      -2.D0))+8.D0*(1.D0+xmumu-uh)) +
+     .      (amucoup(i,ni)*bmucoup(i,nj)*(vzz-azz)-
+     .       amucoup(i,nj)*bmucoup(i,ni)*(vzz+azz))*dsqrt(xmumu)*
+     .           sgn(ni)*(
+     .      (-2.D0)/xmuz*(xmuneut1-uh+xmumu)*(xmuneut1+2.D0*xmumu-th
+     .      -uh+1.D0)+8.D0*(xmuneut1+xmumu-uh)) +
+     .      (amucoup(i,ni)*bmucoup(i,nj)*(vzz+azz)-
+     .       amucoup(i,nj)*bmucoup(i,ni)*(vzz-azz))*dsqrt(xmumu)*
+     .           sgn(ni)*(
+     .      2.D0/xmuz*(xmuneut1*(xmuneut1+3.D0*xmumu-th-2.D0*uh+1.D0)+
+     .      xmumu*(2.D0*xmumu-th-2.D0*uh)+xmumu*(1.D0-uh)+uh*th+
+     .      uh**2-uh)+4.D0*(xmuneut1+xmumu-th)) )
+     .      -g2**2/dstob(i)/dz*oppl(ni,nj)*(
+     .      ((-amucoup(i,ni)*amucoup(i,nj)+bmucoup(i,ni)*
+     .           bmucoup(i,nj))*vzz+
+     .       (amucoup(i,ni)*amucoup(i,nj)+bmucoup(i,ni)*bmucoup(i,nj))*
+     .           azz)*
+     .      xmneut(nj)/xmneut(ni)*xmumu*(
+     .      1/xmuz*(-4.D0)*(1.D0+xmuneut1+2.D0*xmumu-uh-th)+16.D0) +
+     .      ((-amucoup(i,ni)*amucoup(i,nj)+bmucoup(i,ni)*
+     .           bmucoup(i,nj))*vzz-
+     .       (amucoup(i,ni)*amucoup(i,nj)+bmucoup(i,ni)*
+     .           bmucoup(i,nj))*azz)*
+     .      xmneut(nj)/xmneut(ni)*(2.D0/xmuz*(2.D0*xmumu*(xmuneut1+1.D0
+     .      -th-uh)+4.D0*xmumu**2)+4.D0*(1.D0+xmuneut1-uh-th)) +
+     .      ((amucoup(i,ni)*amucoup(i,nj)-bmucoup(i,ni)*bmucoup(i,nj))*
+     .           vzz-
+     .       (amucoup(i,ni)*amucoup(i,nj)+bmucoup(i,ni)*bmucoup(i,nj))*
+     .           azz)*
+     .      xmumu*(2.D0/xmuz*(xmuneut1*(2.D0*xmumu-th-uh+4.D0)+
+     .      2.D0*xmumu-th-uh)+4.D0*(2.D0*xmumu-th-uh)) +
+     .      ((amucoup(i,ni)*amucoup(i,nj)-bmucoup(i,ni)*bmucoup(i,nj))*
+     .           vzz+
+     .       (amucoup(i,ni)*amucoup(i,nj)+bmucoup(i,ni)*bmucoup(i,nj))*
+     .           azz)*
+     .      (2.D0/xmuz*(xmuneut1*(-2.D0*xmumu**2+xmumu*th
+     .      -2.D0*xmumu+xmumu*uh-2.D0*xmumu)+xmumu*(-2.D0*xmumu
+     .      +uh)+xmumu*th)+4.D0*(xmuneut1*(xmumu-th+1.D0)+xmumu*
+     .      (xmumu-th)+xmumu*(1.D0-th)+th**2-th)) + 
+     .      (amucoup(i,nj)*bmucoup(i,ni)*(-vzz-azz)+
+     .       amucoup(i,ni)*bmucoup(i,nj)*(vzz-azz))*
+     .      xmneut(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*
+     .      (2.D0/xmuz*(xmuneut1*(1.D0+xmumu-th)+1.D0+xmumu*
+     .      (2.D0*xmumu-2.D0*th-uh+3.D0)+th*(th-xmumu+uh-2.D0)-uh)+
+     .      4.D0*(1.D0+xmumu-uh)) +
+     .      (amucoup(i,nj)*bmucoup(i,ni)*(-vzz+azz)+
+     .       amucoup(i,ni)*bmucoup(i,nj)*(vzz+azz))*
+     .      xmneut(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*
+     .      (2.D0/xmuz*(xmuneut1*(-1.D0-xmumu+th)-1.D0+xmumu*
+     .      (-xmumu+th-1.D0)+xmumu*(2.D0*th+uh-2.D0-xmumu)
+     .      -th*(th+uh)+2.D0*th+uh)+
+     .      8.D0*(1.D0+xmumu-th)) +
+     .      (amucoup(i,ni)*bmucoup(i,nj)*(-vzz+azz)+
+     .       amucoup(i,nj)*bmucoup(i,ni)*(vzz+azz))*dsqrt(xmumu)*
+     .           sgn(ni)*(
+     .      2.D0/xmuz*(xmuneut1*(-xmuneut1-3.D0*xmumu+2.D0*th+uh-1.D0)
+     .      +xmumu*(-2.D0*xmumu+2.D0*th+uh-1.D0)+th*(xmumu-th-uh+1))
+     .      +8.D0*(xmuneut1+xmumu-th)) +
+     .      (amucoup(i,ni)*bmucoup(i,nj)*(-vzz-azz)+
+     .       amucoup(i,nj)*bmucoup(i,ni)*(vzz-azz))*dsqrt(xmumu)*
+     .           sgn(ni)*(
+     .      2.D0/xmuz*(xmuneut1*(xmuneut1+3.D0*xmumu-uh-2.D0*th+1.D0)+
+     .      xmumu*(xmumu-th+1.D0)+xmumu*(xmumu-2.D0*th-uh)+
+     .      uh*th+th**2-th)+4.D0*(xmuneut1+xmumu-uh)) )
+         enddo
+      else
+         xneutzsmu=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                           Hl-smuon interference
+c -------------------------------------------------------------------- c
+
+      xneuthlsmu=0.D0	
+
+c ---- final state masses included ----
+
+      if ((amneut(nj)+2.D0*ammuon).le.amneut(ni)) then
+         do i=1,2
+            xneuthlsmu=xneuthlsmu
+     .       +2.D0*g2**2/dhl/dsto(i)*(ymuc*(-dsin(a))/dsqrt(2.D0))*
+     .       (-2.D0)*ahl(ni,nj)*(
+     .       (amucoup(i,nj)*amucoup(i,ni)+bmucoup(i,ni)*bmucoup(i,nj))*(
+     .       dsqrt(xmumu)*sgn(ni)*(xmuneut1+xmumu-uh) +
+     .       dsqrt(xmumu)*sgn(ni)*(-xmuneut1-xmumu+th) +
+     .       xmneut(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*
+     .       (-1.D0-xmumu+th) +
+     .       xmneut(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*
+     .       (1.D0+xmumu-uh) )
+     .       +(amucoup(i,nj)*bmucoup(i,ni)+amucoup(i,ni)*
+     .           bmucoup(i,nj))*(
+     .       xmneut(nj)/xmneut(ni)*(-1.D0-xmuneut1+uh+th) +
+     .       2.D0*xmneut(nj)/xmneut(ni)*xmumu +
+     .       xmumu*(-2.D0*xmumu+th+uh) +
+     .       (uh**2+uh*th-uh*(1.D0+2.D0*xmumu+xmuneut1)+xmumu+
+     .       xmuneut1*xmumu)) ) 
+     .       +2.D0*g2**2/dhl/dstob(i)*(ymuc*(-dsin(a))/dsqrt(2.D0))*
+     .       (-2.D0)*ahl(ni,nj)*(
+     .       (amucoup(i,nj)*amucoup(i,ni)+bmucoup(i,ni)*bmucoup(i,nj))*(
+     .       dsqrt(xmumu)*sgn(ni)*(uh-xmuneut1-xmumu) +
+     .       dsqrt(xmumu)*sgn(ni)*(-th+xmumu+xmuneut1) +
+     .       dsqrt(xmumu)*sgn(ni)*xmneut(nj)/xmneut(ni)*(-th+1.D0+
+     .       xmumu) +
+     .       dsqrt(xmumu)*sgn(ni)*xmneut(nj)/xmneut(ni)*(uh-1.D0-
+     .       xmumu)) +
+     .       (amucoup(i,nj)*bmucoup(i,ni)+amucoup(i,ni)*bmucoup(i,nj))*(
+     .       2.D0*xmumu*xmneut(nj)/xmneut(ni) +
+     .       (uh*th+th**2-th*(1.D0+2.D0*xmumu+xmuneut1)+xmumu+
+     .       xmumu*xmuneut1) +
+     .       xmneut(nj)/xmneut(ni)*(uh+th-xmuneut1-1.D0) +
+     .       xmumu*(uh+th-2.D0*xmumu)) )
+         enddo
+      else
+         xneuthlsmu=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                            HH-smuon interference
+c -------------------------------------------------------------------- c
+      
+      xneuthhsmu=0.D0	
+
+c ---- final state masses included ----
+
+      if ((amneut(nj)+2.D0*ammuon).le.amneut(ni)) then
+         do i=1,2
+            xneuthhsmu=xneuthhsmu
+     .       +2.D0*g2**2/dhh/dsto(i)*(ymuc*dcos(a)/dsqrt(2.D0))*
+     .       (-2.D0)*ahh(ni,nj)*(
+     .       (amucoup(i,nj)*amucoup(i,ni)+bmucoup(i,ni)*bmucoup(i,nj))*(
+     .       dsqrt(xmumu)*sgn(ni)*(xmuneut1+xmumu-uh) +
+     .       dsqrt(xmumu)*sgn(ni)*(-xmuneut1-xmumu+th) +
+     .       xmneut(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*(-1.D0-xmumu
+     .       +th) +
+     .       xmneut(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*(1.D0+xmumu
+     .       -uh) ) 
+     .       +(amucoup(i,nj)*bmucoup(i,ni)+amucoup(i,ni)*
+     .           bmucoup(i,nj))*(
+     .       xmneut(nj)/xmneut(ni)*(-1.D0-xmuneut1+uh+th) +
+     .       2.D0*xmneut(nj)/xmneut(ni)*xmumu +
+     .       xmumu*(-2.D0*xmumu+th+uh) +
+     .       (uh**2+uh*th-uh*(1.D0+2.D0*xmumu+xmuneut1)+xmumu+
+     .       xmuneut1*xmumu)) ) 
+     .       +2.D0*g2**2/dhh/dstob(i)*(ymuc*dcos(a)/dsqrt(2.D0))*
+     .       (-2.D0)*ahh(ni,nj)*(
+     .       (amucoup(i,nj)*amucoup(i,ni)+bmucoup(i,ni)*bmucoup(i,nj))*(
+     .       dsqrt(xmumu)*sgn(ni)*(uh-xmuneut1-xmumu) +
+     .       dsqrt(xmumu)*sgn(ni)*(-th+xmumu+xmuneut1) +
+     .       dsqrt(xmumu)*sgn(ni)*xmneut(nj)/xmneut(ni)*(-th+1.D0+
+     .       xmumu) +
+     .       dsqrt(xmumu)*sgn(ni)*xmneut(nj)/xmneut(ni)*(uh-1.D0-
+     .       xmumu)) +
+     .       (amucoup(i,nj)*bmucoup(i,ni)+amucoup(i,ni)*bmucoup(i,nj))*(
+     .       2.D0*xmumu*xmneut(nj)/xmneut(ni) +
+     .       (uh*th+th**2-th*(1.D0+2.D0*xmumu+xmuneut1)+xmumu+
+     .       xmumu*xmuneut1) +
+     .       xmneut(nj)/xmneut(ni)*(uh+th-xmuneut1-1.D0) +
+     .       xmumu*(uh+th-2.D0*xmumu)) )
+         enddo
+      else
+         xneuthhsmu=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c 			   HA-stau interference
+c -------------------------------------------------------------------- c
+
+      xneutasmu=0.D0	
+
+c ---- final state masses included ----
+
+      if ((amneut(nj)+2.D0*ammuon).le.amneut(ni)) then
+         do i=1,2
+            xneutasmu=xneutasmu
+     .       +2.D0*g2**2/da/dsto(i)*((-ymuc*dsin(b))/dsqrt(2.D0))*
+     .       2.D0*aa(ni,nj)*(
+     .       (amucoup(i,nj)*amucoup(i,ni)+bmucoup(i,ni)*bmucoup(i,nj))*(
+     .       dsqrt(xmumu)*sgn(ni)*(xmuneut1+xmumu-uh) +
+     .       dsqrt(xmumu)*sgn(ni)*(-xmuneut1-xmumu+th)*(-1.D0) +
+     .       xmneut(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*(-1.D0-xmumu
+     .       +th)*(-1.D0) +
+     .       xmneut(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*(1.D0+xmumu
+     .       -uh) ) 
+     .       +(amucoup(i,nj)*bmucoup(i,ni)+amucoup(i,ni)*
+     .           bmucoup(i,nj))*(
+     .       xmneut(nj)/xmneut(ni)*(-1.D0-xmuneut1+uh+th)*(-1.D0) +
+     .       2.D0*xmneut(nj)/xmneut(ni)*xmumu +
+     .       xmumu*(-2.D0*xmumu+th+uh)*(-1.D0) +
+     .       (uh**2+uh*th-uh*(1.D0+2.D0*xmumu+xmuneut1)+xmumu+
+     .       xmuneut1*xmumu)) ) 
+     .       +2.D0*g2**2/da/dstob(i)*((-ymuc*dsin(b))/dsqrt(2.D0))*
+     .       2.D0*aa(ni,nj)*(
+     .       (amucoup(i,nj)*amucoup(i,ni)+bmucoup(i,ni)*bmucoup(i,nj))*(
+     .       dsqrt(xmumu)*sgn(ni)*(uh-xmuneut1-xmumu)*(-1.D0) +
+     .       dsqrt(xmumu)*sgn(ni)*(-th+xmumu+xmuneut1) +
+     .       dsqrt(xmumu)*sgn(ni)*xmneut(nj)/xmneut(ni)*(-th+1.D0+
+     .       xmumu) +
+     .       dsqrt(xmumu)*sgn(ni)*xmneut(nj)/xmneut(ni)*(uh-1.D0-
+     .       xmumu)*(-1.D0)) +
+     .       (amucoup(i,nj)*bmucoup(i,ni)+amucoup(i,ni)*bmucoup(i,nj))*(
+     .       2.D0*xmumu*xmneut(nj)/xmneut(ni) +
+     .       (uh*th+th**2-th*(1.D0+2.D0*xmumu+xmuneut1)+xmumu+
+     .       xmumu*xmuneut1) +
+     .       xmneut(nj)/xmneut(ni)*(uh+th-xmuneut1-1.D0)*(-1.D0) +
+     .       xmumu*(uh+th-2.D0*xmumu)*(-1.D0)) )
+         enddo
+      else
+         xneutasmu=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c 	                interference Z and H/h/A
+c -------------------------------------------------------------------- c
+
+      xneutza=0.D0	
+
+      if ((amneut(nj)+2.D0*ammuon).le.amneut(ni)) then      
+         xneutza=xneutza-4.D0*g2**2/da/dz*azz*
+     .    (-ymuc*dsin(b))/dsqrt(2.D0)*2.D0*aa(ni,nj)*oppl(ni,nj)*(
+     .    xmneut(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*(
+     .    4.D0/xmuz*(2.D0+xmuneut1*(2.D0*xmumu-th-uh+2.D0)+xmumu*
+     .    (-uh-th+1.D0+xmumu)+xmumu*(3.D0*xmumu-3.D0*(th+uh)+5.D0)
+     .    +(th+uh)**2-3.D0*(th+uh))+
+     .    4.D0*(th-xmumu-1.D0)+4.D0*(uh-xmumu-1.D0))
+     .    -dsqrt(xmumu)*sgn(ni)*(
+     .    4.D0/xmuz*(-2.D0*xmuneut1**2+xmuneut1*(-6.D0*xmumu+
+     .    3.D0*(th+uh)-2.D0)+xmumu*(-xmumu+th+uh-1.D0)+xmumu*
+     .    (-3.D0*xmumu+3.D0*(uh+th)-1.D0)-(th+uh)**2+(th+uh))+
+     .    4.D0*(xmuneut1+xmumu-uh)+4.D0*(xmuneut1+xmumu-th)) )
+      else
+         xneutza=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+
+      SD_neutmu = xneutsmu+xneutzmu+xneuthl+xneuthh+xneuta+xneuthhhl+
+     .             xneutzsmu+xneuthlsmu+xneuthhsmu+xneutasmu+xneutza
+
+      end
+c end maggie changed 27/9/2016
+
 c ==================================================================== c
 c =======================  neutralino tau+ tau- ====================== c
 c ==================================================================== c
@@ -26224,7 +29048,7 @@ c -------------------------------------------------------------------- c
       endif
 	
 c -------------------------------------------------------------------- c
-c                      Z-selectron interference
+c                         Z-snu_tau interference
 c -------------------------------------------------------------------- c
 
       xneutzsnt=0.D0
@@ -26384,6 +29208,466 @@ c -------------------------------------------------------------------- c
       SD_chelne = xneutsf+xneutwel+xneutwsf
 
       end
+
+c ==================================================================== c
+c =====================  chargino- muon+ nu_muon ===================== c
+c ==================================================================== c
+
+      double precision function SD_chmunmu(x1,x2)
+
+      implicit double precision (a-h,m,o-z)
+      integer k
+
+      dimension ahl(4,4),ahh(4,4),aa(4,4)
+      dimension amneut(4),xmneut(4),amchar(2),xmchar(2)
+      dimension dstau(2),dsntau(2),sgn(4)
+      dimension ae(2,4),be(2,4),ato(2,4),bto(2,4),anu(2,4),bnu(2,4),
+     .          antau(2,4),bntau(2,4)
+      dimension ale(2,2),alto(2,2),alsne(2,2),blsne(2,2),alsnt(2,2),
+     .          blsnt(2,2),blto(2,2)
+      dimension ql(4,2),qr(4,2),or(4,2),ol(4,2)
+      dimension almu(2,2),blmu(2,2),amucoup(2,4),bmucoup(2,4),
+     .     alsnmu(2,2),blsnmu(2,2),anmuon(2,4),bnmuon(2,4)
+
+      COMMON/SD_param/gf,amz,amw,pi,g2
+      COMMON/SD_hmass/ama,aml,amh,amch,amar
+      COMMON/SD_fermion/amt,amb,amtau
+      COMMON/SD_massgino/amneut,xmneut,amchar,xmchar
+      COMMON/SD_sfermionetau/ase1,ase2,astau1,astau2
+      COMMON/SD_sneutrino/asne1,asne2,asntau1,asntau2
+      COMMON/SD_indices/ni,nj
+      COMMON/SD_coup1/ahl,ahh,aa
+      COMMON/SD_coup3/ql,qr,ol,or
+      COMMON/SD_coup5/ale,alto,alsne,blsne,alsnt,blsnt
+c      COMMON/SD_coup8/ae,be,ato,bto,anu,bnu,antau,bntau      
+      COMMON/SD_coup15/achtop,vchtop,achtau,vchtau
+      COMMON/SD_coup18/awff,vwff
+      COMMON/SD_mwmzpole/amwp,amzp
+      COMMON/SUSYHITIN/flagshsin,amsin,amcin,ammuon,alphin,gamwin,
+     .                 gamzin,vusin,vcbin,rvubin
+      COMMON/SD_coup22/almu,amucoup,bmucoup,alsnmu,blsnmu,anmuon,
+     .     bnmuon,achmuon,vchmuon
+
+c --- the neutrino mass ---
+      amne = 0.D0
+
+c --- several definitions ---
+
+      do i=1,4,1
+         sgn(i) = 1.D0
+         if(xmneut(i).gt.0.D0) then
+            sgn(i) = 1.D0
+         elseif(xmneut(i).lt.0.D0) then
+            sgn(i) = -1.D0
+         endif
+      enddo
+
+      xmuneut1 = amchar(nj)**2/amneut(ni)**2
+      xmumu    = ammuon**2/amneut(ni)**2
+      xmun     = amne**2/amneut(ni)**2
+      xmusmuon1 = ase1**2/amneut(ni)**2
+      xmusmuon2 = ase2**2/amneut(ni)**2
+      xmusne1  = asne1**2/amneut(ni)**2
+      xmusne2  = asne2**2/amneut(ni)**2
+
+      x3 = 2.D0-x1-x2
+      y3 = 1.D0+xmuneut1-x3
+
+      do j=1,2,1
+         blmu(1,j) = 0.D0
+         blmu(2,j) = 0.D0
+      end do
+
+c -------------------------------------------------------------------- c
+c                        sfermion exchange
+c -------------------------------------------------------------------- c
+
+      dsntau(1) = 1.D0-x1-xmusne1+xmun
+      dsntau(2) = 1.D0-x1-xmusne2+xmun
+      dstau(1)  = 1.D0-x2-xmusmuon1+xmumu
+      dstau(2)  = 1.D0-x2-xmusmuon2+xmumu
+      
+      uh = 1.D0-x1+xmun
+      th = 1.D0-x2+xmumu
+
+      xneutsf=0.D0
+
+c --- with mass dependence ---
+
+      if((amchar(nj)+ammuon).le.amneut(ni)) then
+         do i=1,2
+            do k=1,2
+               xneutsf=xneutsf
+     .          +g2**2/dstau(k)/dstau(i)*(
+     .          (amucoup(i,ni)*amucoup(k,ni)+bmucoup(i,ni)*
+     .              bmucoup(k,ni))*
+     .          (almu(i,nj)*almu(k,nj)+blmu(i,nj)*blmu(k,nj))*
+     .          (xmuneut1*(th-xmumu-1.D0)+xmun*(th-1.D0)+xmumu*(-xmun
+     .          +th)+th*(-th+1.D0))+
+     .          (amucoup(i,ni)*amucoup(k,ni)+bmucoup(i,ni)*
+     .              bmucoup(k,ni))*
+     .          (almu(i,nj)*blmu(k,nj)+blmu(i,nj)*almu(k,nj))*
+     .          xmchar(nj)/xmneut(ni)*dsqrt(xmun)*sgn(ni)*2.D0*
+     .          (th-xmumu-1.D0)
+     .          +(amucoup(i,ni)*bmucoup(k,ni)+bmucoup(i,ni)*
+     .              amucoup(k,ni))*
+     .          (almu(i,nj)*almu(k,nj)+blmu(i,nj)*blmu(k,nj))*
+     .          dsqrt(xmumu)*sgn(ni)*2.D0*(th-xmun-xmuneut1)+
+     .          (amucoup(i,ni)*bmucoup(k,ni)+bmucoup(i,ni)*
+     .              amucoup(k,ni))*
+     .          (almu(i,nj)*blmu(k,nj)+blmu(i,nj)*almu(k,nj))*
+     .          xmchar(nj)/xmneut(ni)*dsqrt(xmun*xmumu)*(-4.D0) )
+     .          +g2**2/dsntau(k)/dsntau(i)*(
+     .          (anmuon(i,ni)*anmuon(k,ni)+bnmuon(i,ni)*bnmuon(k,ni))*
+     .          (alsnmu(i,nj)*alsnmu(k,nj)+blsnmu(i,nj)*blsnmu(k,nj))*
+     .          (xmuneut1*(-xmun+uh-1.D0)+xmun*(uh-xmumu)+xmumu*
+     .          (uh-1.D0)+uh*(-uh+1.D0))+
+     .          (anmuon(i,ni)*anmuon(k,ni)+bnmuon(i,ni)*bnmuon(k,ni))*
+     .          (alsnmu(i,nj)*blsnmu(k,nj)+blsnmu(i,nj)*alsnmu(k,nj))*
+     .          xmchar(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*2.D0*
+     .          (uh-xmun-1.D0)
+     .          +(anmuon(i,ni)*bnmuon(k,ni)+bnmuon(i,ni)*anmuon(k,ni))*
+     .          (alsnmu(i,nj)*alsnmu(k,nj)+blsnmu(i,nj)*blsnmu(k,nj))*
+     .          dsqrt(xmun)*sgn(ni)*2.D0*(uh-xmumu-xmuneut1)+
+     .          (anmuon(i,ni)*bnmuon(k,ni)+bnmuon(i,ni)*anmuon(k,ni))*
+     .          (alsnmu(i,nj)*blsnmu(k,nj)+blsnmu(i,nj)*alsnmu(k,nj))*
+     .          dsqrt(xmun*xmumu)*xmchar(nj)/xmneut(ni)*(-4.D0))
+     .          -2.D0*g2**2/dsntau(k)/dstau(i)*(
+     .          (alsnmu(k,nj)*almu(i,nj)*amucoup(i,ni)*anmuon(k,ni)+
+     .           blsnmu(k,nj)*blmu(i,nj)*bmucoup(i,ni)*bnmuon(k,ni))*
+     .          xmchar(nj)/xmneut(ni)*(uh+th-1.D0-xmuneut1)+
+     .          (alsnmu(k,nj)*blmu(i,nj)*amucoup(i,ni)*bnmuon(k,ni)+
+     .           blsnmu(k,nj)*almu(i,nj)*bmucoup(i,ni)*anmuon(k,ni))*
+     .          (uh*th-xmun*xmumu-xmuneut1)+
+     .          (alsnmu(k,nj)*almu(i,nj)*amucoup(i,ni)*bnmuon(k,ni)+
+     .           blsnmu(k,nj)*blmu(i,nj)*bmucoup(i,ni)*anmuon(k,ni))*
+     .          xmchar(nj)/xmneut(ni)*dsqrt(xmun)*sgn(ni)*
+     .          (th-xmumu-1.D0)+
+     .          (alsnmu(k,nj)*almu(i,nj)*bmucoup(i,ni)*anmuon(k,ni)+
+     .           blsnmu(k,nj)*blmu(i,nj)*amucoup(i,ni)*bnmuon(k,ni))*
+     .          xmchar(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*
+     .          (uh-xmun-1.D0)+
+     .          (alsnmu(k,nj)*blmu(i,nj)*amucoup(i,ni)*anmuon(k,ni)+
+     .           blsnmu(k,nj)*almu(i,nj)*bmucoup(i,ni)*bnmuon(k,ni))*
+     .          dsqrt(xmun)*sgn(ni)*(-xmuneut1-xmumu+uh)+
+     .          (alsnmu(k,nj)*blmu(i,nj)*bmucoup(i,ni)*bnmuon(k,ni)+
+     .           blsnmu(k,nj)*almu(i,nj)*amucoup(i,ni)*anmuon(k,ni))*
+     .          dsqrt(xmumu)*sgn(ni)*(-xmuneut1-xmun+th)+
+     .          (alsnmu(k,nj)*almu(i,nj)*bmucoup(i,ni)*bnmuon(k,ni)+
+     .           blsnmu(k,nj)*blmu(i,nj)*amucoup(i,ni)*anmuon(k,ni))*
+     .          xmchar(nj)/xmneut(ni)*dsqrt(xmun*xmumu)*(-2.D0)+
+     .          (alsnmu(k,nj)*blmu(i,nj)*bmucoup(i,ni)*anmuon(k,ni)+
+     .           blsnmu(k,nj)*almu(i,nj)*amucoup(i,ni)*bnmuon(k,ni))*
+     .          dsqrt(xmun*xmumu)*(uh+th-xmun-xmumu) )
+             enddo
+         enddo
+      else
+         xneutsf=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                             W+ exchange
+c -------------------------------------------------------------------- c
+
+      xmuw = amwp**2/amneut(ni)**2
+      dw   = y3-xmuw
+      
+c --- with mass dependence
+      
+      if((amchar(nj)+ammuon).le.amneut(ni)) then
+         xneutwmuon=g2**2*16.D0/dw**2*vwff**2*(
+     .        (ol(ni,nj)**2+or(ni,nj)**2)*(-xmuneut1-xmumu*xmun)
+     .        +ol(ni,nj)**2*(xmuneut1*(uh-xmun)+uh*(xmumu+xmun)
+     .         -xmumu-uh**2+uh)
+     .        +or(ni,nj)**2*(xmuneut1*(th-xmumu)+th*(xmumu+xmun)
+     .         -xmun-th**2+th) 
+     .        +2.D0*xmchar(nj)/xmneut(ni)*ol(ni,nj)*or(ni,nj)*
+     .         (uh+th-1.D0-xmuneut1)
+     .        +1.D0/xmuw**2*xmchar(nj)/xmneut(ni)*ol(ni,nj)*
+     .         or(ni,nj)*
+     .         (xmuneut1**2*(xmumu+xmun)+xmuneut1*(xmumu**2+xmun**2
+     .          +6.D0*xmumu*xmun)+(th+uh-1.D0)*(-2.D0*xmuneut1*xmun
+     .          -2.D0*xmuneut1*xmumu-xmumu**2-xmun**2-6.D0*xmun*
+     .          xmumu)+(xmun+xmumu)*(2.D0*uh*th-2.D0*th-2.D0*uh
+     .          +1.D0+uh**2+th**2+4.D0*xmumu*xmun))
+     .        +1.D0/4.D0/xmuw**2*(ol(ni,nj)**2+or(ni,nj)**2)*
+     .         (xmuneut1**2*(xmun+xmumu)*(th+uh-xmun-xmumu-4.D0)
+     .         +xmuneut1*((xmumu+xmun)*(6.D0*(uh+th)-th**2-uh**2-
+     .          4.D0-2.D0*uh*th-2.D0*xmumu-2.D0*xmun)+6.D0*xmumu*xmun*
+     .          (uh+th-2.D0)-4.D0*xmumu*xmun*(xmumu+xmun+1.D0)
+     .          +(xmumu**2+xmun**2)*(uh+th))
+     .         +xmun**2*(-4.D0*xmumu+uh+th-1.D0)
+     .         +xmumu**2*(-4.D0*xmun+uh+th-1.D0)
+     .         +xmumu*xmun*(6.D0*th+6.D0*uh-2.D0)
+     .         +(xmun+xmumu)*(-th**2-uh**2+uh+th-2.D0*uh*th))
+     .        +2.D0/xmuw*xmchar(nj)/xmneut(ni)*ol(ni,nj)*or(ni,nj)*
+     .         (-xmuneut1*(xmumu+xmun)-4.D0*xmumu*xmun+
+     .          (xmumu+xmun)*(uh+th-1.D0))
+     .        +1.D0/xmuw*(ol(ni,nj)**2+or(ni,nj)**2)*(
+     .         xmuneut1*(2.D0*xmumu*xmun+2.D0*xmumu+2.D0*xmun
+     .         -xmun*th-xmumu*uh)-xmumu*th-xmun*uh+2.D0*xmumu*xmun) )
+      else
+         xneutwmuon=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                            H+ exchange
+c -------------------------------------------------------------------- c
+
+      xmuch = amch**2/amneut(ni)**2
+      dh    = y3-xmuch
+
+c --- with mass dependence ---
+
+      if((amchar(nj)+ammuon).le.amneut(ni)) then
+         xneuthmuon=2.D0*g2**2/dh**2*(
+     .     (ql(ni,nj)**2+qr(ni,nj)**2)*(vchmuon**2+achmuon**2)*
+     .     ((1.D0+xmuneut1+xmun+xmumu)*(uh+th)-(uh+th)**2-(1.D0
+     .     +xmuneut1)*(xmun+xmumu))+
+     .     (ql(ni,nj)**2+qr(ni,nj)**2)*(vchmuon**2-achmuon**2)*(-2.D0)*
+     .     dsqrt(xmun*xmumu)*(uh+th-xmun-xmumu)+
+     .     4.D0*ql(ni,nj)*qr(ni,nj)*xmchar(nj)/xmneut(ni)*
+     .     (vchmuon**2+achmuon**2)*(1.D0+xmuneut1-uh-th)+
+     .     4.D0*ql(ni,nj)*qr(ni,nj)*xmchar(nj)/xmneut(ni)*
+     .     (vchmuon**2-achmuon**2)*(-2.D0)*dsqrt(xmun*xmumu) )
+      else
+         xneuthmuon=0.D0
+      endif
+	
+c -------------------------------------------------------------------- c
+c                        W+-sfermion interference
+c -------------------------------------------------------------------- c
+
+      xneutwsf=0.D0
+
+c --- with mass dependence
+
+      if((amchar(nj)+ammuon).le.amneut(ni)) then
+         do i=1,2
+            xneutwsf=xneutwsf+g2**2*4.D0/dsntau(i)/dw*vwff*
+     .      (2.D0*anmuon(i,ni)*alsnmu(i,nj)*ol(ni,nj)*
+     .       (xmuneut1*(-xmun+uh-1.D0)+uh*(xmun+xmumu)-xmun*xmumu
+     .        -xmumu+uh*(1.D0-uh))+
+     .       2.D0*anmuon(i,ni)*alsnmu(i,nj)*or(ni,nj)*
+     .       xmchar(nj)/xmneut(ni)*(uh+th-xmuneut1-1.D0)+
+     .       2.D0*bnmuon(i,ni)*alsnmu(i,nj)*or(ni,nj)*dsqrt(xmun)*
+     .           sgn(ni)*
+     .       xmchar(nj)/xmneut(ni)*(th-xmumu-1.D0)+
+     .       4.D0*anmuon(i,ni)*blsnmu(i,nj)*ol(ni,nj)*
+     .       dsqrt(xmumu)*sgn(ni)*xmchar(nj)/xmneut(ni)*(uh-xmun-1.D0)+
+     .       4.D0*bnmuon(i,ni)*alsnmu(i,nj)*ol(ni,nj)*dsqrt(xmun)*
+     .           sgn(ni)*
+     .       (uh-xmuneut1-xmumu)+
+     .       2.D0*anmuon(i,ni)*blsnmu(i,nj)*or(ni,nj)*dsqrt(xmumu)*
+     .       sgn(ni)*(th-xmuneut1-xmun)+
+     .       2.D0*bnmuon(i,ni)*blsnmu(i,nj)*or(ni,nj)*dsqrt(xmun*xmumu)*
+     .       (uh+th-xmun-xmumu)+
+     .       8.D0*bnmuon(i,ni)*blsnmu(i,nj)*ol(ni,nj)*(-1.D0)*
+     .       dsqrt(xmun*xmumu)*xmchar(nj)/xmneut(ni)+
+     .       1.D0/xmuw*anmuon(i,ni)*alsnmu(i,nj)*ol(ni,nj)*
+     .       (xmun*(xmuneut1*(xmumu-th+2.D0)+xmumu-uh)+
+     .        xmumu*(xmuneut1*(xmun-uh+2.D0)+xmun-th))+
+     .       1.D0/xmuw*anmuon(i,ni)*alsnmu(i,nj)*or(ni,nj)*
+     .       xmchar(nj)/xmneut(ni)*(xmuneut1*(-xmun-xmumu)+xmun*(th+uh
+     .       -1.D0-2.D0*xmumu)+xmumu*(th+uh-1.D0-2.D0*xmun))+
+     .       1.D0/xmuw*bnmuon(i,ni)*alsnmu(i,nj)*or(ni,nj)*
+     .       dsqrt(xmun)*sgn(ni)*xmchar(nj)/xmneut(ni)*(xmuneut1*
+     .       (-xmun+uh-1.D0)+xmun*(-xmumu+uh)+xmumu*(-xmumu+th+
+     .       2.D0*uh-3.D0)+th*(1.D0-uh)+uh*(2.D0-uh)-1.D0)+
+     .       1.D0/xmuw*anmuon(i,ni)*blsnmu(i,nj)*ol(ni,nj)*
+     .       dsqrt(xmumu)*sgn(ni)*xmchar(nj)/xmneut(ni)*(xmuneut1*
+     .       (xmun-uh+1.D0)+xmun*(xmun-th-2.D0*uh+2.D0)+xmumu*(xmun-
+     .       uh+1.D0)+uh*th-th+uh**2-2.D0*uh+1.D0)+
+     .       1.D0/xmuw*bnmuon(i,ni)*alsnmu(i,nj)*ol(ni,nj)*
+     .       dsqrt(xmun)*sgn(ni)*
+     .       (xmuneut1**2+xmuneut1*(xmun+2.D0*xmumu-th-2.D0*uh+1.D0)
+     .        +xmun*(xmumu-uh)+xmumu*(xmumu-th-2.D0*uh+1.D0)+uh*
+     .        (th+uh-1.D0))+
+     .       1.D0/xmuw*anmuon(i,ni)*blsnmu(i,nj)*or(ni,nj)*
+     .       dsqrt(xmumu)*sgn(ni)*(-xmuneut1**2+xmuneut1*(-3.D0*xmun+
+     .       th+2.D0*uh-1.D0)+xmun*(-xmun+th+2.D0*uh)+xmumu*(-xmun+uh
+     .       -1.D0)+uh*(-th-uh+1.D0))+
+     .       2.D0/xmuw*bnmuon(i,ni)*blsnmu(i,nj)*ol(ni,nj)*
+     .       dsqrt(xmun*xmumu)*xmchar(nj)/xmneut(ni)*(xmuneut1+xmun+
+     .       xmumu-uh-th+1.D0)+
+     .       1.D0/xmuw*bnmuon(i,ni)*blsnmu(i,nj)*or(ni,nj)*
+     .       dsqrt(xmun*xmumu)*(xmuneut1*(-xmun-xmumu+th+uh-4.D0)
+     .       -xmun-xmumu+th+uh))
+     .       -g2**2*4.D0/dstau(i)/dw*vwff*(
+     .       2.D0*amucoup(i,ni)*almu(i,nj)*or(ni,nj)*(xmuneut1*(-xmumu
+     .       +th-1.D0)+th*(xmun+xmumu)-xmun*xmumu-xmun+th*(1.D0-th))
+     .       +2.D0*amucoup(i,ni)*almu(i,nj)*ol(ni,nj)*
+     .       xmchar(nj)/xmneut(ni)*(uh+th-xmuneut1-1.D0)+
+     .       4.D0*amucoup(i,ni)*blmu(i,nj)*or(ni,nj)*xmchar(nj)
+     .           /xmneut(ni)*
+     .       dsqrt(xmun)*sgn(ni)*(th-xmumu-1.D0)+
+     .       2.D0*bmucoup(i,ni)*almu(i,nj)*ol(ni,nj)*xmchar(nj)
+     .           /xmneut(ni)*
+     .       dsqrt(xmumu)*sgn(ni)*(uh-xmun-1.D0)+
+     .       2.D0*amucoup(i,ni)*blmu(i,nj)*ol(ni,nj)*dsqrt(xmun)*
+     .           sgn(ni)*
+     .       (uh-xmumu-xmuneut1)+
+     .       4.D0*bmucoup(i,ni)*almu(i,nj)*or(ni,nj)*dsqrt(xmumu)*
+     .           sgn(ni)*
+     .       (th-xmun-xmuneut1)+
+     .       2.D0*bmucoup(i,ni)*blmu(i,nj)*ol(ni,nj)*dsqrt(xmumu*xmun)*
+     .       (uh+th-xmun-xmumu)+
+     .       8.D0*bmucoup(i,ni)*blmu(i,nj)*or(ni,nj)*dsqrt(xmumu*xmun)*
+     .       xmchar(nj)/xmneut(ni)*(-1.D0)+
+     .       1.D0/xmuw*amucoup(i,ni)*almu(i,nj)*or(ni,nj)*(xmumu*
+     .       (xmuneut1*(xmun-uh+2.D0)+xmun-th)+xmun*(xmuneut1*
+     .       (xmumu-th+2.D0)+xmumu-uh))+
+     .       1.D0/xmuw*amucoup(i,ni)*almu(i,nj)*ol(ni,nj)*
+     .       xmchar(nj)/xmneut(ni)*(xmuneut1*(-xmun-xmumu)+xmun*(uh
+     .       +th-1.D0-2.D0*xmumu)+xmumu*(uh+th-1.D0-2.D0*xmun))+ 
+     .       1.D0/xmuw*amucoup(i,ni)*blmu(i,nj)*or(ni,nj)*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmun)*sgn(ni)*(xmuneut1*
+     .       (xmumu-th+1.D0)+xmumu*(xmumu-2.D0*th-uh+2.D0)+xmun*
+     .       (xmumu-th+1.D0)+uh*th-uh+th**2-2.D0*th+1.D0)+
+     .       1.D0/xmuw*bmucoup(i,ni)*almu(i,nj)*ol(ni,nj)*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*(xmuneut1*
+     .       (-xmumu+th-1.D0)+xmumu*(-xmun+th)+xmun*(-xmun+2.D0*th+
+     .       uh-3.D0)+uh*(-th+1.D0)+th*(2.D0-th)-1.D0)+
+     .       1.D0/xmuw*amucoup(i,ni)*blmu(i,nj)*ol(ni,nj)*
+     .       dsqrt(xmun)*sgn(ni)*(-xmuneut1**2+xmuneut1*(-3.D0*xmumu+
+     .       2.D0*th+uh-1.D0)+xmumu*(-xmumu+2.D0*th+uh)+xmun*
+     .       (-xmumu+th-1.D0)+th*(-th-uh+1.D0))+
+     .       1.D0/xmuw*bmucoup(i,ni)*almu(i,nj)*or(ni,nj)*
+     .       dsqrt(xmumu)*sgn(ni)*(
+     .       xmuneut1**2+xmuneut1*(2.D0*xmun+xmumu-2.D0*th-uh+1.D0)
+     .       +xmumu*(xmun-th)+xmun*(xmun-2.D0*th-uh+1.D0)+th*(th+uh
+     .       -1.D0))+
+     .       1.D0/xmuw*bmucoup(i,ni)*blmu(i,nj)*ol(ni,nj)*
+     .       dsqrt(xmun*xmumu)*(xmuneut1*(-xmun-xmumu+th+uh-4.D0)+uh
+     .       +th-xmun-xmumu)+
+     .       2.D0/xmuw*bmucoup(i,ni)*blmu(i,nj)*or(ni,nj)*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmun*xmumu)*(xmuneut1+xmun
+     .       +xmumu-th-uh+1.D0))
+         enddo
+      else
+         xneutwsf=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                        H+ sfermion interference
+c -------------------------------------------------------------------- c
+
+      xneuthsf = 0.D0
+
+c --- with mass dependence ---
+
+      if((amchar(nj)+ammuon).le.amneut(ni)) then
+         do i=1,2
+            xneuthsf=xneuthsf+2.D0*g2**2/dh/dsntau(i)*(
+     .       (alsnmu(i,nj)*bnmuon(i,ni)*qr(ni,nj)*(vchmuon+achmuon)
+     .       +anmuon(i,ni)*blsnmu(i,nj)*ql(ni,nj)*(vchmuon-achmuon))*
+     .       xmchar(nj)/xmneut(ni)*(uh+th-xmuneut1-1.D0)+
+     .       (alsnmu(i,nj)*bnmuon(i,ni)*ql(ni,nj)*(vchmuon+achmuon)
+     .       +anmuon(i,ni)*blsnmu(i,nj)*qr(ni,nj)*(vchmuon-achmuon))*
+     .       (xmuneut1*(xmun-uh)+uh*(-xmun-xmumu)+xmumu+uh*
+     .        (th+uh-1.D0))+
+     .       (alsnmu(i,nj)*anmuon(i,ni)*qr(ni,nj)*(vchmuon+achmuon)
+     .       +bnmuon(i,ni)*blsnmu(i,nj)*ql(ni,nj)*(vchmuon-achmuon))*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmun)*sgn(ni)*
+     .       (-xmumu+th-1.D0)+
+     .       (alsnmu(i,nj)*anmuon(i,ni)*qr(ni,nj)*(vchmuon-achmuon)
+     .       +bnmuon(i,ni)*blsnmu(i,nj)*ql(ni,nj)*(vchmuon+achmuon))*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*(xmun-uh+1.D0)+
+     .       (alsnmu(i,nj)*anmuon(i,ni)*ql(ni,nj)*(vchmuon+achmuon)
+     .       +bnmuon(i,ni)*blsnmu(i,nj)*qr(ni,nj)*(vchmuon-achmuon))*
+     .       dsqrt(xmun)*sgn(ni)*(xmuneut1+xmumu-uh)+
+     .       (alsnmu(i,nj)*anmuon(i,ni)*ql(ni,nj)*(vchmuon-achmuon)
+     .       +bnmuon(i,ni)*blsnmu(i,nj)*qr(ni,nj)*(vchmuon+achmuon))*
+     .       dsqrt(xmumu)*sgn(ni)*(-xmuneut1-xmun+th)+
+     .       (alsnmu(i,nj)*bnmuon(i,ni)*qr(ni,nj)*(vchmuon-achmuon)
+     .       +anmuon(i,ni)*blsnmu(i,nj)*ql(ni,nj)*(vchmuon+achmuon))*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmun*xmumu)*2.D0+
+     .       (alsnmu(i,nj)*bnmuon(i,ni)*ql(ni,nj)*(vchmuon-achmuon)
+     .       +anmuon(i,ni)*blsnmu(i,nj)*qr(ni,nj)*(vchmuon+achmuon))*
+     .       dsqrt(xmun*xmumu)*(-xmun-xmumu+uh+th) )
+     .       +2.D0*g2**2/dh/dstau(i)*(
+     .       (almu(i,nj)*bmucoup(i,ni)*ql(ni,nj)*(vchmuon-achmuon)
+     .       +blmu(i,nj)*amucoup(i,ni)*qr(ni,nj)*(vchmuon+achmuon))*
+     .       xmchar(nj)/xmneut(ni)*(uh+th-1.D0-xmuneut1)+
+     .       (almu(i,nj)*bmucoup(i,ni)*qr(ni,nj)*(vchmuon-achmuon)
+     .       +blmu(i,nj)*amucoup(i,ni)*ql(ni,nj)*(vchmuon+achmuon))*
+     .       (xmuneut1*(xmumu-th)+xmun*(1.D0-th)+th*
+     .       (-xmumu+th+uh-1.D0))+
+     .       (almu(i,nj)*amucoup(i,ni)*ql(ni,nj)*(vchmuon+achmuon)
+     .       +blmu(i,nj)*bmucoup(i,ni)*qr(ni,nj)*(vchmuon-achmuon))*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmun)*sgn(ni)*(xmumu-th+1.D0)+
+     .       (almu(i,nj)*amucoup(i,ni)*ql(ni,nj)*(vchmuon-achmuon)
+     .       +blmu(i,nj)*bmucoup(i,ni)*qr(ni,nj)*(vchmuon+achmuon))*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*(uh-xmun-1.D0)+
+     .       (almu(i,nj)*amucoup(i,ni)*qr(ni,nj)*(vchmuon+achmuon)
+     .       +blmu(i,nj)*bmucoup(i,ni)*ql(ni,nj)*(vchmuon-achmuon))*
+     .       dsqrt(xmun)*sgn(ni)*(uh-xmuneut1-xmumu)+
+     .       (almu(i,nj)*amucoup(i,ni)*qr(ni,nj)*(vchmuon-achmuon)
+     .       +blmu(i,nj)*bmucoup(i,ni)*ql(ni,nj)*(vchmuon+achmuon))*
+     .       dsqrt(xmumu)*sgn(ni)*(xmun+xmuneut1-th)+
+     .       (almu(i,nj)*bmucoup(i,ni)*ql(ni,nj)*(vchmuon+achmuon)
+     .       +blmu(i,nj)*amucoup(i,ni)*qr(ni,nj)*(vchmuon-achmuon))*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmun*xmumu)*2.D0+
+     .       (almu(i,nj)*bmucoup(i,ni)*qr(ni,nj)*(vchmuon+achmuon)
+     .       +blmu(i,nj)*amucoup(i,ni)*ql(ni,nj)*(vchmuon-achmuon))*
+     .       dsqrt(xmun*xmumu)*(uh+th-xmun-xmumu) )
+         end do
+      else
+         xneuthsf=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                           H+ W- interference
+c -------------------------------------------------------------------- c
+
+      if((amchar(nj)+ammuon).le.amneut(ni)) then
+            xneuthw=-g2**2/dw/dh*vwff*(
+     .       (ql(ni,nj)*or(ni,nj)+qr(ni,nj)*ol(ni,nj))*
+     .        (vchmuon+achmuon)*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmun)*sgn(ni)*8.D0*
+     .       (1.D0-th+xmumu)
+     .      +(ql(ni,nj)*or(ni,nj)+qr(ni,nj)*ol(ni,nj))*
+     .        (vchmuon-achmuon)*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*8.D0*
+     .       (-1.D0+uh-xmun)
+     .      +(ql(ni,nj)*ol(ni,nj)+qr(ni,nj)*or(ni,nj))*
+     .        (vchmuon+achmuon)*
+     .       dsqrt(xmun)*sgn(ni)*8.D0*(uh-xmuneut1-xmumu)
+     .      +(ql(ni,nj)*ol(ni,nj)+qr(ni,nj)*or(ni,nj))*
+     .        (vchmuon-achmuon)*
+     .       dsqrt(xmumu)*sgn(ni)*8.D0*(xmun+xmuneut1-th)+
+     .      1.D0/xmuw*(
+     .      (ql(ni,nj)*or(ni,nj)+qr(ni,nj)*ol(ni,nj))*(vchmuon+achmuon)*
+     .      xmchar(nj)/xmneut(ni)*dsqrt(xmun)*sgn(ni)*4.D0*(
+     .      xmuneut1*(uh+th-xmun-xmumu-2.D0)+xmun*(uh+th-2.D0*xmumu
+     .      -1.D0)+xmumu*(-2.D0*xmumu+3.D0*(th+uh)-5.D0)+th*(3.D0
+     .      -2.D0*uh-th)+uh*(3.D0-uh)-2.D0)+
+     .      (ql(ni,nj)*or(ni,nj)+qr(ni,nj)*ol(ni,nj))*(vchmuon-achmuon)*
+     .      xmchar(nj)/xmneut(ni)*dsqrt(xmumu)*sgn(ni)*4.D0*(
+     .      xmuneut1*(-uh-th+xmun+xmumu+2.D0)+xmumu*(-uh-th+1.D0+
+     .      2.D0*xmun)+xmun*(2.D0*xmun-3.D0*(th+uh)+5.D0)+uh*(uh-3.D0
+     .      +2.D0*th)+th*(th-3.D0)+2.D0)+
+     .      (ql(ni,nj)*ol(ni,nj)+qr(ni,nj)*or(ni,nj))*(vchmuon+achmuon)*
+     .      dsqrt(xmun)*sgn(ni)*4.D0*(xmuneut1*(2.D0*xmuneut1+xmun+
+     .      5.D0*xmumu-3.D0*(th+uh)+2.D0)+xmun*(2.D0*xmumu-th-uh+
+     .      1.D0)+xmumu*(2.D0*xmumu-3.D0*(uh+th)+1.D0)+th*(th+2.D0*uh
+     .      -1.D0)+uh*(uh-1.D0))+
+     .      (ql(ni,nj)*ol(ni,nj)+qr(ni,nj)*or(ni,nj))*(vchmuon-achmuon)*
+     .      dsqrt(xmumu)*sgn(ni)*4.D0*(xmuneut1*(-2.D0*xmuneut1-5.D0*
+     .      xmun-xmumu+3.D0*(uh+th)-2.D0)+xmumu*(th+uh-1.D0-2.D0*
+     .      xmun)+xmun*(-2.D0*xmun+3.D0*(th+uh)-1.D0)+uh*(-uh+1.D0
+     .      -2.D0*th)+th*(1.D0-th)) ) )
+      else
+         xneuthw=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+
+      SD_chmunmu = xneutsf+xneutwmuon+xneuthmuon+xneutwsf+xneuthsf+
+     .               xneuthw
+
+      end
+c end maggie changed 27/9/2016
 
 c ==================================================================== c
 c =======================  chargino- tau+ nu_tau ===================== c
@@ -26945,6 +30229,444 @@ c -------------------------------------------------------------------- c
       SD_chubd = xneutsf+xneutw+xneutwsf
 
       end
+
+c maggie changed 27/9/2016
+c ==================================================================== c
+c ===================  chargino- charm strangebar ==================== c
+c ==================================================================== c
+
+      double precision function SD_chcbs(x1,x2)
+
+      implicit double precision (a-h,m,o-z)
+      integer k
+
+      dimension amneut(4),xmneut(4),amchar(2),xmchar(2)
+      dimension dsbot(2),dstop(2),sgn(4)
+      dimension atopr(2,4),btopr(2,4)
+      dimension abot(2,4),bbot(2,4)
+      dimension alsbot(2,2),aksbot(2,2),alstor(2,2),akstor(2,2)
+      dimension ql(4,2),qr(4,2),or(4,2),ol(4,2)
+      dimension alsstr(2,2),aksstr(2,2),astr(2,4),bstr(2,4),
+     .     alschar(2,2),akschar(2,2),achar(2,4),bchar(2,4)
+
+      COMMON/SD_param/gf,amz,amw,pi,g2
+      COMMON/SD_hmass/ama,aml,amh,amch,amar
+      COMMON/SD_fermion/amt,amb,amtau
+      COMMON/SD_massgino/amneut,xmneut,amchar,xmchar
+      COMMON/SD_squarktb/ast1,ast2,asb1,asb2
+      COMMON/SD_squarkud/asup1,asup2,asdown1,asdown2
+      COMMON/SD_indices/ni,nj
+      COMMON/SD_scala/scalb,scalt
+      COMMON/SD_yukawa/ytewsb,ybewsb,ytauewsb
+      COMMON/SD_coup3/ql,qr,ol,or
+      COMMON/SD_coup18/awff,vwff
+      COMMON/SD_runcoupscale/scalechoice,scaleofcoupling,inumloop
+      COMMON/SD_mwmzpole/amwp,amzp
+      COMMON/SUSYHITIN/flagshsin,amsin,amcin,ammuonin,alphin,gamwin,
+     .                 gamzin,vusin,vcbin,rvubin
+      COMMON/SD_coup23/alsstr,aksstr,astr,bstr,alschar,akschar,achar,
+     .     bchar,vchchar,achchar
+
+c --- several definitions ---
+
+      do i=1,4,1
+         sgn(i) = 1.D0
+         if(xmneut(i).gt.0.D0) then
+            sgn(i) = 1.D0
+         elseif(xmneut(i).lt.0.D0) then
+            sgn(i) = -1.D0
+         endif
+      enddo
+
+      xmuneut1 = amchar(nj)**2/amneut(ni)**2
+      xmuc     = amcin**2/amneut(ni)**2
+      xmus     = amsin**2/amneut(ni)**2
+
+      uh = 1.D0-x1+xmuc
+      th = 1.D0-x2+xmus
+
+      x3 = 2.D0-x1-x2
+      y3 = 1.D0+xmuneut1-x3
+
+c -------------------------------------------------------------------- c
+c                          sfermion exchange
+c -------------------------------------------------------------------- c
+
+      xmusdow1 = asdown1**2/amneut(ni)**2
+      xmusdow2 = asdown2**2/amneut(ni)**2
+      xmusup1 = asup1**2/amneut(ni)**2
+      xmusup2 = asup2**2/amneut(ni)**2
+
+      dsbot(1) = 1-x2-xmusdow1+xmus
+      dsbot(2) = 1-x2-xmusdow2+xmus
+      dstop(1) = 1-x1-xmusup1+xmuc
+      dstop(2) = 1-x1-xmusup2+xmuc
+      
+      xneutsf=0.D0
+
+c --- with mass dependence ---
+
+      if((amchar(nj)+amcin+amsin).le.amneut(ni)) then
+         do i=1,2
+            do k=1,2
+               xneutsf=xneutsf
+     .          +g2**2/dsbot(k)/dsbot(i)*(
+     .          (astr(i,ni)*astr(k,ni)+bstr(i,ni)*bstr(k,ni))*
+     .          (alsstr(i,nj)*alsstr(k,nj)+aksstr(i,nj)*aksstr(k,nj))*
+     .          (xmuneut1*(th-xmus-1.D0)+xmuc*(th-1.D0)+xmus*(-xmuc
+     .          +th)+th*(-th+1.D0))+
+     .          (astr(i,ni)*astr(k,ni)+bstr(i,ni)*bstr(k,ni))*
+     .          (alsstr(i,nj)*aksstr(k,nj)+aksstr(i,nj)*alsstr(k,nj))*
+     .          xmchar(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*2.D0*
+     .          (th-xmus-1.D0)
+     .          +(astr(i,ni)*bstr(k,ni)+bstr(i,ni)*astr(k,ni))*
+     .          (alsstr(i,nj)*alsstr(k,nj)+aksstr(i,nj)*aksstr(k,nj))*
+     .          dsqrt(xmus)*sgn(ni)*2.D0*(th-xmuc-xmuneut1)+
+     .          (astr(i,ni)*bstr(k,ni)+bstr(i,ni)*astr(k,ni))*
+     .          (alsstr(i,nj)*aksstr(k,nj)+aksstr(i,nj)*alsstr(k,nj))*
+     .          xmchar(nj)/xmneut(ni)*dsqrt(xmuc*xmus)*(-4.D0) )
+     .          +g2**2/dstop(k)/dstop(i)*(
+     .          (achar(i,ni)*achar(k,ni)+bchar(i,ni)*bchar(k,ni))*
+     .          (alschar(i,nj)*alschar(k,nj)+akschar(i,nj)*
+     .              akschar(k,nj))*
+     .          (xmuneut1*(-xmuc+uh-1.D0)+xmuc*(uh-xmus)+xmus*
+     .          (uh-1.D0)+uh*(-uh+1.D0))+
+     .          (achar(i,ni)*achar(k,ni)+bchar(i,ni)*bchar(k,ni))*
+     .          (alschar(i,nj)*akschar(k,nj)+akschar(i,nj)*
+     .              alschar(k,nj))*
+     .          xmchar(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*2.D0*
+     .          (uh-xmuc-1.D0)
+     .          +(achar(i,ni)*bchar(k,ni)+bchar(i,ni)*achar(k,ni))*
+     .          (alschar(i,nj)*alschar(k,nj)+akschar(i,nj)*
+     .              akschar(k,nj))*
+     .          dsqrt(xmuc)*sgn(ni)*2.D0*(uh-xmus-xmuneut1)+
+     .          (achar(i,ni)*bchar(k,ni)+bchar(i,ni)*achar(k,ni))*
+     .          (alschar(i,nj)*akschar(k,nj)+akschar(i,nj)*
+     .              alschar(k,nj))*
+     .          dsqrt(xmuc*xmus)*xmchar(nj)/xmneut(ni)*(-4.D0))
+     .          -2.D0*g2**2/dstop(k)/dsbot(i)*(
+     .          (alschar(k,nj)*alsstr(i,nj)*astr(i,ni)*achar(k,ni)+
+     .           akschar(k,nj)*aksstr(i,nj)*bstr(i,ni)*bchar(k,ni))*
+     .          xmchar(nj)/xmneut(ni)*(uh+th-1.D0-xmuneut1)+
+     .          (alschar(k,nj)*aksstr(i,nj)*astr(i,ni)*bchar(k,ni)+
+     .           akschar(k,nj)*alsstr(i,nj)*bstr(i,ni)*achar(k,ni))*
+     .          (uh*th-xmuc*xmus-xmuneut1)+
+     .          (alschar(k,nj)*alsstr(i,nj)*astr(i,ni)*bchar(k,ni)+
+     .           akschar(k,nj)*aksstr(i,nj)*bstr(i,ni)*achar(k,ni))*
+     .          xmchar(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*
+     .          (th-xmus-1.D0)+
+     .          (alschar(k,nj)*alsstr(i,nj)*bstr(i,ni)*achar(k,ni)+
+     .           akschar(k,nj)*aksstr(i,nj)*astr(i,ni)*bchar(k,ni))*
+     .          xmchar(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*
+     .          (uh-xmuc-1.D0)+
+     .          (alschar(k,nj)*aksstr(i,nj)*astr(i,ni)*achar(k,ni)+
+     .           akschar(k,nj)*alsstr(i,nj)*bstr(i,ni)*bchar(k,ni))*
+     .          dsqrt(xmuc)*sgn(ni)*(-xmuneut1-xmus+uh)+
+     .          (alschar(k,nj)*aksstr(i,nj)*bstr(i,ni)*bchar(k,ni)+
+     .           akschar(k,nj)*alsstr(i,nj)*astr(i,ni)*achar(k,ni))*
+     .          dsqrt(xmus)*sgn(ni)*(-xmuneut1-xmuc-th)+
+     .          (alschar(k,nj)*alsstr(i,nj)*bstr(i,ni)*bchar(k,ni)+
+     .           akschar(k,nj)*aksstr(i,nj)*astr(i,ni)*achar(k,ni))*
+     .          xmchar(nj)/xmneut(ni)*dsqrt(xmuc*xmus)*(-2.D0)+
+     .          (alschar(k,nj)*aksstr(i,nj)*bstr(i,ni)*achar(k,ni)+
+     .           akschar(k,nj)*alsstr(i,nj)*astr(i,ni)*bchar(k,ni))*
+     .          dsqrt(xmuc*xmus)*(uh+th-xmuc-xmus) )
+             enddo
+         enddo
+      else
+         xneutsf=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                               W+ exchange
+c -------------------------------------------------------------------- c
+
+      xmuw = amwp**2/amneut(ni)**2
+      dw   = y3-xmuw
+
+c --- with mass dependence
+
+      if((amchar(nj)+amcin+amsin).le.amneut(ni)) then
+         xneutw=g2**2*16.D0/dw**2*vwff**2*(
+     .        (ol(ni,nj)**2+or(ni,nj)**2)*(-xmuneut1-xmus*xmuc)
+     .        +ol(ni,nj)**2*(xmuneut1*(uh-xmuc)+uh*(xmus+xmuc)
+     .         -xmus-uh**2+uh)
+     .        +or(ni,nj)**2*(xmuneut1*(th-xmus)+th*(xmus+xmuc)
+     .         -xmuc-th**2+th) 
+     .        +2.D0*xmchar(nj)/xmneut(ni)*ol(ni,nj)*or(ni,nj)*
+     .         (uh+th-1.D0-xmuneut1)
+     .        +1.D0/xmuw**2*xmchar(nj)/xmneut(ni)*ol(ni,nj)*
+     .         or(ni,nj)*
+     .         (xmuneut1**2*(xmus+xmuc)+xmuneut1*(xmus**2+xmuc**2
+     .          +6.D0*xmus*xmuc)+(th+uh-1.D0)*(-2.D0*xmuneut1*xmuc
+     .          -2.D0*xmuneut1*xmus-xmus**2-xmuc**2-6.D0*xmuc*
+     .          xmus)+(xmuc+xmus)*(2.D0*uh*th-2.D0*th-2.D0*uh
+     .          +1.D0+uh**2+th**2+4.D0*xmus*xmuc))
+     .        +1.D0/4.D0/xmuw**2*(ol(ni,nj)**2+or(ni,nj)**2)*
+     .         (xmuneut1**2*(xmuc+xmus)*(th+uh-xmuc-xmus-4.D0)
+     .         +xmuneut1*((xmus+xmuc)*(6.D0*(uh+th)-th**2-uh**2-
+     .          4.D0-2.D0*uh*th-2.D0*xmus-2.D0*xmuc)+6.D0*xmus*xmuc*
+     .          (uh+th-2.D0)-4.D0*xmus*xmuc*(xmus+xmuc+1.D0)
+     .          +(xmus**2+xmuc**2)*(uh+th))
+     .         +xmuc**2*(-4.D0*xmus+uh+th-1.D0)
+     .         +xmus**2*(-4.D0*xmuc+uh+th-1.D0)
+     .         +xmus*xmuc*(6.D0*th+6.D0*uh-2.D0)
+     .         +(xmuc+xmus)*(-th**2-uh**2+uh+th-2.D0*uh*th))
+     .        +2.D0/xmuw*xmchar(nj)/xmneut(ni)*ol(ni,nj)*or(ni,nj)*
+     .         (-xmuneut1*(xmus+xmuc)-4.D0*xmus*xmuc+
+     .          (xmus+xmuc)*(uh+th-1.D0))
+     .        +1.D0/xmuw*(ol(ni,nj)**2+or(ni,nj)**2)*(
+     .         xmuneut1*(2.D0*xmus*xmuc+2.D0*xmus+2.D0*xmuc
+     .         -xmuc*th-xmus*uh)-xmus*th-xmuc*uh+2.D0*xmus*xmuc) )
+      else
+         xneutw=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                              H+ exchange
+c -------------------------------------------------------------------- c
+
+      xmuch = amch**2/amneut(ni)**2
+      dh    = y3-xmuch
+
+c --- with mass dependence ---
+
+      if((amchar(nj)+amcin+amsin).le.amneut(ni)) then
+         xneuth=2.D0*g2**2/dh**2*(
+     .     (ql(ni,nj)**2+qr(ni,nj)**2)*(vchchar**2+achchar**2)*
+     .     ((1.D0+xmuneut1+xmuc+xmus)*(uh+th)-(uh+th)**2-(1.D0
+     .     +xmuneut1)*(xmuc+xmus))+
+     .     (ql(ni,nj)**2+qr(ni,nj)**2)*(vchchar**2-achchar**2)*(-2.D0)*
+     .     dsqrt(xmuc*xmus)*(uh+th-xmuc-xmus)+
+     .     4.D0*ql(ni,nj)*qr(ni,nj)*xmchar(nj)/xmneut(ni)*
+     .     (vchchar**2+achchar**2)*(1.D0+xmuneut1-uh-th)+
+     .     4.D0*ql(ni,nj)*qr(ni,nj)*xmchar(nj)/xmneut(ni)*
+     .     (vchchar**2-achchar**2)*(-2.D0)*dsqrt(xmuc*xmus) )
+      else
+         xneuth=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                         W+-sfermion interference
+c -------------------------------------------------------------------- c
+
+      xneutwsf=0.D0
+
+c --- with mass dependence
+
+      if((amchar(nj)+amcin+amsin).le.amneut(ni)) then
+         do i=1,2
+            xneutwsf=xneutwsf+g2**2*4.D0/dstop(i)/dw*vwff*
+     .      (2.D0*achar(i,ni)*alschar(i,nj)*ol(ni,nj)*
+     .       (xmuneut1*(-xmuc+uh-1.D0)+uh*(xmuc+xmus)-xmuc*xmus
+     .        -xmus+uh*(1.D0-uh))+
+     .       2.D0*achar(i,ni)*alschar(i,nj)*or(ni,nj)*
+     .       xmchar(nj)/xmneut(ni)*(uh+th-xmuneut1-1.D0)+
+     .       2.D0*bchar(i,ni)*alschar(i,nj)*or(ni,nj)*
+     .       dsqrt(xmuc)*sgn(ni)*xmchar(nj)/xmneut(ni)*(th-xmus-1.D0)+
+     .       4.D0*achar(i,ni)*akschar(i,nj)*ol(ni,nj)*
+     .       dsqrt(xmus)*sgn(ni)*xmchar(nj)/xmneut(ni)*(uh-xmuc-1.D0)+
+     .       4.D0*bchar(i,ni)*alschar(i,nj)*ol(ni,nj)*
+     .       dsqrt(xmuc)*sgn(ni)*(uh-xmuneut1-xmus)+
+     .       2.D0*achar(i,ni)*akschar(i,nj)*or(ni,nj)*
+     .       dsqrt(xmus)*sgn(ni)*(th-xmuneut1-xmuc)+
+     .       2.D0*bchar(i,ni)*akschar(i,nj)*or(ni,nj)*dsqrt(xmuc*xmus)*
+     .       (uh+th-xmuc-xmus)+
+     .       8.D0*bchar(i,ni)*akschar(i,nj)*ol(ni,nj)*(-1.D0)*
+     .       dsqrt(xmuc*xmus)*xmchar(nj)/xmneut(ni)+
+     .       1.D0/xmuw*achar(i,ni)*alschar(i,nj)*ol(ni,nj)*
+     .       (xmuc*(xmuneut1*(xmus-th+2.D0)+xmus-uh)+
+     .        xmus*(xmuneut1*(xmuc-uh+2.D0)+xmuc-th))+
+     .       1.D0/xmuw*achar(i,ni)*alschar(i,nj)*or(ni,nj)*
+     .       xmchar(nj)/xmneut(ni)*(xmuneut1*(-xmuc-xmus)+xmuc*(th+uh
+     .       -1.D0-2.D0*xmus)+xmus*(th+uh-1.D0-2.D0*xmuc))+
+     .       1.D0/xmuw*bchar(i,ni)*alschar(i,nj)*or(ni,nj)*
+     .       dsqrt(xmuc)*sgn(ni)*
+     .       xmchar(nj)/xmneut(ni)*(xmuneut1*(-xmuc+uh-1.D0)+xmuc*
+     .       (-xmus+uh)+xmus*(-xmus+th+2.D0*uh-3.D0)+th*(1.D0-uh)
+     .       +uh*(2.D0-uh)-1.D0)+
+     .       1.D0/xmuw*achar(i,ni)*akschar(i,nj)*ol(ni,nj)*
+     .       dsqrt(xmus)*sgn(ni)*
+     .       xmchar(nj)/xmneut(ni)*(xmuneut1*(xmuc-uh+1.D0)+xmuc*(
+     .       xmuc-th-2.D0*uh+2.D0)+xmus*(xmuc-uh+1.D0)+uh*th-th+uh**2
+     .       -2.D0*uh+1.D0)+
+     .       1.D0/xmuw*bchar(i,ni)*alschar(i,nj)*ol(ni,nj)*
+     .       dsqrt(xmuc)*sgn(ni)*(xmuneut1**2+xmuneut1*(xmuc+2.D0*xmus
+     .       -th-2.D0*uh+1.D0)+xmuc*(xmus-uh)+xmus*(xmus-th-2.D0*uh+
+     .       1.D0)+uh*(th+uh-1.D0))+
+     .       1.D0/xmuw*achar(i,ni)*akschar(i,nj)*or(ni,nj)*
+     .       dsqrt(xmus)*sgn(ni)*(-xmuneut1**2+xmuneut1*(-3.D0*xmuc+th+
+     .       2.D0*uh-1.D0)+xmuc*(-xmuc+th+2.D0*uh)+xmus*(-xmuc+uh-1.D0)
+     .       +uh*(-th-uh+1.D0))+
+     .       2.D0/xmuw*bchar(i,ni)*akschar(i,nj)*ol(ni,nj)*
+     .       dsqrt(xmuc*xmus)*xmchar(nj)/xmneut(ni)*(xmuneut1+xmuc+
+     .       xmus-uh-th+1.D0)+
+     .       1.D0/xmuw*bchar(i,ni)*akschar(i,nj)*or(ni,nj)*
+     .       dsqrt(xmuc*xmus)*(xmuneut1*(-xmuc-xmus+th+uh-4.D0)
+     .       -xmuc-xmus+th+uh))
+     .       -g2**2*4.D0/dsbot(i)/dw*vwff*(
+     .       2.D0*astr(i,ni)*alsstr(i,nj)*or(ni,nj)*(xmuneut1*(-xmus
+     .       +th-1.D0)+th*(xmuc+xmus)-xmuc*xmus-xmuc+th*(1.D0-th))
+     .       +2.D0*astr(i,ni)*alsstr(i,nj)*ol(ni,nj)*
+     .       xmchar(nj)/xmneut(ni)*(uh+th-xmuneut1-1.D0)+
+     .       4.D0*astr(i,ni)*aksstr(i,nj)*or(ni,nj)*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*(th-xmus-1.D0)+
+     .       2.D0*bstr(i,ni)*alsstr(i,nj)*ol(ni,nj)*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*(uh-xmuc-1.D0)+
+     .       2.D0*astr(i,ni)*aksstr(i,nj)*ol(ni,nj)*dsqrt(xmuc)*sgn(ni)*
+     .       (uh-xmus-xmuneut1)+
+     .       4.D0*bstr(i,ni)*alsstr(i,nj)*or(ni,nj)*dsqrt(xmus)*sgn(ni)*
+     .       (th-xmuc-xmuneut1)+
+     .       2.D0*bstr(i,ni)*aksstr(i,nj)*ol(ni,nj)*dsqrt(xmus*xmuc)*
+     .       (uh+th-xmuc-xmus)+
+     .       8.D0*bstr(i,ni)*aksstr(i,nj)*or(ni,nj)*dsqrt(xmus*xmuc)*
+     .       xmchar(nj)/xmneut(ni)*(-1.D0)+
+     .       1.D0/xmuw*astr(i,ni)*alsstr(i,nj)*or(ni,nj)*(xmus*
+     .       (xmuneut1*(xmuc-uh+2.D0)+xmuc-th)+xmuc*(xmuneut1*
+     .       (xmus-th+2.D0)+xmus-uh))+
+     .       1.D0/xmuw*astr(i,ni)*alsstr(i,nj)*ol(ni,nj)*
+     .       xmchar(nj)/xmneut(ni)*(xmuneut1*(-xmuc-xmus)+xmuc*(uh
+     .       +th-1.D0-2.D0*xmus)+xmus*(uh+th-1.D0-2.D0*xmuc))+ 
+     .       1.D0/xmuw*astr(i,ni)*aksstr(i,nj)*or(ni,nj)*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*(xmuneut1*
+     .       (xmus-th+1.D0)+xmus*(xmus-2.D0*th-uh+2.D0)+xmuc*(xmus-th
+     .       +1.D0)+uh*th-uh+th**2-2.D0*th+1.D0)+
+     .       1.D0/xmuw*bstr(i,ni)*alsstr(i,nj)*ol(ni,nj)*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*(xmuneut1*(-xmus+
+     .       th-1.D0)+xmus*(-xmuc+th)+xmuc*(-xmuc+2.D0*th+uh-3.D0)+
+     .       uh*(-th+1.D0)+th*(2.D0-th)-1.D0)+
+     .       1.D0/xmuw*astr(i,ni)*aksstr(i,nj)*ol(ni,nj)*
+     .       dsqrt(xmuc)*sgn(ni)*(-xmuneut1**2+xmuneut1*(-3.D0*xmus+
+     .       2.D0*th+uh-1.D0)+xmus*(-xmus+2.D0*th+uh)+xmuc*(-xmus+th-
+     .       1.D0)+th*(-th-uh+1.D0))+
+     .       1.D0/xmuw*bstr(i,ni)*alsstr(i,nj)*or(ni,nj)*
+     .       dsqrt(xmus)*sgn(ni)*(xmuneut1**2+xmuneut1*(2.D0*xmuc+xmus
+     .       -2.D0*th-uh+1.D0)+xmus*(xmuc-th)+xmuc*(xmuc-2.D0*th-uh+
+     .       1.D0)+th*(th+uh-1.D0))+
+     .       1.D0/xmuw*bstr(i,ni)*aksstr(i,nj)*ol(ni,nj)*
+     .       dsqrt(xmuc*xmus)*(xmuneut1*(-xmuc-xmus+th+uh-4.D0)+uh
+     .       +th-xmuc-xmus)+
+     .       2.D0/xmuw*bstr(i,ni)*aksstr(i,nj)*or(ni,nj)*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmuc*xmus)*(xmuneut1+xmuc
+     .       +xmus-th-uh+1.D0))
+         enddo
+      else
+         xneutwsf=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                          H+ sfermion interference
+c -------------------------------------------------------------------- c
+	
+      xneuthsf = 0.D0
+
+c --- with mass dependence ---
+
+      if((amchar(nj)+amcin+amsin).le.amneut(ni)) then
+         do i=1,2
+            xneuthsf=xneuthsf+2.D0*g2**2/dh/dstop(i)*(
+     .       (alschar(i,nj)*bchar(i,ni)*qr(ni,nj)*(vchchar+achchar)
+     .       +achar(i,ni)*akschar(i,nj)*ql(ni,nj)*(vchchar-achchar))*
+     .       xmchar(nj)/xmneut(ni)*(uh+th-xmuneut1-1.D0)+
+     .       (alschar(i,nj)*bchar(i,ni)*ql(ni,nj)*(vchchar+achchar)
+     .       +achar(i,ni)*akschar(i,nj)*qr(ni,nj)*(vchchar-achchar))*
+     .       (xmuneut1*(xmuc-uh)+uh*(-xmuc-xmus)+xmus+uh*
+     .        (th+uh-1.D0))+
+     .       (alschar(i,nj)*achar(i,ni)*qr(ni,nj)*(vchchar+achchar)
+     .       +bchar(i,ni)*akschar(i,nj)*ql(ni,nj)*(vchchar-achchar))*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*(-xmus+th-1.D0)+
+     .       (alschar(i,nj)*achar(i,ni)*qr(ni,nj)*(vchchar-achchar)
+     .       +bchar(i,ni)*akschar(i,nj)*ql(ni,nj)*(vchchar+achchar))*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*(xmuc-uh+1.D0)+
+     .       (alschar(i,nj)*achar(i,ni)*ql(ni,nj)*(vchchar+achchar)
+     .       +bchar(i,ni)*akschar(i,nj)*qr(ni,nj)*(vchchar-achchar))*
+     .       dsqrt(xmuc)*sgn(ni)*(xmuneut1+xmus-uh)+
+     .       (alschar(i,nj)*achar(i,ni)*ql(ni,nj)*(vchchar-achchar)
+     .       +bchar(i,ni)*akschar(i,nj)*qr(ni,nj)*(vchchar+achchar))*
+     .       dsqrt(xmus)*sgn(ni)*(-xmuneut1-xmuc+th)+
+     .       (alschar(i,nj)*bchar(i,ni)*qr(ni,nj)*(vchchar-achchar)
+     .       +achar(i,ni)*akschar(i,nj)*ql(ni,nj)*(vchchar+achchar))*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmuc*xmus)*2.D0+
+     .       (alschar(i,nj)*bchar(i,ni)*ql(ni,nj)*(vchchar-achchar)
+     .       +achar(i,ni)*akschar(i,nj)*qr(ni,nj)*(vchchar+achchar))*
+     .       dsqrt(xmuc*xmus)*(-xmuc-xmus+uh+th) )
+     .       +2.D0*g2**2/dh/dsbot(i)*(
+     .       (alsstr(i,nj)*bstr(i,ni)*ql(ni,nj)*(vchchar-achchar)
+     .       +aksstr(i,nj)*astr(i,ni)*qr(ni,nj)*(vchchar+achchar))*
+     .       xmchar(nj)/xmneut(ni)*(uh+th-1.D0-xmuneut1)+
+     .       (alsstr(i,nj)*bstr(i,ni)*qr(ni,nj)*(vchchar-achchar)
+     .       +aksstr(i,nj)*astr(i,ni)*ql(ni,nj)*(vchchar+achchar))*
+     .       (xmuneut1*(xmus-th)+xmuc*(1.D0-th)+th*
+     .       (-xmus+th+uh-1.D0))+
+     .       (alsstr(i,nj)*astr(i,ni)*ql(ni,nj)*(vchchar+achchar)
+     .       +aksstr(i,nj)*bstr(i,ni)*qr(ni,nj)*(vchchar-achchar))*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*(xmus-th+1.D0)+
+     .       (alsstr(i,nj)*astr(i,ni)*ql(ni,nj)*(vchchar-achchar)
+     .       +aksstr(i,nj)*bstr(i,ni)*qr(ni,nj)*(vchchar+achchar))*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*(uh-xmuc-1.D0)+
+     .       (alsstr(i,nj)*astr(i,ni)*qr(ni,nj)*(vchchar+achchar)
+     .       +aksstr(i,nj)*bstr(i,ni)*ql(ni,nj)*(vchchar-achchar))*
+     .       dsqrt(xmuc)*sgn(ni)*(uh-xmuneut1-xmus)+
+     .       (alsstr(i,nj)*astr(i,ni)*qr(ni,nj)*(vchchar-achchar)
+     .       +aksstr(i,nj)*bstr(i,ni)*ql(ni,nj)*(vchchar+achchar))*
+     .       dsqrt(xmus)*sgn(ni)*(xmuc+xmuneut1-th)+
+     .       (alsstr(i,nj)*bstr(i,ni)*ql(ni,nj)*(vchchar+achchar)
+     .       +aksstr(i,nj)*astr(i,ni)*qr(ni,nj)*(vchchar-achchar))*
+     .       xmchar(nj)/xmneut(ni)*dsqrt(xmuc*xmus)*2.D0+
+     .       (alsstr(i,nj)*bstr(i,ni)*qr(ni,nj)*(vchchar+achchar)
+     .       +aksstr(i,nj)*astr(i,ni)*ql(ni,nj)*(vchchar-achchar))*
+     .       dsqrt(xmuc*xmus)*(uh+th-xmuc-xmus) )
+         end do
+      else
+         xneuthsf=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+c                           H+ W- interference
+c -------------------------------------------------------------------- c
+
+      if((amchar(nj)+amcin+amsin).le.amneut(ni)) then
+            xneuthw=-g2**2/dw/dh*vwff*(
+     .     (ql(ni,nj)*or(ni,nj)+qr(ni,nj)*ol(ni,nj))*(vchchar+achchar)*
+     .     xmchar(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*8.D0*(1.D0-th+xmus)
+     .     +(ql(ni,nj)*or(ni,nj)+qr(ni,nj)*ol(ni,nj))*(vchchar-achchar)*
+     .     xmchar(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*8.D0*(-1.D0+uh
+     .     -xmuc)
+     .     +(ql(ni,nj)*ol(ni,nj)+qr(ni,nj)*or(ni,nj))*(vchchar+achchar)*
+     .     dsqrt(xmuc)*sgn(ni)*8.D0*(uh-xmuneut1-xmus)
+     .     +(ql(ni,nj)*ol(ni,nj)+qr(ni,nj)*or(ni,nj))*(vchchar-achchar)*
+     .     dsqrt(xmus)*sgn(ni)*8.D0*(xmuc+xmuneut1-th)+
+     .     1.D0/xmuw*(
+     .     (ql(ni,nj)*or(ni,nj)+qr(ni,nj)*ol(ni,nj))*(vchchar+achchar)*
+     .     xmchar(nj)/xmneut(ni)*dsqrt(xmuc)*sgn(ni)*4.D0*(
+     .     xmuneut1*(uh+th-xmuc-xmus-2.D0)+xmuc*(uh+th-2.D0*xmus
+     .     -1.D0)+xmus*(-2.D0*xmus+3.D0*(th+uh)-5.D0)+th*(3.D0
+     .     -2.D0*uh-th)+uh*(3.D0-uh)-2.D0)+
+     .     (ql(ni,nj)*or(ni,nj)+qr(ni,nj)*ol(ni,nj))*(vchchar-achchar)*
+     .     xmchar(nj)/xmneut(ni)*dsqrt(xmus)*sgn(ni)*4.D0*(
+     .     xmuneut1*(-uh-th+xmuc+xmus+2.D0)+xmus*(-uh-th+1.D0+
+     .     2.D0*xmuc)+xmuc*(2.D0*xmuc-3.D0*(th+uh)+5.D0)+uh*(uh-3.D0
+     .     +2.D0*th)+th*(th-3.D0)+2.D0)+
+     .     (ql(ni,nj)*ol(ni,nj)+qr(ni,nj)*or(ni,nj))*(vchchar+achchar)*
+     .     dsqrt(xmuc)*sgn(ni)*4.D0*(xmuneut1*(2.D0*xmuneut1+xmuc+
+     .     5.D0*xmus-3.D0*(th+uh)+2.D0)+xmuc*(2.D0*xmus-th-uh+1.D0)+
+     .     xmus*(2.D0*xmus-3.D0*(uh+th)+1.D0)+th*(th+2.D0*uh-1.D0)+uh*(
+     .     uh-1.D0))+
+     .     (ql(ni,nj)*ol(ni,nj)+qr(ni,nj)*or(ni,nj))*(vchchar-achchar)*
+     .     dsqrt(xmus)*sgn(ni)*4.D0*(xmuneut1*(-2.D0*xmuneut1-5.D0*xmuc
+     .     -xmus+3.D0*(uh+th)-2.D0)+xmus*(th+uh-1.D0-2.D0*xmuc)+
+     .     xmuc*(-2.D0*xmuc+3.D0*(th+uh)-1.D0)+uh*(-uh+1.D0-2.D0*th)+
+     .     th*(1.D0-th))) )
+      else
+         xneuthw=0.D0
+      endif
+
+c -------------------------------------------------------------------- c
+
+      SD_chcbs = xneutsf+xneutw+xneuth+xneutwsf+xneuthsf+xneuthw
+
+      end
+c end maggie changed 27/9/2016
 
 c ==================================================================== c
 c =====================  chargino- top bottombar ===================== c
